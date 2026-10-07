@@ -1,0 +1,20 @@
+{
+  "name": "chatgpt-usage",
+  "interface": {
+    "displayName": "ChatGPT Usage"
+  },
+  "plugins": [
+    {
+      "name": "usage",
+      "source": {
+        "source": "local",
+        "path": "./plugins/usage"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
