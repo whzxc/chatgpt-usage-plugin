@@ -13,7 +13,9 @@
         "HTTP_PROXY",
         "HTTPS_PROXY",
         "ALL_PROXY",
-        "NO_PROXY"
+        "NO_PROXY",
+        "PATHEXT",
+        "CHATGPT_USAGE_NODE"
       ],
       "tool_timeout_sec": 330
     }

@@ -1,8 +1,13 @@
 {
-  "version": "0.1.1",
-  "sourceCommit": "1ad3bfc094dfe7d7b329cf71c509d475d9ae94bb",
-  "binaries": {
-    "darwin-aarch64": "452d31667683ef4a5f7a1c7d15ecdddb09b20f75a98c6c151f2e23fd492ed83e",
-    "windows-x86_64": "5f24331c23e0d7517ea6d5d9f3d58f04a168533fee23768dce116e85c4ec6e27"
+  "version": "0.2.0",
+  "sourceCommit": "e5f3453ea9840687253845d715006e31a9e8c69d",
+  "files": {
+    "THIRD_PARTY_NOTICES.txt": "b4f4a7ad86a43b198300c1dc180aaec1ae1748a1891a204902b1132034d78b3f",
+    "chatgpt-usage": "03a5f13efe617e920fdb7d8f2ed02b2ab21764d6a59bbac274fd118577837c93",
+    "chatgpt-usage.cmd": "ceba7e56d2e6b35f5390272b58b3bfc88a433ec04704d179a2c2b77ea125b0d4",
+    "check-runtime.cjs": "c413b7626aaa099a8a18a5f8f225f99b1db1af900f5ee4e50f48c7a76630c43e",
+    "launch.ps1": "ca9f445c1fec75342182ca0af14ae5f4511de6a3c3fe28a9f4239bdf55112a41",
+    "main.mjs": "71e63ba8428c7942ec919f29119de72459e6131dbe403ac1c926f1ab08daffa8",
+    "worker.mjs": "76fafc7fa4074522792d10e67e790e8936708f5d4dadf516a489163be9d080e1"
   }
 }
