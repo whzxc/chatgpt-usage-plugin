@@ -10,6 +10,7 @@ function hostContext() {
   const params = new URLSearchParams(location.search);
   const requested = params.get('theme');
   return { theme: requested === 'light' || requested === 'dark' ? requested : systemTheme.matches ? 'dark' : 'light',
+    containerDimensions: { width: panel.clientWidth, height: panel.clientHeight },
     locale: params.get('locale') || navigator.language };
 }
 function send(message: unknown) {
@@ -64,3 +65,5 @@ systemTheme.addEventListener('change', () => {
   send({ jsonrpc: '2.0', method: 'ui/notifications/host-context-changed', params: hostContext() });
 });
 panel.src = '/plugin-panel.html';
+
+new ResizeObserver(() => send({ jsonrpc: "2.0", method: "ui/notifications/host-context-changed", params: hostContext() })).observe(panel);

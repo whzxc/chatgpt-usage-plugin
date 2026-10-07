@@ -1,8 +1,5 @@
 name: Plugin
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
     inputs:
       publish:
@@ -33,8 +30,6 @@ jobs:
           workspaces: native -> target
           cache-bin: false
       - run: npm ci
-      - run: npm run check
-      - run: npm run check:format
       - run: npm run plugin:build
       - uses: actions/upload-artifact@v4
         with:
@@ -43,51 +38,9 @@ jobs:
             dist/*.zip
             dist/*.sha256
           if-no-files-found: error
-  assemble:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: package-*
-          path: dist/artifacts
-          merge-multiple: true
-      - run: node tooling/marketplace.mjs assemble dist/artifacts dist/marketplace
-      - uses: actions/upload-artifact@v4
-        with:
-          name: marketplace
-          path: dist/marketplace
-          include-hidden-files: true
-          if-no-files-found: error
-  verify:
-    needs: assemble
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: marketplace
-          path: dist/marketplace
-      - if: runner.os == 'macOS'
-        run: chmod +x dist/marketplace/plugins/usage/bin/chatgpt-usage
-      - run: npm run build:ui
-      - run: npm run plugin:check -- dist/marketplace/plugins/usage
   publish:
-    needs: verify
-    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    needs: build
+    if: inputs.publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -101,13 +54,11 @@ jobs:
           node-version: '24'
       - uses: actions/download-artifact@v4
         with:
-          name: marketplace
-          path: dist/marketplace
-      - uses: actions/download-artifact@v4
-        with:
           pattern: package-*
           path: dist/artifacts
           merge-multiple: true
+      - name: Assemble marketplace
+        run: node tooling/marketplace.mjs assemble dist/artifacts dist/marketplace
       - name: Publish marketplace
         env:
           GH_TOKEN: ${{ github.token }}

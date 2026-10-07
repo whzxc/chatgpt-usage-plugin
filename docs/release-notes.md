@@ -1,1 +1,3 @@
-Usage overview and task usage panels for ChatGPT Desktop, including Codex token statistics, estimated costs, quota and task trajectories. The plugin has a standalone native backend and is distributed from this repository's marketplace.
+- 修复 Usage 面板随宿主窗口尺寸变化的布局与尺寸通知。
+- 开发预览同步宿主容器尺寸，支持宽窄窗口验收。
+- CI/CD 收敛为手动构建与可选发布；推送、PR 和标签创建不再自动触发。

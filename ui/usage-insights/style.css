@@ -1,7 +1,7 @@
 .insight-app {
   width: 100%;
   min-width: 0;
-  min-height: 100vh;
+  min-height: var(--mcp-panel-height, 100dvh);
   background: var(--canvas);
   padding: 20px clamp(12px, 2.5vw, 32px) 12px;
   display: flex;

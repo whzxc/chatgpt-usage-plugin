@@ -1,8 +1,11 @@
+import { applyHostSize, observeHostSize } from "../host-size";
+let stopSizing: (() => void) | undefined;
 import type { ProviderSnapshot } from "../subscriptions/types";
 import { text } from "./format";
 import { locale, resolveLocale } from "../i18n";
 function applyHostContext(context: unknown) {
   applyMcpHostTheme(context);
+  applyHostSize(context);
   const host = context as { locale?: string } | undefined;
   if (host?.locale) {
     const next = resolveLocale([host.locale]);
@@ -202,6 +205,7 @@ window.addEventListener("message", (event) => {
   if (message.method === "ui/notifications/host-context-changed")
     applyHostContext(message.params);
   if (message.method === "ui/resource-teardown") {
+    stopSizing?.();
     for (const call of pending.values()) {
       clearTimeout(call.timeout);
       call.reject(new Error(text("closed")));
@@ -224,6 +228,8 @@ export function initialize() {
       (result) => {
         browserNavigation = !!(result as { hostCapabilities?: { experimental?: { usageNavigation?: boolean } } }).hostCapabilities?.experimental?.usageNavigation;
         applyHostContext((result as { hostContext?: unknown }).hostContext);
+        stopSizing?.();
+        stopSizing = observeHostSize();
         window.parent.postMessage(
           { jsonrpc: "2.0", method: "ui/notifications/initialized" },
           "*",

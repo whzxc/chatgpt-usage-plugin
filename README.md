@@ -25,7 +25,7 @@ codex plugin marketplace add whzxc/chatgpt-usage-plugin --ref stable
 codex plugin add usage@chatgpt-usage
 ```
 
-Until `stable` exists, use a locally built package or the verified `marketplace` artifact from the [Plugin workflow](https://github.com/whzxc/chatgpt-usage-plugin/actions/workflows/plugin.yml). Extract the entire artifact, register its root with `codex plugin marketplace add <directory>`, then install `usage@chatgpt-usage`. Do not register the source checkout: it contains no native executables.
+For a development build, use a locally built package or the platform ZIP from the manually triggered [Plugin workflow](https://github.com/whzxc/chatgpt-usage-plugin/actions/workflows/plugin.yml). Extract the ZIP, register its root with `codex plugin marketplace add <directory>`, then install `usage@chatgpt-usage`. Do not register the source checkout: it contains no native executables.
 
 Open **Usage overview** from the host explorer/sidebar or **Task usage** from a task's additional tools. You can also select a task in the overview. A host that cannot bind a local task may require selecting it in the overview. Cloud or other-device history is outside this plugin's scope.
 
@@ -56,7 +56,7 @@ npm run plugin:build -- --debug
 npm run check:format
 ```
 
-The workflow builds and checks both supported platforms, combines them into one marketplace, and verifies that marketplace on both operating systems. Source changes do not publish a release or advance `stable`. See [distribution](docs/distribution.md).
+The workflow runs only when manually triggered. It builds and checks packages for both supported platforms. With `publish=true` on a matching version tag, it assembles the marketplace, advances `stable` and publishes the release archives. Source pushes, pull requests and tag creation do not trigger builds. See [distribution](docs/distribution.md).
 
 ## Data and architecture
 
