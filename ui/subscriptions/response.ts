@@ -1,10 +1,10 @@
-import type { ProviderSnapshot, UsageHistory } from './types';
+import type { ProviderSnapshot, UsageHistory } from '../../shared/quota';
 
 const object = (value: unknown): Record<string, unknown> =>
   value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const text = (value: unknown) => typeof value === 'string' ? value : undefined;
 
-// Native keeps normalized quota windows for scheduling and rail alerts. Display-only
+// The backend keeps normalized quota windows. Display-only
 // fields come from the original usage response, shared by every frontend surface.
 export function presentSubscription(provider: ProviderSnapshot): ProviderSnapshot {
   const raw = object(provider.rawUsage);

@@ -1,4 +1,4 @@
-import type { ProviderSnapshot, QuotaWindow } from './types';
+import type { ProviderSnapshot, QuotaWindow } from '../../shared/quota';
 export function quotaPeriod(w:QuotaWindow,p:ProviderSnapshot):number|undefined {
   const numeric=/^(\d+) (min|s)$/.exec(w.label);
   if(numeric)return Number(numeric[1])*(numeric[2]==='min'?60000:1000);

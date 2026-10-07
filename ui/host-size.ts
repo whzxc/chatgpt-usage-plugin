@@ -18,7 +18,7 @@ export function applyHostSize(context: unknown) {
   schedule?.();
 }
 
-export function observeHostSize() {
+export function observeHostSize(send: (size: {width: number; height: number}) => void) {
   let frame = 0;
   let previous = "";
   const report = () => {
@@ -31,7 +31,7 @@ export function observeHostSize() {
     const key = JSON.stringify(params);
     if (key === previous || !params.width || !params.height) return;
     previous = key;
-    window.parent.postMessage({ jsonrpc: "2.0", method: "ui/notifications/size-changed", params }, "*");
+    send(params);
   };
   const enqueue = () => { if (!frame) frame = requestAnimationFrame(report); };
   schedule = enqueue;

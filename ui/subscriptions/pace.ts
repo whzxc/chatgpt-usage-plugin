@@ -1,5 +1,5 @@
 // Burn-rate rules adapted from OpenUsage Support/Pace.swift and WidgetData.meterState (MIT).
-import type {ProviderSnapshot, QuotaWindow} from './types';
+import type {ProviderSnapshot, QuotaWindow} from '../../shared/quota';
 import {quotaDisplay, resetDisplay} from './displayPreferences';
 import {duration, preciseTime, usageColors} from './presentation';
 import {t} from '../i18n';

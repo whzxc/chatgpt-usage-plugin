@@ -24,12 +24,8 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@49a0bdc70d2e1b713ca9e2869b211fcce03d3c1c
-        with:
-          workspaces: native -> target
-          cache-bin: false
       - run: npm ci
+      - run: npm run check
       - run: npm run plugin:build
       - uses: actions/upload-artifact@v4
         with:

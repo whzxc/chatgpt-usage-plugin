@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+base=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# No PATH fallback: end users do not need a separately installed Node.
+node=${CHATGPT_USAGE_NODE:-}
+if [ -z "$node" ]; then
+  for app in /Applications/ChatGPT.app "$HOME/Applications/ChatGPT.app" /Applications/Codex.app "$HOME/Applications/Codex.app"; do
+    candidate="$app/Contents/Resources/cua_node/bin/node"
+    if [ -x "$candidate" ]; then node=$candidate; break; fi
+  done
+fi
+if [ -z "$node" ] || [ ! -x "$node" ]; then
+  echo 'Usage: supported ChatGPT/Codex host Node is unavailable. See docs/runtime.md.' >&2
+  exit 1
+fi
+"$node" --disable-warning=ExperimentalWarning "$base/check-runtime.cjs" || exit 1
+exec "$node" --use-env-proxy --disable-warning=ExperimentalWarning "$base/main.mjs" "$@"

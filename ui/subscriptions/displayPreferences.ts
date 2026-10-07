@@ -1,6 +1,6 @@
 import { preference } from '../state/store';
 import { t } from '../i18n';
-import { remaining, type QuotaWindow } from './types';
+import { remaining, type QuotaWindow } from '../../shared/quota';
 
 export const quotaDisplay = preference<'remaining' | 'used'>('quota-display', 'remaining', value => value === 'used' ? 'used' : 'remaining', value => value);
 export const resetDisplay = preference<'countdown' | 'time'>('quota-reset-display', 'countdown', value => value === 'time' ? 'time' : 'countdown', value => value);

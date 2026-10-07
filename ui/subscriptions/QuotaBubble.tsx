@@ -24,7 +24,7 @@ import {
 import { quotaPace } from "./pace";
 import { cycleEstimate } from "./cycleEstimate";
 import { usageLink } from "./usageLinks";
-import type { ProviderSnapshot } from "./types";
+import type { ProviderSnapshot } from "../../shared/quota";
 import UsageHistory from "./UsageHistory";
 import "./bubble.css";
 export default function QuotaBubble({

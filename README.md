@@ -7,7 +7,7 @@ Two usage panels for **ChatGPT Desktop**: an overview of readable Codex history 
 - Account quota from the native Codex login, separate from log statistics.
 - Host theme and language integration, keyboard controls and reduced motion.
 
-The native backend is bundled. Installed packages need no Node, npm, Rust, Connector Desktop or network ingress. The plugin does not create or modify Agent tasks. It does not include Kanban, task orchestration, a tray app or Tunnel management. It reports readable Codex history on this device, not all ChatGPT conversations or account-wide billing.
+The TypeScript backend and React UI are bundled. Installed packages reuse a compatible ChatGPT/Codex host Node; users do not need to install Node, npm or Rust. This depends on host internals and is limited to the runtime layouts described in [runtime support](docs/runtime.md). No Connector Desktop or network ingress is required. The plugin does not create or modify Agent tasks. It does not include Kanban, task orchestration, a tray app or Tunnel management. It reports readable Codex history on this device, not all ChatGPT conversations or account-wide billing.
 
 ## Installation
 
@@ -25,7 +25,7 @@ codex plugin marketplace add whzxc/chatgpt-usage-plugin --ref stable
 codex plugin add usage@chatgpt-usage
 ```
 
-For a development build, use a locally built package or the platform ZIP from the manually triggered [Plugin workflow](https://github.com/whzxc/chatgpt-usage-plugin/actions/workflows/plugin.yml). Extract the ZIP, register its root with `codex plugin marketplace add <directory>`, then install `usage@chatgpt-usage`. Do not register the source checkout: it contains no native executables.
+For a development build, use a locally built package or the platform ZIP from the manually triggered [Plugin workflow](https://github.com/whzxc/chatgpt-usage-plugin/actions/workflows/plugin.yml). Extract the ZIP, register its root with `codex plugin marketplace add <directory>`, then install `usage@chatgpt-usage`. Do not register the source checkout: it contains no built server bundle.
 
 Open **Usage overview** from the host explorer/sidebar or **Task usage** from a task's additional tools. You can also select a task in the overview. A host that cannot bind a local task may require selecting it in the overview. Cloud or other-device history is outside this plugin's scope.
 
@@ -37,7 +37,7 @@ Update with `codex plugin marketplace upgrade chatgpt-usage`, then reload the pl
 
 ## Development
 
-Use Node 24.12+ and stable Rust on Apple Silicon macOS or Windows x64.
+Use Node 24.19+ (24.x) and npm on Apple Silicon macOS or Windows x64. Rust is not used.
 
 ```sh
 npm ci
@@ -46,12 +46,12 @@ npm run build
 npm run dev
 ```
 
-The browser preview is at `http://127.0.0.1:5188/plugin.html?scope=global`. It uses the real Rust backend through the same MCP tools as the host. React/CSS edits hot-reload; Rust edits require restarting the command. The preview binds only to loopback and requires its same-origin request header. Browser rendering is not installed-host acceptance.
+The browser preview is at `http://127.0.0.1:5188/plugin.html?scope=global`. It uses the real TypeScript backend through the same MCP tools as the host. React/CSS edits hot-reload; Server edits require restarting the command. The preview binds only to loopback and requires its same-origin request header. Browser rendering is not installed-host acceptance.
 
 `npm run plugin:dev` creates and installs an isolated `usage@chatgpt-usage-dev` development marketplace through the host CLI. Saving UI source rebuilds the embedded resource; open development panels reload through MCP. Disable the development variant before validating a release variant. No host restart is automated.
 
 ```sh
-npm run plugin:build           # native release build, package and existing artifact verification
+npm run plugin:build           # bundle, package and existing artifact verification
 npm run plugin:build -- --debug
 npm run check:format
 ```
@@ -60,13 +60,13 @@ The workflow runs only when manually triggered. It builds and checks packages fo
 
 ## Data and architecture
 
-The host starts `chatgpt-usage mcp` over stdio. The process serves the embedded React panel, indexes Codex JSONL logs and reads quota through a short-lived native `account/rateLimits/read` call. Only three panel tools are exposed: `usage_overview`, `usage_task`, `usage_refresh`. Detailed statistics travel in tool-result `_meta`, outside model-visible text. The backend starts no HTTP listener and has no dependency on Connector's Core, version or state.
+The host starts a small OS launcher, which locates and validates its bundled Node, then runs `main.mjs mcp` over stdio. The official MCP SDK owns server protocol handling; MCP Apps `App` owns panel transport, initialization, host context, sizing, teardown and resource reload. The browser preview uses `AppBridge`. The process serves the embedded React panel, indexes Codex JSONL logs and reads quota through a short-lived native `account/rateLimits/read` call. Only three panel tools are exposed: `usage_overview`, `usage_task`, `usage_refresh`. Detailed statistics travel in tool-result `_meta`, outside model-visible text. The backend starts no HTTP listener and has no dependency on Connector's Core, version or state.
 
 `CODEX_HOME` selects the native history/login location. `CHATGPT_USAGE_STATE_DIR` selects the plugin's disposable cache; the default is `~/.local/state/chatgpt-usage-plugin` on macOS and `%LOCALAPPDATA%/chatgpt-usage-plugin` on Windows. Preview and development installations use their own directories under `dist`. Original logs, login files and tasks are not changed. Quota follows the installed host's bundled Codex CLI, falling back to `codex` on PATH.
 
-Each MCP process owns its collectors; it does not share a daemon with other plugins or Connector. Checkpoints are written atomically and can be rebuilt. Hidden panels stop polling. The host terminating the plugin stops its analysis and quota reader, not external tasks.
+Worker threads keep indexing off the MCP event loop. Period views, selected task details and quota history have independent collectors. Each MCP process owns its collectors; it does not share a daemon with other plugins or Connector. Checkpoints are written atomically under `usage-ts` and can be rebuilt. Old Rust checkpoints are not read or deleted; original history needs no conversion. Oversized compaction histories are streamed, prompts are read from source offsets only when requested, and incomplete tails wait for a later scan. Hidden panels stop polling. The host terminating the plugin stops its analysis and quota reader, not external tasks.
 
-Model prices use bundled snapshots and public feed refreshes. No task records or credentials are sent to price feeds. Cost figures are estimates; cached input and reasoning output are subsets, and missing fields remain unknown. Account quota and local history have different coverage and cannot establish exact per-task billing. HTTP proxy environment variables apply to public pricing requests.
+Model prices use bundled snapshots and public feed refreshes. No task records or credentials are sent to price feeds. Cost figures are estimates; cached input and reasoning output are subsets, and missing fields remain unknown. Account quota and local history have different coverage and cannot establish exact per-task billing. HTTP_PROXY, HTTPS_PROXY and NO_PROXY apply to public pricing requests through Node’s environment proxy support.
 
 ## License
 

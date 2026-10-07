@@ -1,7 +1,7 @@
 import { quotaTiming } from './quotaTiming';
 import openaiIcon from '../assets/agents/openai.svg';
 import { locale } from '../i18n';
-import { type QuotaWindow,type ProviderSnapshot } from './types';
+import { type QuotaWindow,type ProviderSnapshot } from '../../shared/quota';
 export const brandIcon=(_id:string)=>openaiIcon;
 export { usageColors } from '../colors';
 import { usageColors } from '../colors';

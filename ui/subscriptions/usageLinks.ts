@@ -1,4 +1,4 @@
-import type { ProviderSnapshot } from './types';
+import type { ProviderSnapshot } from '../../shared/quota';
 
 export function usageLink(provider: ProviderSnapshot): string | undefined {
   // The Go usage response currently contains no workspace identity.

@@ -238,7 +238,7 @@
   "insights.guide.quota.title": "Missing or stale account quota",
   "insights.guide.quota.body": "Quota is read through the installed native Codex CLI using its current login. Check sign-in in the native client if unavailable. Quota and log statistics are independent; unavailable quota does not mean full remaining allowance.",
   "insights.guide.entrypoints.title": "Plugin, desktop app and remote access",
-  "insights.guide.entrypoints.body": "This plugin provides Usage overview and Task usage in ChatGPT Desktop. It includes a native backend. Node, Rust and Connector Desktop are not needed for installed packages. It does not expose a network service.",
+  "insights.guide.entrypoints.body": "This plugin provides Usage overview and Task usage in ChatGPT Desktop. It reuses a compatible host runtime. A separate Node installation, Rust and Connector Desktop are not needed. It does not expose a network service.",
   "insights.guide.data.title": "Coverage and counting",
   "insights.guide.data.body": "Only readable local Codex logs are counted, not the account’s full activity. Cached input and reasoning output are subsets and are not added twice. Missing fields show —; a confirmed subtotal may be incomplete. Parent and child tasks are counted separately. Tool return sizes and whole-turn durations are not charges or pure generation speed. Charts filter event time; daily groups use the host device’s local time.",
   "insights.guide.lifecycle.title": "What happens when you close it",

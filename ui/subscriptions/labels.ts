@@ -1,6 +1,6 @@
 import { quotaDisplay } from './displayPreferences';
 import { t } from '../i18n';
-import type { ProviderSnapshot } from './types';
+import type { ProviderSnapshot } from '../../shared/quota';
 import { duration as readableDuration } from './presentation';
 export const isFiveHour = (value:string) => ['rolling','five_hour','session','300 min','18000 s'].includes(value);
 export function windowLabel(value: string) {

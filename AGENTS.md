@@ -1,7 +1,7 @@
 # Development
 
 - MIT-licensed ChatGPT Desktop plugin. Scope is Usage overview and Task usage; keep Agent execution, Kanban, Tunnel and Connector Desktop out of this repository.
-- macOS Apple Silicon and Windows x64. Rust native backend plus React MCP panels; Node/npm are build tools only. No public npm package.
+- macOS Apple Silicon and Windows x64. TypeScript backend plus React MCP panels using the official MCP/MCP Apps SDKs; installed packages reuse validated host Node 24.19+ (24.x), while npm is build-only. No public npm package.
 - No Git worktrees. Do not add compatibility aliases or depend on personal paths or sibling checkouts.
 - Keep source on main and generated marketplace on stable. Repository publication requires user authorization; normal CI does not publish.
 - Do not add test files or cases. Adapt and run existing checks and perform real acceptance appropriate to changes.

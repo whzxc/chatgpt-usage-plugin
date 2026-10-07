@@ -1,63 +1,111 @@
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-import { createServer } from 'vite';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { buildNative } from './build.mjs';
-const root = fileURLToPath(new URL('../', import.meta.url));
-const binary = await buildNative();
-const client = new Client({ name: 'usage-plugin-web', version: '1' });
-const tools = new Set(['usage_overview', 'usage_task', 'usage_refresh']);
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import { createServer } from "vite";
+import { Client } from "@modelcontextprotocol/client";
+import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
+import { buildServer } from "./build.mjs";
+const root = fileURLToPath(new URL("../", import.meta.url));
+const binary = await buildServer();
+const client = new Client({ name: "usage-plugin-web", version: "1" });
+const tools = new Set(["usage_overview", "usage_task", "usage_refresh"]);
 let server;
 let stopping = false;
 async function stop() {
   if (stopping) return;
   stopping = true;
-  try { await server?.close(); } finally { await client.close(); }
+  try {
+    await server?.close();
+  } finally {
+    await client.close();
+  }
 }
-process.on('SIGINT', () => { void stop(); });
-process.on('SIGTERM', () => { void stop(); });
+process.on("SIGINT", () => {
+  void stop();
+});
+process.on("SIGTERM", () => {
+  void stop();
+});
 try {
-  await client.connect(new StdioClientTransport({ command: binary, args: ['mcp'], env: { ...process.env, CHATGPT_USAGE_STATE_DIR: process.env.CHATGPT_USAGE_STATE_DIR || path.join(root, 'dist/dev-state') }, stderr: 'inherit' }));
-  server = await createServer({
-    configFile: path.join(root, 'vite.config.ts'),
-    plugins: [{
-      name: 'usage-plugin-web-host',
-      configureServer(vite) {
-        vite.middlewares.use((request, response, next) => {
-          if (request.url !== '/__plugin/tools') return next();
-          response.setHeader('Cache-Control', 'no-store');
-          response.setHeader('Content-Type', 'application/json');
-          if (request.method !== 'POST' || request.headers.host !== '127.0.0.1:5188'
-            || request.headers.origin !== 'http://127.0.0.1:5188'
-            || request.headers['sec-fetch-site'] === 'cross-site'
-            || request.headers['x-usage-request'] !== '1') {
-            response.writeHead(403); response.end(JSON.stringify({ error: '仅允许本机调试页面访问。' })); return;
-          }
-          void (async () => {
-            const chunks = [];
-            let size = 0;
-            for await (const chunk of request) {
-              size += chunk.length;
-              if (size > 65536) { response.writeHead(413); response.end(); return; }
-              chunks.push(Buffer.from(chunk));
-            }
-            const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-            if (!tools.has(body.name)) {
-              response.writeHead(400); response.end(JSON.stringify({ error: '仅支持插件面板工具。' })); return;
-            }
-            const result = await client.callTool({ name: body.name, arguments: body.arguments ?? {},
-              ...(typeof body.threadId === 'string' && body.threadId ? { _meta: { threadId: body.threadId } } : {}) }, undefined, { timeout: 330000 });
-            if (!response.destroyed) response.end(JSON.stringify(result));
-          })().catch(error => {
-            if (!response.destroyed) { response.writeHead(502); response.end(JSON.stringify({ error: error.message })); }
-          });
-        });
+  await client.connect(
+    new StdioClientTransport({
+      command: process.execPath,
+      args: ["--use-env-proxy", binary, "mcp"],
+      env: {
+        ...process.env,
+        CHATGPT_USAGE_STATE_DIR:
+          process.env.CHATGPT_USAGE_STATE_DIR ||
+          path.join(root, "dist/dev-state"),
       },
-    }],
+      stderr: "inherit",
+    }),
+  );
+  server = await createServer({
+    configFile: path.join(root, "vite.config.ts"),
+    plugins: [
+      {
+        name: "usage-plugin-web-host",
+        configureServer(vite) {
+          vite.middlewares.use((request, response, next) => {
+            if (request.url !== "/__plugin/tools") return next();
+            response.setHeader("Cache-Control", "no-store");
+            response.setHeader("Content-Type", "application/json");
+            if (
+              request.method !== "POST" ||
+              request.headers.host !== "127.0.0.1:5188" ||
+              request.headers.origin !== "http://127.0.0.1:5188" ||
+              request.headers["sec-fetch-site"] === "cross-site" ||
+              request.headers["x-usage-request"] !== "1"
+            ) {
+              response.writeHead(403);
+              response.end(
+                JSON.stringify({ error: "仅允许本机调试页面访问。" }),
+              );
+              return;
+            }
+            void (async () => {
+              const chunks = [];
+              let size = 0;
+              for await (const chunk of request) {
+                size += chunk.length;
+                if (size > 65536) {
+                  response.writeHead(413);
+                  response.end();
+                  return;
+                }
+                chunks.push(Buffer.from(chunk));
+              }
+              const body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+              if (!tools.has(body.name)) {
+                response.writeHead(400);
+                response.end(JSON.stringify({ error: "仅支持插件面板工具。" }));
+                return;
+              }
+              const result = await client.callTool(
+                {
+                  name: body.name,
+                  arguments: body.arguments ?? {},
+                  ...(typeof body.threadId === "string" && body.threadId
+                    ? { _meta: { threadId: body.threadId } }
+                    : {}),
+                },
+                { timeout: 330000 },
+              );
+              if (!response.destroyed) response.end(JSON.stringify(result));
+            })().catch((error) => {
+              if (!response.destroyed) {
+                response.writeHead(502);
+                response.end(JSON.stringify({ error: error.message }));
+              }
+            });
+          });
+        },
+      },
+    ],
   });
   await server.listen();
-  console.log('Plugin Web ready:\nOverview: http://127.0.0.1:5188/plugin.html?scope=global\nTask: http://127.0.0.1:5188/plugin.html?scope=thread\nReact/CSS changes hot-reload. Rust changes require restarting this command.');
+  console.log(
+    "Plugin Web ready:\nOverview: http://127.0.0.1:5188/plugin.html?scope=global\nTask: http://127.0.0.1:5188/plugin.html?scope=thread\nReact/CSS changes hot-reload. Server changes require restarting this command.",
+  );
 } catch (error) {
   await stop();
   throw error;

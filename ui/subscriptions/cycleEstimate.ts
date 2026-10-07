@@ -1,4 +1,4 @@
-import type {ProviderSnapshot, QuotaWindow} from './types';
+import type {ProviderSnapshot, QuotaWindow} from '../../shared/quota';
 import {quotaPeriod} from './quotaTiming';
 import {t, locale} from '../i18n';
 

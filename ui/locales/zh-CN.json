@@ -238,7 +238,7 @@
   "insights.guide.quota.title": "额度缺失或已过期",
   "insights.guide.quota.body": "配额通过已安装的原生 Codex CLI 和当前登录读取。不可用时请检查原生客户端登录。配额与日志统计彼此独立；配额缺失不表示额度充足。",
   "insights.guide.entrypoints.title": "插件、桌面应用与远程接入",
-  "insights.guide.entrypoints.body": "插件在 ChatGPT Desktop 中提供用量总览和任务用量两个面板，自带原生后台。安装包运行不需要 Node、Rust 或 Connector Desktop，不提供网络服务。",
+  "insights.guide.entrypoints.body": "插件在 ChatGPT Desktop 中提供用量总览和任务用量两个面板，复用兼容的宿主运行时，无需另装 Node、Rust 或 Connector Desktop，不提供网络服务。",
   "insights.guide.data.title": "数据覆盖与计量",
   "insights.guide.data.body": "只统计可读的本机 Codex 日志，不能据此认定账号全部用量。缓存属于输入，推理属于输出，不重复相加。缺失字段显示为 —，已确认小计可能不完整。父子任务分别计量；工具返回大小、整轮耗时不等于费用或纯生成速度。图表按事件时间筛选，日分组使用 宿主设备的本地时间。",
   "insights.guide.lifecycle.title": "关闭窗口后会怎样",
