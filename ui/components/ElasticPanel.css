@@ -1,0 +1,83 @@
+.elastic-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+}
+.dialog.elastic-panel {
+  --panel-border: 1px;
+  --panel-layout-width: min(var(--preferred-width), calc(100vw - 40px));
+  width: var(--panel-layout-width);
+  max-height: calc(100dvh - 40px);
+  border-radius: 28px;
+  animation: none;
+
+  overflow: hidden;
+}
+.elastic-panel-content {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  align-self: center;
+  width: calc(var(--panel-layout-width) - 2 * var(--panel-border));
+  max-height: calc(100dvh - 40px - 2 * var(--panel-border));
+  min-height: 0;
+}
+.elastic-panel[data-recessed] {
+  visibility: hidden;
+  pointer-events: none;
+}
+.elastic-panel .dialog-header {
+  padding: 28px 28px 12px;
+  border: 0;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.elastic-panel .dialog-header:active {
+  cursor: grabbing;
+}
+.elastic-panel .dialog-header h2 {
+  font-size: 22px;
+}
+.elastic-panel .dialog-header .actions {
+  cursor: default;
+}
+.elastic-panel .dialog-body {
+  padding: 0 28px 28px;
+}
+.elastic-panel .dialog-footer {
+  border: 0;
+  padding: 12px 28px 28px;
+}
+.elastic-panel.unframed {
+  --panel-border: 0px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 22px;
+}
+.elastic-panel.unframed .dialog-body {
+  padding: 0;
+  overflow: auto;
+}
+@media (max-width: 600px) {
+  .elastic-panel .dialog-header {
+    padding: 20px 20px 12px;
+  }
+  .elastic-panel .dialog-body {
+    padding: 0 20px 20px;
+  }
+  .elastic-panel .dialog-footer {
+    padding: 12px 20px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog.elastic-panel {
+    transition: none;
+  }
+}
+
+.elastic-panel.headerless .dialog-body { padding-top: 28px; }
+.elastic-panel:not(.unframed) { background: var(--canvas); }
+.dialog.elastic-panel:not(.unframed) { box-shadow: var(--shadow-panel); }
+.dialog.elastic-panel:focus { outline: none; }

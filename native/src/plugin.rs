@@ -1,4 +1,4 @@
-//! Standalone local plugin entrypoint over the same leased Core used by Desktop.
+//! Self-contained usage panels over MCP stdio.
 use crate::*;
 use base64::{engine::general_purpose::STANDARD, Engine};
 use tokio::io::{AsyncWriteExt, BufReader};

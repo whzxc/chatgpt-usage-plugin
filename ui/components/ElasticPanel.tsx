@@ -1,3 +1,4 @@
+import "./ElasticPanel.css";
 import {
   useCallback,
   useEffect,

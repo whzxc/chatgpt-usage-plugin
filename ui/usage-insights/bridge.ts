@@ -247,11 +247,4 @@ export async function refresh(args: Record<string, unknown>) {
 }
 declare const __PLUGIN_VERSION__: string;
 
-export async function callTool<T>(name: string, args: Record<string, unknown>): Promise<T> {
-  const response = await rpc("tools/call", { name, arguments: args }, 90000) as unknown as { isError?: boolean; structuredContent?: { result?: T & { error?: { message?: string } } } };
-  const result = response.structuredContent?.result;
-  if (response.isError) throw new Error(result?.error?.message || "Tool request failed");
-  if (result === undefined) throw new Error("Invalid tool response");
-  return result;
-}
 export async function openLink(url: string) { await rpc("ui/open-link", { url }); }
