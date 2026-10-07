@@ -1,0 +1,120 @@
+name: Plugin
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the matching version tag to the stable marketplace
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: usage-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@49a0bdc70d2e1b713ca9e2869b211fcce03d3c1c
+        with:
+          workspaces: native -> target
+          cache-bin: false
+      - run: npm ci
+      - run: npm run check
+      - run: npm run check:format
+      - run: npm run plugin:build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.os }}
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+  assemble:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist/artifacts
+          merge-multiple: true
+      - run: node tooling/marketplace.mjs assemble dist/artifacts dist/marketplace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: marketplace
+          path: dist/marketplace
+          include-hidden-files: true
+          if-no-files-found: error
+  verify:
+    needs: assemble
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: marketplace
+          path: dist/marketplace
+      - if: runner.os == 'macOS'
+        run: chmod +x dist/marketplace/plugins/usage/bin/chatgpt-usage
+      - run: npm run build:ui
+      - run: npm run plugin:check -- dist/marketplace/plugins/usage
+  publish:
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && inputs.publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: usage-marketplace-publish
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: marketplace
+          path: dist/marketplace
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: dist/artifacts
+          merge-multiple: true
+      - name: Publish marketplace
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          node tooling/marketplace.mjs publish dist/marketplace
+      - name: Publish release archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/artifacts/* --verify-tag --title "ChatGPT Usage $GITHUB_REF_NAME" --notes-file docs/release-notes.md

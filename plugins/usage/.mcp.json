@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "usage": {
+      "command": "./bin/chatgpt-usage",
+      "args": [
+        "mcp"
+      ],
+      "cwd": ".",
+      "env_vars": [
+        "PATH",
+        "CODEX_HOME",
+        "CHATGPT_USAGE_STATE_DIR",
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "NO_PROXY"
+      ],
+      "tool_timeout_sec": 330
+    }
+  }
+}

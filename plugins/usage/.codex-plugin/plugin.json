@@ -1,0 +1,22 @@
+{
+  "name": "usage",
+  "version": "0.1.0",
+  "description": "Codex usage overview and task insights panels for ChatGPT Desktop.",
+  "author": {
+    "name": "ChatGPT Usage Plugin contributors"
+  },
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Usage",
+    "shortDescription": "Usage overview and task insights.",
+    "longDescription": "Explore Codex token usage, estimated costs, quota and task trajectories in two ChatGPT Desktop panels.",
+    "developerName": "ChatGPT Usage Plugin contributors",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg",
+    "logoDark": "./assets/icon.svg",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ]
+  }
+}

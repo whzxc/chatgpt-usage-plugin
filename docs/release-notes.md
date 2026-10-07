@@ -1,0 +1,1 @@
+Usage overview and task usage panels for ChatGPT Desktop, including Codex token statistics, estimated costs, quota and task trajectories. The plugin has a standalone native backend and is distributed from this repository's marketplace.

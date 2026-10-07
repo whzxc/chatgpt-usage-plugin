@@ -1,0 +1,9 @@
+node_modules/
+native/target/
+dist/
+plugins/usage/bin/
+.DS_Store
+.env
+.env.*
+*.key
+*.pem

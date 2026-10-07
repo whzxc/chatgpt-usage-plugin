@@ -1,0 +1,51 @@
+{
+  "name": "chatgpt-usage-plugin",
+  "version": "0.1.0",
+  "description": "Codex usage overview and task insights panels for ChatGPT Desktop.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit -p ui/tsconfig.json",
+    "build:ui": "node tooling/build-plugin.mjs",
+    "build": "node tooling/build.mjs",
+    "dev": "node tooling/dev.mjs",
+    "plugin:dev": "node tooling/plugin-dev.mjs",
+    "plugin:build": "node tooling/package.mjs",
+    "plugin:check": "node tooling/check-plugin.mjs",
+    "check:format": "cargo fmt --manifest-path native/Cargo.toml -- --check"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@radix-ui/themes": "^3.3.0",
+    "@types/node": "26.1.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "lucide-react": "^1.48.0",
+    "motion": "^13.4.4",
+    "radix-ui": "^1.6.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1",
+    "typescript": "6.0.3",
+    "vite": "8.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whzxc/chatgpt-usage-plugin.git"
+  },
+  "homepage": "https://github.com/whzxc/chatgpt-usage-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/whzxc/chatgpt-usage-plugin/issues"
+  },
+  "keywords": [
+    "chatgpt",
+    "codex",
+    "mcp",
+    "usage"
+  ],
+  "private": true
+}
