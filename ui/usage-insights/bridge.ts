@@ -217,7 +217,7 @@ let initialization: Promise<void> | undefined;
 export function initialize() {
   if (!initialization)
     initialization = rpc("ui/initialize", {
-      appInfo: { name: "clc-usage", version: __PLUGIN_VERSION__ },
+      appInfo: { name: "chatgpt-usage", version: __PLUGIN_VERSION__ },
       appCapabilities: {},
       protocolVersion: "2026-01-26",
     }).then(

@@ -291,5 +291,8 @@
   "insights.earlierCalls": "{n} earlier calls",
   "insights.contextCompaction": "Context compaction",
   "insights.closeSearch": "Close search",
-  "insights.turnOutputBytes": "Turn cumulative return size"
+  "insights.turnOutputBytes": "Turn cumulative return size",
+  "usageFiveHourLimit": "5h limit",
+  "usageWeeklyLimit": "Weekly limit",
+  "usageMonthlyLimit": "Monthly limit"
 }

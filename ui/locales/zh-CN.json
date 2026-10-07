@@ -291,5 +291,8 @@
   "insights.earlierCalls": "之前的 {n} 次调用",
   "insights.contextCompaction": "上下文压缩",
   "insights.closeSearch": "关闭搜索",
-  "insights.turnOutputBytes": "本轮累计返回量"
+  "insights.turnOutputBytes": "本轮累计返回量",
+  "usageFiveHourLimit": "5h 限额",
+  "usageWeeklyLimit": "周限额",
+  "usageMonthlyLimit": "月限额"
 }
