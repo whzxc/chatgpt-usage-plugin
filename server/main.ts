@@ -85,8 +85,16 @@ for (const [name, title, entry] of [
         threadId: text(extra.mcpReq._meta, "threadId"),
         thread_id: text(extra.mcpReq._meta, "thread_id"),
       };
-      const data = await service.query(args, meta, scope);
-      data.quota = quota.snapshot(args.refreshQuota === true);
+      const snapshot = await service.query(args, meta, scope);
+      // Task panels never render account quota or its device-wide history.
+      // Do not start that index or transport it on every task refresh.
+      const data: Json = {
+        ...snapshot,
+        quota:
+          scope === "global"
+            ? quota.snapshot(args.refreshQuota === true)
+            : null,
+      };
       return {
         content: [
           {

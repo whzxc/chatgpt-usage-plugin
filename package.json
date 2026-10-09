@@ -1,6 +1,6 @@
 {
   "name": "chatgpt-usage-plugin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Codex usage overview and task insights panels for ChatGPT Desktop.",
   "license": "MIT",
   "type": "module",

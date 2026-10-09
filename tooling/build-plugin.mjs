@@ -16,6 +16,12 @@ const result = await build({
     cssTarget: "chrome123",
     write: false,
     minify: true,
+    // The MCP transport logs entire messages at debug level. Chromium retains
+    // console arguments, including every polled snapshot, even with DevTools shut.
+    // Keep warning/error diagnostics without retaining historical payloads.
+    rolldownOptions: {
+      treeshake: { manualPureFunctions: ["console.debug"] },
+    },
     lib: {
       entry: fileURLToPath(new URL("ui/usage-insights/main.tsx", root)),
       name: "UsageInsights",

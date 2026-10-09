@@ -13,7 +13,7 @@ parentPort!.on("message", (request: Json) => {
     try {
       pricing.refresh();
       if (request.history) {
-        await collector.refresh(null, null);
+        await collector.refresh(32, null);
         const rows = [...collector.threads.values()].flatMap((t) =>
           sortedValues(t.modern ? t.responses : t.legacy),
         );

@@ -365,7 +365,9 @@ export class Views {
         ? observation(ordered.find((r) => r.at > (e.at ?? 0))!)
         : null,
     }));
+    const turnId = text(args, "turnId");
     const turns = sortedValues(t.turns)
+      .filter((turn) => !turnId || turn.id === turnId)
       .map((turn) => {
         const rs = ordered.filter((r) => r.turnId === turn.id),
           usage = this.metrics(rs),
@@ -390,8 +392,7 @@ export class Views {
         return value;
       })
       .sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0));
-    const turnId = text(args, "turnId"),
-      responseRows = rows
+    const responseRows = rows
         .filter((r) => !turnId || r.turnId === turnId)
         .sort((a, b) => b.at - a.at),
       tools = sortedValues(t.tools)
@@ -425,7 +426,7 @@ export class Views {
       family: t.modern ? "response" : "legacy",
       lastEventAt: t.lastEventAt,
       turns,
-      turnCount: turns.length,
+      turnCount: Object.keys(t.turns).length,
       responses,
       responseCount: responseRows.length,
       tools: tools.slice(toolOffset, toolOffset + limit),

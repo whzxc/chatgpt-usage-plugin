@@ -14,6 +14,21 @@ const app = new App(
   { autoResize: false },
 );
 let stopSizing: (() => void) | undefined, stopReload: (() => void) | undefined;
+let teardown: (() => void) | undefined;
+let disposed = false;
+export function onTeardown(listener: () => void) {
+  teardown = listener;
+}
+function dispose() {
+  disposed = true;
+  stopSizing?.();
+  stopReload?.();
+  teardown?.();
+  teardown = undefined;
+  initialResult = undefined;
+  listeners.clear();
+  routeListeners.clear();
+}
 function applyHostContext(context: unknown) {
   applyMcpHostTheme(context);
   applyHostSize(context);
@@ -67,6 +82,7 @@ function dataOf(result: unknown): Snapshot | undefined {
 }
 let initialResult: unknown;
 app.ontoolresult = (result) => {
+  if (disposed) return;
   initialResult = result;
   const data = dataOf(result);
   if (data?.schemaVersion === 1)
@@ -74,15 +90,23 @@ app.ontoolresult = (result) => {
 };
 app.onhostcontextchanged = applyHostContext;
 app.onteardown = () => {
-  stopSizing?.();
-  stopReload?.();
+  dispose();
   return {};
 };
+window.addEventListener(
+  "pagehide",
+  () => {
+    dispose();
+    void app.close();
+  },
+  { once: true },
+);
 let initialization: Promise<void> | undefined;
 export function initialize() {
   return (initialization ??= app
     .connect(undefined, { timeout: 20000 })
     .then(() => {
+      if (disposed) return;
       browserNavigation =
         !!app.getHostCapabilities()?.experimental?.usageNavigation;
       applyHostContext(app.getHostContext());
@@ -106,10 +130,14 @@ export function initialize() {
       throw error;
     }));
 }
-export async function refresh(args: Record<string, unknown>) {
+export async function refresh(
+  args: Record<string, unknown>,
+  signal?: AbortSignal,
+) {
+  if (disposed) throw new Error("Usage panel closed");
   const result = await app.callServerTool(
     { name: "usage_refresh", arguments: args },
-    { timeout: 20000 },
+    { timeout: 20000, signal },
   );
   const data = dataOf(result);
   if (data?.schemaVersion !== 1) throw new Error(text("schemaError"));
@@ -121,7 +149,6 @@ export async function openLink(url: string) {
 
 if (import.meta.hot)
   import.meta.hot.dispose(() => {
-    stopSizing?.();
-    stopReload?.();
+    dispose();
     void app.close();
   });

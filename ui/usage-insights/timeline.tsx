@@ -148,12 +148,18 @@ function TurnActivity({ turn, threadId, revision, onReady }: { turn: Turn; threa
   useEffect(() => { if (detail) onReady(); }, [detail, onReady]);
   useEffect(() => {
     let alive = true;
-    void refresh({ scope: "thread", threadId, turnId: turn.id }).then(result => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const controller = new AbortController();
+    void refresh({ scope: "thread", threadId, turnId: turn.id }, controller.signal).then(result => {
       if (!alive) return;
+      if (result.state === "collecting") {
+        timer = setTimeout(() => setRetry(n => n + 1), 500);
+        return;
+      }
       if (result.state !== "ready" || !result.thread) throw new Error(result.message || text("unavailable"));
       setDetail(result.thread); setError("");
     }).catch(e => { if (alive) setError(e instanceof Error ? e.message : String(e)); });
-    return () => { alive = false; };
+    return () => { alive = false; clearTimeout(timer); controller.abort(); };
   }, [threadId, turn.id, revision, retry]);
   const responses = useMemo(() => detail?.responses.filter(row => row.turnId === turn.id).sort((a, b) => a.at - b.at || a.id.localeCompare(b.id)) ?? [], [detail, turn.id]);
   const events = useMemo<Event[]>(() => {
@@ -283,12 +289,19 @@ function ToolPayload({ threadId, turnId, tool }: { threadId: string; turnId: str
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     let alive = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const controller = new AbortController();
     setError("");
-    void refresh({ scope: "thread", threadId, turnId, toolId: tool.id }).then(result => {
+    void refresh({ scope: "thread", threadId, turnId, toolId: tool.id }, controller.signal).then(result => {
+      if (!alive) return;
+      if (result.state === "collecting") {
+        timer = setTimeout(() => setRetry(n => n + 1), 500);
+        return;
+      }
       if (result.state !== "ready" || !result.toolDetail) throw new Error(result.message || text("unavailable"));
       if (alive) setData(result.toolDetail);
     }).catch(error => { if (alive) setError(String(error.message ?? error)); });
-    return () => { alive = false; };
+    return () => { alive = false; clearTimeout(timer); controller.abort(); };
   }, [threadId, turnId, tool.id, tool.completedAt, tool.outputBytes, retry]);
   const format = (value: unknown): string => {
     if (value == null) return "—";

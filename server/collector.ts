@@ -468,6 +468,7 @@ export class Collector {
         (old || other ? fresh() : restore(cachePath(), detail));
       if (old || other) {
         if (
+          !s.catalogueOnly ||
           s.schema !== CACHE_SCHEMA ||
           s.length !== meta.size ||
           s.stamp !== meta.mtimeMs ||
