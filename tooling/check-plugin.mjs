@@ -17,7 +17,7 @@ const server = await checkManifests(directory, pkg.version);
 for (const file of ["LICENSE", "assets/icon.svg", "assets/entrypoint.svg"])
   await access(path.join(directory, file));
 const binary =
-  server.command.replace("${PLUGIN_ROOT}", directory) +
+  path.resolve(directory, server.command) +
   (process.platform === "win32" ? ".cmd" : "");
 const mode = (await stat(binary)).mode;
 if (process.platform !== "win32" && !(mode & 0o111))

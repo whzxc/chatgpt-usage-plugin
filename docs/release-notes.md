@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.2.4
+
+- Fix missing Usage overview and Task usage entrypoints: portable stdio commands must use `./bin/chatgpt-usage`; the host rejects `${PLUGIN_ROOT}` in the command token. Keep `${PLUGIN_ROOT}` as the working directory and validate the command semantics during package checks. Both entries were opened in ChatGPT Desktop on macOS with bundled CLI 0.162.0-alpha.17.2; Windows host acceptance remains separate.
+
 ## 0.2.3 — P1–P5
 
 - **P1 — Shared indexing:** one index worker per MCP process, CODEX_HOME-isolated SQLite WAL storage and cross-process scan leases. Quota uses a shared five-minute cache; cycle-equivalent cost is aggregated on the server.

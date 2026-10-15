@@ -35,7 +35,7 @@ export async function checkManifests(directory, version) {
   deepStrictEqual(config.mcpServers, {
     usage: {
       type: "stdio",
-      command: "${PLUGIN_ROOT}/bin/chatgpt-usage",
+      command: "./bin/chatgpt-usage",
       args: ["mcp"],
       cwd: "${PLUGIN_ROOT}",
     },

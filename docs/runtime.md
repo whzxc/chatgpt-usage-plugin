@@ -22,4 +22,4 @@ The launcher enables Node’s environment HTTP proxy support for public price fe
 
 Quota continues to use the host’s Codex CLI and its existing login. Windows keeps the CLI’s sibling helpers together in a private cache, as required for launching Store-supplied executables outside their package.
 
-Portable `mcp.json` launches the same executable as the retained legacy configuration, using `${PLUGIN_ROOT}` paths. The host must implement Agent Plugins stdio expansion and environment inheritance. Legacy hosts use `.mcp.json` with explicit inherited environment names. See [distribution](distribution.md#package-layout-and-compatibility) for the retention/removal boundary.
+Portable `mcp.json` launches the same executable as the retained legacy configuration, using a plugin-relative `./bin/chatgpt-usage` command and `${PLUGIN_ROOT}` working directory. The host must implement Agent Plugins stdio expansion and environment inheritance. Legacy hosts use `.mcp.json` with explicit inherited environment names. See [distribution](distribution.md#package-layout-and-compatibility) for the retention/removal boundary.
