@@ -6,6 +6,7 @@ import {
   seconds,
   emptyMap,
   stableJson,
+  jsonBytes,
   type Json,
 } from "./common.js";
 export type Tokens = {
@@ -470,9 +471,9 @@ export function ingest(
     t.completedAt ??= at;
     t.outputBytes =
       "output" in p
-        ? Buffer.byteLength(
-            typeof p.output === "string" ? p.output : JSON.stringify(p.output),
-          )
+        ? typeof p.output === "string"
+          ? Buffer.byteLength(p.output)
+          : jsonBytes(p.output)
         : null;
     if (p.is_error === true || p.isError === true) t.status = "failed";
   }

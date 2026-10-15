@@ -269,6 +269,7 @@ export const dataTools = {
           durationMs: nullable,
           input: toolBody,
           output: toolBody,
+          exitCode: nullable,
         })
         .nullable(),
       index,

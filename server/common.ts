@@ -41,6 +41,47 @@ export const sortedValues = <T>(map: Record<string, T>): T[] =>
     .sort()
     .map((key) => map[key]);
 export const emptyMap = <T>(): Record<string, T> => Object.create(null);
+// Byte size of parsed JSON without allocating another copy of large tool results.
+export function jsonBytes(value: unknown): number {
+  if (typeof value === "string") {
+    let size = Buffer.byteLength(value) + 2;
+    const escaped = /["\\\u0000-\u001f\ud800-\udfff]/g;
+    while (escaped.test(value)) {
+      const index = escaped.lastIndex - 1,
+        c = value.charCodeAt(index);
+      if (c >= 0xd800) {
+        const next = value.charCodeAt(index + 1),
+          previous = value.charCodeAt(index - 1);
+        if (
+          c <= 0xdbff
+            ? next >= 0xdc00 && next <= 0xdfff
+            : previous >= 0xd800 && previous <= 0xdbff
+        )
+          continue;
+        size += 3; // Lone surrogates serialize as six ASCII bytes, not U+FFFD.
+      } else size += c < 32 && ![8, 9, 10, 12, 13].includes(c) ? 5 : 1;
+    }
+    return size;
+  }
+  if (Array.isArray(value))
+    return (
+      2 +
+      Math.max(0, value.length - 1) +
+      value.reduce((n, item) => n + jsonBytes(item), 0)
+    );
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value);
+    return (
+      2 +
+      Math.max(0, entries.length - 1) +
+      entries.reduce(
+        (n, [key, item]) => n + jsonBytes(key) + 1 + jsonBytes(item),
+        0,
+      )
+    );
+  }
+  return JSON.stringify(value).length;
+}
 const protectedDirs = new Set<string>();
 export function privateDir(dir: string) {
   mkdirSync(dir, { recursive: true, mode: 0o700 });

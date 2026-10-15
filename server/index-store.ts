@@ -9,6 +9,7 @@ import {
   privateDir,
   rangeStart,
   text,
+  jsonBytes,
 } from "./common.js";
 import {
   fresh,
@@ -22,6 +23,7 @@ import {
 import { relationalSchema, writeThread, reprice } from "./relational.js";
 import type { Pricing } from "./pricing.js";
 import { projection } from "./projection.js";
+import { toolPreview } from "./tool-content.js";
 
 const families = [
   "responses",
@@ -30,7 +32,7 @@ const families = [
   "tools",
   "compactions",
 ] as const;
-const schema = 4;
+const schema = 5;
 export function indexPath() {
   let home = path.resolve(codexHome());
   try {
@@ -449,23 +451,8 @@ export class IndexStore {
     )
       kind = "narrative";
     if (kind) {
-      const body =
-        value == null
-          ? null
-          : typeof value === "string"
-            ? value
-            : JSON.stringify(value);
-      let preview = body;
-      if (kind === "input") {
-        let parsed = value;
-        try {
-          if (typeof value === "string") parsed = JSON.parse(value);
-        } catch {}
-        preview =
-          ["title", "description", "cmd", "command", "query", "url", "path"]
-            .map((k) => (typeof parsed?.[k] === "string" ? parsed[k] : null))
-            .find(Boolean) ?? (typeof parsed === "string" ? parsed : null);
-      }
+      const preview =
+        kind === "input" ? toolPreview(p.name ?? "", value) : null;
       locations.push([
         file,
         offset,
@@ -473,7 +460,11 @@ export class IndexStore {
         turn,
         tool,
         kind,
-        body === null ? null : Buffer.byteLength(body),
+        value == null
+          ? null
+          : typeof value === "string"
+            ? Buffer.byteLength(value)
+            : jsonBytes(value),
         kind === "input"
           ? preview == null
             ? null

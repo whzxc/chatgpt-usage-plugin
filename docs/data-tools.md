@@ -17,11 +17,13 @@ Today begins at local midnight. Other ranges are rolling 7/30-day windows; daily
 
 Tools are associated with a request only when there is one reliable model response within the tool emission/result interval and no intervening compaction. Other tools remain separate timeline rows. Narratives and tool bodies are read from indexed JSONL byte ranges; no whole-file reread is required. Large turns are loaded in pages of at most 100 timeline rows.
 
+Tool previews are generated during indexing: shell commands use their first line, stdin writes identify the session, and other calls show the tool name and primary parameter. Static arguments inside code-mode wrappers are parsed without executing code. Tool details show full shell commands or formatted arguments, unwrap text items and nested output envelopes, and expose `exitCode` and recorded execution duration when available. Copy actions use the displayed text; byte counts still describe the original payload. Reasoning summaries remove bold markers and separate headings with `；`.
+
 Summary and thread totals include `outputTps`, `ttftMedianMs`, `ttftP90Ms` and `ttftTurns`; thread totals also include `ttftMaxMs`. Output speed uses summed output tokens divided by summed duration for completed/interrupted turns with reliable output and positive duration. Range summaries include only whole turns whose start/end and request timestamps lie within the range. TTFT statistics include turns with a recorded TTFT (including zero); range summaries require both turn boundaries within the range. The median averages the two middle values for even counts; P90 uses nearest rank. SQL computes the ordering and aggregates. Turn summaries also expose `ttftMs` and `outputTps`.
 
 ## Storage and refresh
 
-Each process has one worker and a read-only query connection to a shared, CODEX_HOME-specific SQLite WAL database. Schema 4 contains:
+Each process has one worker and a read-only query connection to a shared, CODEX_HOME-specific SQLite WAL database. Schema 5 contains:
 
 - `threads`: identity, session, title, first/last event, latest model/tier, running state, context limit and coverage flags.
 - `turns`: composite thread/turn identity, sequence, prompt preview, timing, status and context limit.

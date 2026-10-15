@@ -218,9 +218,7 @@ function Metrics({ turn }: { turn: Turn }) {
         " → " +
         compact(m.context.end) +
         (m.context.limit && m.context.end !== null
-          ? "（占上限 " +
-            Math.round((m.context.end * 100) / m.context.limit) +
-            "%）"
+          ? "（" + Math.round((m.context.end * 100) / m.context.limit) + "%）"
           : ""),
     ],
   ];

@@ -68,7 +68,7 @@ export function ToolDialog({
           <h2 id="tool-title">{tool?.name || ""} 工具调用</h2>
           <p id="tool-description">
             {tool
-              ? `${clock(tool.at)}，用时 ${duration(tool.durationMs)}，返回 ${bytes(tool.output.bytes)}`
+              ? `${clock(tool.at)}，用时 ${duration(tool.durationMs)}${tool.exitCode === null ? "" : `，退出码 ${tool.exitCode}`}，返回 ${bytes(tool.output.bytes)}`
               : "正在读取工具调用。"}
           </p>
           <button

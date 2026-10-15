@@ -4,6 +4,7 @@ import { rangeStart, type Json } from "./common.js";
 import { readTurnContent } from "./content.js";
 import { readPrompt } from "./collector.js";
 import { promptText } from "./projection.js";
+import { toolInput, toolOutput } from "./tool-content.js";
 
 const sum = (field: string) =>
   `CASE WHEN count(*)>0 AND min(reliable)=1 AND count(${field})=count(*) AND sum(${field})<=9007199254740991 THEN sum(${field}) END`;
@@ -298,7 +299,17 @@ export class DataViews {
             kind,
             id: r.id,
             at: r.at,
-            summary: excerpt(r.text, 400),
+            summary: excerpt(
+              kind === "reasoning"
+                ? r.text
+                    .replace(/\*\*/g, "")
+                    .split(/\n+/)
+                    .map((s: string) => s.trim())
+                    .filter(Boolean)
+                    .join("；")
+                : r.text,
+              400,
+            ),
             durationMs: r.durationMs ?? null,
           });
     } catch {
@@ -369,6 +380,8 @@ export class DataViews {
     );
     if (!t.toolId)
       return { tool: null, index: this.status(), reason: "tool-not-found" };
+    let exitCode: number | null = null,
+      durationMs = t.durationMs;
     const body = (side: string) => {
       if (!t[side + "Path"])
         return { text: null, bytes: t[side + "Bytes"], truncated: false };
@@ -383,27 +396,38 @@ export class DataViews {
           : p.type === "function_call"
             ? p.arguments
             : p.input;
-      const text =
+      const original =
         value == null
           ? null
           : typeof value === "string"
             ? value
             : JSON.stringify(value);
+      let text: string | null;
+      if (side === "input") text = toolInput(t.name ?? "", value);
+      else {
+        const output = toolOutput(value);
+        text = output.text;
+        exitCode = output.exitCode;
+        durationMs = output.durationMs ?? durationMs;
+      }
       return {
         text: text === null ? null : excerpt(text, 16000),
-        bytes: text === null ? null : Buffer.byteLength(text),
+        bytes: original === null ? null : Buffer.byteLength(original),
         truncated: (text?.length ?? 0) > 16000,
       };
     };
     try {
+      const input = body("input"),
+        output = body("output");
       return {
         tool: {
           toolId: t.toolId,
           name: t.name,
           at: t.at,
-          durationMs: t.durationMs,
-          input: body("input"),
-          output: body("output"),
+          durationMs,
+          exitCode,
+          input,
+          output,
         },
         index: this.status(),
         reason: null,

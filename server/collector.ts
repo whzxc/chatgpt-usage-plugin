@@ -68,8 +68,13 @@ export const fresh = (): FileState => ({
 });
 export const identity = (m: NonNullable<ReturnType<typeof statSync>>) =>
   `${m.dev}:${m.ino}:${m.birthtimeMs}`;
+// Callers consume each range synchronously. Reuse storage for prompt reads and
+// fingerprints instead of leaving many differently sized native allocations.
+let rangeBuffer = Buffer.alloc(512);
 function readRange(fd: number, offset: number, length: number): Buffer {
-  const bytes = Buffer.alloc(length);
+  if (rangeBuffer.length < length)
+    rangeBuffer = Buffer.allocUnsafe(2 ** Math.ceil(Math.log2(length)));
+  const bytes = rangeBuffer;
   let n = 0;
   while (n < length) {
     const read = readSync(fd, bytes, n, length - n, offset + n);
