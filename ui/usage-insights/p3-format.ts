@@ -50,3 +50,40 @@ export function fullTime(n: number | null) {
   const d = new Date(n);
   return `${d.getMonth() + 1} 月 ${d.getDate()} 日 ${time(n)}`;
 }
+
+export function productName(value: string) {
+  return value ? value[0]!.toLocaleUpperCase() + value.slice(1) : value;
+}
+
+export function bucketTitle(at: number, range: "today" | "7d" | "30d") {
+  const start = new Date(at);
+  if (range !== "today")
+    return `${start.getMonth() + 1} 月 ${start.getDate()} 日`;
+  const end = new Date(at + 60 * 60 * 1000);
+  const hour = (date: Date) =>
+    date.toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  return `${hour(start)}–${hour(end)}`;
+}
+
+export function chartScale(maximum: number) {
+  if (!(maximum > 0)) return { maximum: 1, ticks: [0, 1] };
+  const rough = maximum / 4,
+    power = 10 ** Math.floor(Math.log10(rough)),
+    fraction = rough / power,
+    factor = fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10,
+    step = factor * power;
+  let top = Math.ceil(maximum / step) * step;
+  if (top <= maximum) top += step;
+  while (top / step < 3) top += step;
+  return {
+    maximum: top,
+    ticks: Array.from(
+      { length: Math.round(top / step) + 1 },
+      (_, i) => i * step,
+    ),
+  };
+}

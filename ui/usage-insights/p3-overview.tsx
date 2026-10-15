@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { callData } from "./bridge";
 import { Chevron, RefreshIcon, SearchIcon, WarningIcon } from "./p3-icons";
 import {
+  bucketTitle,
+  chartScale,
   compact,
   fullTime,
   integer,
   money,
   percent,
+  productName,
   quotaPercent,
   time,
   when,
@@ -49,10 +52,16 @@ function Segmented<T extends string>({
 }
 
 function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
+  if (quota.state === "loading")
+    return (
+      <section className="account quota-error">
+        <span>正在读取账户额度</span>
+      </section>
+    );
   if (quota.state !== "ready")
     return (
       <section className="account quota-error">
-        <span>无法读取账户额度：{quota.reason || "未登录"}</span>
+        <span>无法读取账户额度：{quota.reason || "账户不可用"}</span>
         <button className="text-btn" onClick={retry}>
           重试
         </button>
@@ -74,7 +83,7 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
     <section className="account" aria-labelledby="account-title">
       <div className="account-head">
         <h2 id="account-title">账户额度</h2>
-        {quota.plan && <span className="plan">{quota.plan}</span>}
+        {quota.plan && <span className="plan">{productName(quota.plan)}</span>}
         <div className="account-meta">
           {quota.credits != null && <span>积分 {integer(quota.credits)}</span>}
           {quota.availableResets != null && (
@@ -127,7 +136,7 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
                     <WarningIcon />
                     <span>
                       {w.usedPercent >= 100
-                        ? `额度已用完，${fullTime(w.resetsAt)}重置`
+                        ? `额度已用完，${fullTime(w.resetsAt)} 重置`
                         : w.exhaustsAt
                           ? `按当前速度约 ${Math.max(1, Math.round((w.exhaustsAt - Date.now()) / 36e5))} 小时后用完`
                           : "额度消耗快于周期进度"}
@@ -140,7 +149,7 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
                   {w.cycleUsd != null && (
                     <span>整周约合 {money(w.cycleUsd)}</span>
                   )}
-                  {w.resetsAt && <span>{fullTime(w.resetsAt)}重置</span>}
+                  {w.resetsAt && <span>{fullTime(w.resetsAt)} 重置</span>}
                 </span>
               </div>
             )}
@@ -224,13 +233,14 @@ function UsageChart({ summary, range }: { summary: Summary; range: Range }) {
   const totals = summary.buckets.map((b) =>
       b.models.reduce((n, m) => n + (m[metric] ?? 0), 0),
     ),
-    max = Math.max(...totals, 1);
+    scale = chartScale(Math.max(...totals, 0)),
+    max = scale.maximum;
   const step = inner / Math.max(1, summary.buckets.length),
     bar = Math.min(24, step * 0.6);
   const models = [...summary.models].sort(
     (a, b) => (a.slot || 9) - (b.slot || 9),
   );
-  const ticks = [0, max / 3, (2 * max) / 3, max];
+  const ticks = scale.ticks;
   return (
     <div className="trend">
       <div>
@@ -349,6 +359,7 @@ function UsageChart({ summary, range }: { summary: Summary; range: Range }) {
               summary={summary}
               index={active}
               metric={metric}
+              range={range}
               left={left + active * step + step / 2}
               width={chartWidth}
             />
@@ -388,12 +399,14 @@ function ChartTip({
   summary,
   index,
   metric,
+  range,
   left,
   width,
 }: {
   summary: Summary;
   index: number;
   metric: "tokens" | "cost";
+  range: Range;
   left: number;
   width: number;
 }) {
@@ -408,13 +421,7 @@ function ChartTip({
       : { left: left + 18 };
   return (
     <div className="tip" style={position}>
-      <strong>
-        {new Date(bucket.at).toLocaleString("zh-CN", {
-          month: "long",
-          day: "numeric",
-          hour: summary.buckets.length > 20 ? undefined : "2-digit",
-        })}
-      </strong>
+      <strong>{bucketTitle(bucket.at, range)}</strong>
       {models.map((m) => (
         <div className="tip-row" key={m.id}>
           <span className="dot" style={{ background: colors(m.slot) }} />
@@ -632,6 +639,28 @@ export default function P3Overview({
     }, 30000);
     return () => clearInterval(id);
   }, [active, range, sort, search, page]);
+  useEffect(() => {
+    if (!active || quota.state !== "loading") return;
+    let stopped = false,
+      timer = 0;
+    const poll = async () => {
+      try {
+        const next = await callData<Quota>("usage_quota", {});
+        if (stopped) return;
+        setQuota(next);
+        if (next.state === "loading" && document.visibilityState === "visible")
+          timer = window.setTimeout(poll, 500);
+      } catch {
+        if (!stopped && document.visibilityState === "visible")
+          timer = window.setTimeout(poll, 500);
+      }
+    };
+    timer = window.setTimeout(poll, 500);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+    };
+  }, [active, quota.state]);
   const chooseRange = (v: Range) => {
     try {
       localStorage.setItem("usage-range", v);
@@ -649,7 +678,9 @@ export default function P3Overview({
       <header className="topbar">
         <h1>用量</h1>
         <div className="updated">
-          <span>{busy ? "正在更新" : `${time(quota.observedAt)} 更新`}</span>
+          {(busy || quota.observedAt) && (
+            <span>{busy ? "正在更新" : `${time(quota.observedAt)} 更新`}</span>
+          )}
           <button
             className={`icon-btn ${busy ? "is-busy" : ""}`}
             aria-label="刷新"
