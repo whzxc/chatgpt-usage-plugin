@@ -3,7 +3,7 @@
   "mcpServers": {
     "usage": {
       "type": "stdio",
-      "command": "${PLUGIN_ROOT}/bin/chatgpt-usage",
+      "command": "./bin/chatgpt-usage",
       "args": [
         "mcp"
       ],
