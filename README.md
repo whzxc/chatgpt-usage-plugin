@@ -11,4 +11,4 @@ Update with `codex plugin marketplace upgrade chatgpt-usage`, then reload the pl
 
 This branch is generated. Source, development documentation and issues live on [main](https://github.com/whzxc/chatgpt-usage-plugin/tree/main). `release.json` identifies the source commit, version and runtime payload SHA-256 hashes. Platform ZIPs and checksums are attached to [releases](https://github.com/whzxc/chatgpt-usage-plugin/releases). Packages are not notarized macOS apps or Authenticode-signed Windows installers.
 
-MIT licensed. No separately installed Node/npm, Connector Desktop or Tunnel is required. A compatible host-managed Node is required. This plugin reads Codex history and quota; it does not expose Agent task controls.
+MIT licensed. No separately installed Node/npm is required. A compatible host-managed Node is required. This plugin reads Codex history and quota; it does not expose Agent task controls.
