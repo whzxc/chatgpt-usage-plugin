@@ -683,6 +683,5 @@ export function CopyField({
   );
 }
 
-export { StackedBarChart } from "./StackedBarChart";
 
 import "./DetailDialog.css";

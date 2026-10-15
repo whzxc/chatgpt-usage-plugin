@@ -23,7 +23,7 @@ const performance = {
   ttftP90Ms: nullable,
   ttftTurns: n,
 };
-const range = z.enum(["today", "7d", "30d"]);
+export const range = z.enum(["today", "7d", "30d"]);
 const id = z.string().min(1).max(128);
 const turn = z
   .object({
@@ -242,3 +242,10 @@ export const dataTools = {
     }),
   },
 };
+
+export const overviewInitial = z.object({
+  range,
+  summary: dataTools.usage_summary.output,
+  tasks: dataTools.usage_tasks.output,
+  quota: dataTools.usage_quota.output,
+});

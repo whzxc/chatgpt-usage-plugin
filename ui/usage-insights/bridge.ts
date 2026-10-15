@@ -1,5 +1,4 @@
 import { App } from "@modelcontextprotocol/ext-apps";
-import { z } from "zod";
 import { applyHostSize, observeHostSize } from "../host-size";
 import { applyMcpHostTheme } from "../theme";
 import { locale, resolveLocale } from "../i18n";
@@ -27,7 +26,7 @@ function dispose() {
   teardown = undefined;
   initialResult = undefined;
   listeners.clear();
-  routeListeners.clear();
+  initialListeners.clear();
 }
 function applyHostContext(context: unknown) {
   applyMcpHostTheme(context);
@@ -40,41 +39,20 @@ function applyHostContext(context: unknown) {
   }
 }
 const listeners = new Set<(data: Snapshot) => void>();
+const initialListeners = new Set<(result: unknown) => void>();
+export function onInitialResult(listener: (result: unknown) => void) {
+  initialListeners.add(listener);
+  if (initialResult !== undefined) listener(initialResult);
+  return () => {
+    initialListeners.delete(listener);
+  };
+}
 export function onResult(listener: (data: Snapshot) => void) {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
   };
 }
-export type UsageRoute = { scope: "global" | "thread"; threadId: string };
-const routeListeners = new Set<(route: UsageRoute) => void>();
-export function onRoute(listener: (route: UsageRoute) => void) {
-  routeListeners.add(listener);
-  return () => {
-    routeListeners.delete(listener);
-  };
-}
-let browserNavigation = false;
-export function navigate(threadId: string) {
-  if (browserNavigation)
-    void app.notification({
-      method: "usage/notifications/navigate",
-      params: { scope: threadId ? "thread" : "global", threadId },
-    });
-}
-app.setNotificationHandler(
-  "usage/notifications/route-changed",
-  {
-    params: z.object({
-      scope: z.enum(["global", "thread"]),
-      threadId: z.string(),
-    }),
-  },
-  (message) => {
-    if (browserNavigation)
-      routeListeners.forEach((listener) => listener(message));
-  },
-);
 function dataOf(result: unknown): Snapshot | undefined {
   const r = result as
     { _meta?: { usage?: Snapshot }; structuredContent?: Snapshot } | undefined;
@@ -84,6 +62,7 @@ let initialResult: unknown;
 app.ontoolresult = (result) => {
   if (disposed) return;
   initialResult = result;
+  initialListeners.forEach((listener) => listener(result));
   const data = dataOf(result);
   if (data?.schemaVersion === 1)
     listeners.forEach((listener) => listener(data));
@@ -107,8 +86,6 @@ export function initialize() {
     .connect(undefined, { timeout: 20000 })
     .then(() => {
       if (disposed) return;
-      browserNavigation =
-        !!app.getHostCapabilities()?.experimental?.usageNavigation;
       applyHostContext(app.getHostContext());
       stopSizing?.();
       stopSizing = observeHostSize((params) => {
@@ -141,6 +118,19 @@ export async function refresh(
   );
   const data = dataOf(result);
   if (data?.schemaVersion !== 1) throw new Error(text("schemaError"));
+  return data;
+}
+export async function callData<T>(
+  name: string,
+  args: Record<string, unknown>,
+  signal?: AbortSignal,
+): Promise<T> {
+  const result = await app.callServerTool(
+    { name, arguments: args },
+    { timeout: 20000, signal },
+  );
+  const data = (result as { structuredContent?: T }).structuredContent;
+  if (!data) throw new Error("无法读取本机用量。");
   return data;
 }
 export async function openLink(url: string) {

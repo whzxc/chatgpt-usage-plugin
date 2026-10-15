@@ -143,10 +143,14 @@ try {
   let overview;
   for (let attempt = 0; attempt < 20; attempt++) {
     overview = await client.callTool({ name: "usage_overview", arguments: {} });
-    if (overview._meta?.usage?.state === "ready") break;
+    if (overview._meta?.usageOverview?.summary?.index?.state === "ready") break;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  if (overview._meta?.usage?.state !== "ready")
+  if (
+    overview._meta?.usageOverview?.summary?.index?.state !== "ready" ||
+    overview._meta?.usageOverview?.range !== "7d" ||
+    overview.content?.length !== 1
+  )
     throw new Error("Standalone backend did not serve its usage panel");
   console.log(
     `Standalone plugin verified: v${pkg.version}, ${tools.tools.length} tools, embedded UI, TypeScript backend (${process.env.CHATGPT_USAGE_NODE ? "explicit build runtime" : "host runtime"}).`,

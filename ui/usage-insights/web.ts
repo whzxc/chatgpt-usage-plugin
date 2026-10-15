@@ -4,7 +4,6 @@ import {
   PostMessageTransport,
 } from "@modelcontextprotocol/ext-apps/app-bridge";
 import type { McpUiHostContext } from "@modelcontextprotocol/ext-apps";
-import { z } from "zod";
 const panel = document.getElementById("panel") as HTMLIFrameElement;
 function route() {
   const params = new URLSearchParams(location.search),
@@ -45,7 +44,7 @@ async function callTool(name: string, args: Record<string, unknown> = {}) {
 const bridge = new AppBridge(
   null,
   { name: "usage-preview", version: "1" },
-  { serverTools: {}, experimental: { usageNavigation: {} } },
+  { serverTools: {} },
   { hostContext: hostContext() },
 );
 bridge.oncalltool = (params) => callTool(params.name, params.arguments);
@@ -54,31 +53,8 @@ bridge.onopenlink = async ({ url }) => {
   window.open(url, "_blank", "noopener,noreferrer");
   return {};
 };
-bridge.setNotificationHandler(
-  "usage/notifications/navigate",
-  {
-    params: z.object({
-      scope: z.enum(["global", "thread"]),
-      threadId: z.string(),
-    }),
-  },
-  (params) => {
-    const url = new URL(location.href);
-    url.searchParams.set("scope", params.scope);
-    if (params.scope === "thread" && params.threadId)
-      url.searchParams.set("threadId", params.threadId);
-    else url.searchParams.delete("threadId");
-    if (url.href !== location.href) history.pushState(null, "", url);
-  },
-);
-const notifyRoute = () =>
-  bridge.notification({
-    method: "usage/notifications/route-changed",
-    params: route(),
-  });
 bridge.oninitialized = async () => {
   const { scope, threadId } = route();
-  await notifyRoute();
   try {
     await bridge.sendToolInput({ arguments: threadId ? { threadId } : {} });
     await bridge.sendToolResult(
@@ -105,9 +81,6 @@ bridge.oninitialized = async () => {
 await bridge.connect(
   new PostMessageTransport(panel.contentWindow!, panel.contentWindow!),
 );
-window.addEventListener("popstate", () => {
-  void notifyRoute();
-});
 systemTheme.addEventListener("change", () =>
   bridge.setHostContext(hostContext()),
 );

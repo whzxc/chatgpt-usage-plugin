@@ -2,14 +2,16 @@
 
 The three panel tools retain their existing snapshots. Six app-only data tools return `structuredContent` validated against Zod output schemas, without UI resources or entrypoints. Numbers use milliseconds, USD and percentages from 0 to 100. Unknown measurements remain `null`; missing prices do not imply zero cost.
 
-| Tool | Input | Output |
-| --- | --- | --- |
-| `usage_summary` | `range: today / 7d / 30d` | Totals, models with stable 30-day token-ranked slots 1–3 (others 0), time buckets, index progress |
-| `usage_tasks` | `range`, `sort: recent / cost / tokens`, optional `query`, `page`, optional `pageSize` (default 10, maximum 100) | Total match count, clamped page and task rows |
-| `usage_quota` | Optional `refresh` | Plan, credit balance, available reset count, windows with elapsed percentage, projected exhaustion and cycle-equivalent USD, status and observation time |
-| `usage_thread` | Optional `threadId`, otherwise request metadata `threadId` / `thread_id` | Thread metadata, totals, request input series, turn boundaries, compactions and turn summaries |
-| `usage_turn` | `threadId`, `turnId` | Eight metrics and chronological request, reply, reasoning and unassociated tool rows |
-| `usage_tool` | `threadId`, `toolId` | Tool metadata; input and output each capped at 16,000 characters, original UTF-8 byte counts and truncation flags |
+`usage_overview` now returns the global entrypoint's complete initial payload in `_meta.usageOverview`: `{ range: "7d", summary, tasks, quota }`. The three nested values use the exact Zod schemas of `usage_summary`, `usage_tasks` (recent, page 1, 10 rows), and `usage_quota`; the server validates the payload before returning it. Model-visible `structuredContent` contains only the global scope and index state, while text content remains the single short sentence `本机用量总览。`. The app renders `_meta` directly and does not repeat those requests on mount. `usage_task` and `usage_refresh` retain their legacy panel snapshots until P4.
+
+| Tool            | Input                                                                                                            | Output                                                                                                                                                   |
+| --------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `usage_summary` | `range: today / 7d / 30d`                                                                                        | Totals, models with stable 30-day token-ranked slots 1–3 (others 0), time buckets, index progress                                                        |
+| `usage_tasks`   | `range`, `sort: recent / cost / tokens`, optional `query`, `page`, optional `pageSize` (default 10, maximum 100) | Total match count, clamped page and task rows                                                                                                            |
+| `usage_quota`   | Optional `refresh`                                                                                               | Plan, credit balance, available reset count, windows with elapsed percentage, projected exhaustion and cycle-equivalent USD, status and observation time |
+| `usage_thread`  | Optional `threadId`, otherwise request metadata `threadId` / `thread_id`                                         | Thread metadata, totals, request input series, turn boundaries, compactions and turn summaries                                                           |
+| `usage_turn`    | `threadId`, `turnId`                                                                                             | Eight metrics and chronological request, reply, reasoning and unassociated tool rows                                                                     |
+| `usage_tool`    | `threadId`, `toolId`                                                                                             | Tool metadata; input and output each capped at 16,000 characters, original UTF-8 byte counts and truncation flags                                        |
 
 Today begins at local midnight. Other ranges are rolling 7/30-day windows; daily buckets follow local calendar boundaries, including daylight-saving changes. Task rows include catalogued historical tasks with no usage in the selected range, matching the panel snapshot. `requests` counts observed model responses; legacy cumulative deltas contribute tokens and cost but cannot establish a response count. Request sequence positions are one-based, ordered by event time and record ID. Prompt, tool preview and narrative summaries are capped at 300, 200 and 400 characters respectively.
 

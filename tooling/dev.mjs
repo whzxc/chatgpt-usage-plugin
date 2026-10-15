@@ -7,7 +7,14 @@ import { buildServer } from "./build.mjs";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const binary = await buildServer();
 const client = new Client({ name: "usage-plugin-web", version: "1" });
-const tools = new Set(["usage_overview", "usage_task", "usage_refresh"]);
+const tools = new Set([
+  "usage_overview",
+  "usage_task",
+  "usage_refresh",
+  "usage_summary",
+  "usage_tasks",
+  "usage_quota",
+]);
 let server;
 let stopping = false;
 async function stop() {

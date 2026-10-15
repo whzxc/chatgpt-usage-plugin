@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
-import {
-  ArrowLeft,
-  RefreshCw,
-} from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import {
   Button,
   IconButton,
@@ -16,8 +13,6 @@ import {
 import { locale } from "../i18n";
 import {
   initialize,
-  navigate,
-  onRoute,
   onResult,
   refresh,
   type Snapshot,
@@ -25,27 +20,30 @@ import {
 } from "./bridge";
 import { Empty, UsageStats } from "./components";
 import { TaskTimeline } from "./timeline";
-import { Overview } from "./overview";
 import { Guide, type GuideSection } from "./guide";
-import {
-  text,
-  date,
-  short,
-} from "./format";
+import { text, date, short } from "./format";
 import "../style.css";
 import "./style.css";
 
-export default function App() {
+export default function LegacyTask({
+  threadId = "",
+  onBack,
+}: {
+  threadId?: string;
+  onBack?: () => void;
+}) {
   locale.use();
   const [data, setData] = useState<Snapshot>(),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const [days, setDays] = useState("7"),
-    [selected, setSelected] = useState("");
-  const [taskSelection, setTaskSelection] = useState<TaskSelection>({ page: 1, pageSize: 10, search: "" });
+    [selected, setSelected] = useState(threadId);
+  const [taskSelection, setTaskSelection] = useState<TaskSelection>({
+    page: 1,
+    pageSize: 10,
+    search: "",
+  });
   const [guide, setGuide] = useState<GuideSection | null>(null);
-  const [routeVersion, setRouteVersion] = useState(0);
-  const browserRoute = useRef(false);
   const entryScope = useRef<"global" | "thread">("thread"),
     receivedInitial = useRef(false),
     initialized = useRef(false);
@@ -62,7 +60,10 @@ export default function App() {
       setError("");
     }
   };
-  const update = async (mode: "auto" | "filter" | "manual" = "manual", refreshQuota = false) => {
+  const update = async (
+    mode: "auto" | "filter" | "manual" = "manual",
+    refreshQuota = false,
+  ) => {
     if (inFlight.current && mode !== "filter") return;
     inFlight.current = true;
     const serial = ++request.current;
@@ -107,22 +108,17 @@ export default function App() {
   updateRef.current = update;
   useEffect(() => {
     alive.current = true;
-    const offRoute = onRoute(route => {
-      browserRoute.current = true;
-      entryScope.current = route.threadId ? "global" : route.scope;
-      request.current++;
-      inFlight.current = false;
-      filter.current = { ...filter.current, selected: route.threadId };
-      setSelected(route.threadId);
-      setData(previous => previous?.state === "ready" ? { ...previous, thread: null, binding: "unknown", scope: route.scope } : previous);
-      setRouteVersion(version => version + 1);
-      window.scrollTo(0, 0);
-    });
     const off = onResult((next) => {
       const selection = filter.current.selected;
-      if (browserRoute.current && (next.scope !== (selection ? "thread" : entryScope.current) || (next.state === "ready" && selection && next.thread && next.thread.id !== selection))) return;
+      if (
+        next.scope !== "thread" ||
+        (next.state === "ready" &&
+          selection &&
+          next.thread &&
+          next.thread.id !== selection)
+      )
+        return;
       if (!receivedInitial.current) {
-        if (!browserRoute.current) entryScope.current = next.scope;
         receivedInitial.current = true;
         setDays(String(next.state === "ready" ? next.range.days : 7));
       }
@@ -131,26 +127,39 @@ export default function App() {
     void initialize()
       .then(() => {
         initialized.current = true;
+        if (threadId) void updateRef.current("filter");
       })
       .catch((e) => setError(String(e)));
     return () => {
       alive.current = false;
       off();
-      offRoute();
     };
   }, []);
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (document.visibilityState === "visible" && current.current)
-        void updateRef.current("auto");
-    }, data?.state === "collecting" || (data?.state === "ready" && (data.refreshing || data.quota?.refreshing)) ? 500 : 10000);
+    const timer = setInterval(
+      () => {
+        if (document.visibilityState === "visible" && current.current)
+          void updateRef.current("auto");
+      },
+      data?.state === "collecting" ||
+        (data?.state === "ready" && (data.refreshing || data.quota?.refreshing))
+        ? 500
+        : 10000,
+    );
     return () => clearInterval(timer);
-  }, [data?.state, data?.state === "ready" && data.refreshing, data?.state === "ready" && data.quota?.refreshing]);
+  }, [
+    data?.state,
+    data?.state === "ready" && data.refreshing,
+    data?.state === "ready" && data.quota?.refreshing,
+  ]);
   useEffect(() => {
     if (current.current) void updateRef.current("filter");
-  }, [days, selected, taskSelection, routeVersion]);
+  }, [days, selected, taskSelection]);
   const choose = (id: string) => {
-    navigate(id);
+    if (!id && onBack) {
+      onBack();
+      return;
+    }
     if (id) window.scrollTo(0, 0);
     request.current++;
     inFlight.current = false;
@@ -161,10 +170,13 @@ export default function App() {
         : previous,
     );
   };
-  const global = data?.scope === "global" && !selected;
+  const global = false;
   const ready = data?.state === "ready" ? data : undefined;
-  const failure = error || (data && data.state !== "ready" && data.state !== "collecting"
-    ? data.message || text(data.state) : "");
+  const failure =
+    error ||
+    (data && data.state !== "ready" && data.state !== "collecting"
+      ? data.message || text(data.state)
+      : "");
   const detail = ready?.thread;
   const label =
     detail?.label ??
@@ -182,13 +194,13 @@ export default function App() {
           <header className="insight-header">
             <div className="insight-title">
               {selected && (
-                <IconButton
-                  icon={ArrowLeft}
-                  label={text("back")}
-                  onClick={() => choose("")}
-                />
+                <button className="legacy-back" onClick={() => choose("")}>
+                  ← 全部任务
+                </button>
               )}
-              <h1 title={global || !data ? undefined : label}>{global ? text("overview") : !data ? text("usage") : label}</h1>
+              <h1 title={global || !data ? undefined : label}>
+                {global ? text("overview") : !data ? text("usage") : label}
+              </h1>
             </div>
             <div className="insight-header-actions">
               {ready && (
@@ -210,12 +222,18 @@ export default function App() {
                       </>
                     }
                   >
-                    <span tabIndex={0}>{ready.refreshing ? text("restoring") : date(ready.observedAt)}</span>
+                    <span tabIndex={0}>
+                      {ready.refreshing
+                        ? text("restoring")
+                        : date(ready.observedAt)}
+                    </span>
                   </Tooltip>
                   <span
                     className={`insight-status ${error || ready.refreshing ? "interrupted" : "completed"}`}
                     role="img"
-                    aria-label={text(error || ready.refreshing ? "stale" : "connected")}
+                    aria-label={text(
+                      error || ready.refreshing ? "stale" : "connected",
+                    )}
                   />
                 </div>
               )}
@@ -225,7 +243,13 @@ export default function App() {
                     compact
                     label={text("range")}
                     value={days}
-                    onChange={(value) => { setDays(value); setTaskSelection(previous => ({...previous, page: 1})); }}
+                    onChange={(value) => {
+                      setDays(value);
+                      setTaskSelection((previous) => ({
+                        ...previous,
+                        page: 1,
+                      }));
+                    }}
                     options={["day", "week", "month"].map((key, i) => ({
                       value: ["1", "7", "30"][i]!,
                       label: text(key),
@@ -236,14 +260,30 @@ export default function App() {
             </div>
           </header>
           {failure && (
-            <ErrorCallout action={<Button variant="ghost" busy={busy} onClick={() => void update()}>{text("retry")}</Button>}>
+            <ErrorCallout
+              action={
+                <Button
+                  variant="ghost"
+                  busy={busy}
+                  onClick={() => void update()}
+                >
+                  {text("retry")}
+                </Button>
+              }
+            >
               {failure}
             </ErrorCallout>
           )}
           {!data || data.state !== "ready" ? (
-            !failure && <div className="insight-state">
-              <LoadingIndicator label={text(data?.state === "collecting" ? "collecting" : "loading")} />
-            </div>
+            !failure && (
+              <div className="insight-state">
+                <LoadingIndicator
+                  label={text(
+                    data?.state === "collecting" ? "collecting" : "loading",
+                  )}
+                />
+              </div>
+            )
           ) : (
             <>
               <AnimatePresence mode="wait" initial={false}>
@@ -254,30 +294,31 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -3 }}
                 >
-                  {global ? (
-                    <Overview data={data} selection={taskSelection} selectTasks={setTaskSelection} choose={choose} guide={setGuide} refreshQuota={() => update("manual", true)} />
-                  ) : (
-                    <>
-                      {detail ? (
-                        <>
-                          <UsageStats detail={detail} />
-                          <TaskTimeline key={detail.id} detail={detail} />
-
-                        </>
-                      ) : (
-                        <Empty>
-                          {busy ? text("loading") : text("unbound")}
-                          {!busy && <Button variant="ghost" onClick={() => setGuide("start")}>{text("guide")}</Button>}
-                        </Empty>
-                      )}
-                    </>
-                  )}
+                  <>
+                    {detail ? (
+                      <>
+                        <UsageStats detail={detail} />
+                        <TaskTimeline key={detail.id} detail={detail} />
+                      </>
+                    ) : (
+                      <Empty>
+                        {busy ? text("loading") : text("unbound")}
+                        {!busy && (
+                          <Button
+                            variant="ghost"
+                            onClick={() => setGuide("start")}
+                          >
+                            {text("guide")}
+                          </Button>
+                        )}
+                      </Empty>
+                    )}
+                  </>
                 </motion.div>
               </AnimatePresence>
             </>
           )}
           {guide && <Guide section={guide} close={() => setGuide(null)} />}
-
         </main>
       </TooltipProvider>
     </MotionConfig>

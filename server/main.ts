@@ -8,7 +8,7 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 import { hash, version, text, type Json } from "./common.js";
-import { dataTools } from "./data-tools.js";
+import { dataTools, overviewInitial } from "./data-tools.js";
 import { UsageService } from "./service.js";
 declare const __PANEL_HTML__: string, __ICON_SVG__: string, __DEV__: boolean;
 if (process.argv.includes("--version")) {
@@ -64,6 +64,14 @@ for (const [name, title, entry] of [
       description:
         "Read Codex usage from readable native logs. No model turn or account changes.",
       inputSchema,
+      ...(name === "usage_overview"
+        ? {
+            outputSchema: z.object({
+              scope: z.literal("global"),
+              state: z.enum(["ready", "indexing", "unavailable"]),
+            }),
+          }
+        : {}),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -84,6 +92,27 @@ for (const [name, title, entry] of [
         threadId: text(extra.mcpReq._meta, "threadId"),
         thread_id: text(extra.mcpReq._meta, "thread_id"),
       };
+      if (name === "usage_overview") {
+        const range = "7d" as const;
+        const initial = overviewInitial.parse({
+          range,
+          summary: service.data("usage_summary", { range }, meta),
+          tasks: service.data(
+            "usage_tasks",
+            { range, sort: "recent", page: 1, pageSize: 10 },
+            meta,
+          ),
+          quota: service.data("usage_quota", {}, meta),
+        });
+        return {
+          content: [{ type: "text" as const, text: "本机用量总览。" }],
+          structuredContent: {
+            scope: "global" as const,
+            state: initial.summary.index.state,
+          },
+          _meta: { ui: { resourceUri: uri }, usageOverview: initial },
+        };
+      }
       const snapshot = await service.query(args, meta, scope);
       const data = snapshot;
       return {
