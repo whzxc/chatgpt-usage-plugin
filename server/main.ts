@@ -10,7 +10,10 @@ import { z } from "zod";
 import { hash, version, text, type Json } from "./common.js";
 import { dataTools, overviewInitial, taskInitial } from "./data-tools.js";
 import { UsageService } from "./service.js";
-declare const __PANEL_HTML__: string, __ICON_SVG__: string, __DEV__: boolean;
+declare const __PANEL_HTML__: string,
+  __ICON_SVG__: string,
+  __ENTRY_ICON_SVG__: string,
+  __DEV__: boolean;
 if (process.argv.includes("--version")) {
   console.log(version);
   process.exit(0);
@@ -39,7 +42,15 @@ for (const [name, title, entry] of [
     name,
     {
       title,
-      ...{ icons },
+      ...{
+        icons: [
+          {
+            src: `data:image/svg+xml;base64,${Buffer.from(__ENTRY_ICON_SVG__).toString("base64")}`,
+            mimeType: "image/svg+xml",
+            sizes: ["20x20"],
+          },
+        ],
+      },
       description:
         "Read Codex usage from readable native logs. No model turn or account changes.",
       inputSchema: appInput,
@@ -118,6 +129,10 @@ for (const [name, schemas] of Object.entries(dataTools)) {
 registerAppResource(server, "Usage Insights", uri, {}, async () => {
   let current = html;
   const meta: Json = {
+    "openai/ui": {
+      availableDisplayModes: ["fullscreen"],
+      preferredDisplayMode: "fullscreen",
+    },
     ui: {
       prefersBorder: false,
       csp: { connectDomains: [], resourceDomains: [] },

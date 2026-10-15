@@ -53,6 +53,7 @@ jobs:
           pattern: package-*
           path: dist/artifacts
           merge-multiple: true
+      - run: npm ci
       - name: Assemble marketplace
         run: node tooling/marketplace.mjs assemble dist/artifacts dist/marketplace
       - name: Publish marketplace

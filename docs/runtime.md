@@ -4,7 +4,7 @@ Usage bundles JavaScript and small shell/PowerShell launchers. It does not ship 
 
 ## macOS Apple Silicon
 
-The launcher looks for `ChatGPT.app` and `Codex.app` in `/Applications` and `~/Applications`, then uses `Contents/Resources/cua_node/bin/node`. ChatGPT 26.930.61225 with Node 24.21.0 has been verified locally through the packaged launcher and MCP. A missing or incompatible runtime stops with a diagnostic on stderr.
+The launcher looks for `ChatGPT.app` and `Codex.app` in `/Applications` and `~/Applications`, then uses `Contents/Resources/cua_node/bin/node`. The previously verified baseline is ChatGPT 26.930.61225 with Node 24.21.0 through the packaged launcher and MCP; this does not establish portable-manifest loading or current panel acceptance. A missing or incompatible runtime stops with a diagnostic on stderr.
 
 ## Windows x64
 
@@ -21,3 +21,5 @@ The startup check requires Node 24.19+ within the 24.x line and SQLite, worker t
 The launcher enables Node’s environment HTTP proxy support for public price feeds. It passes stdin/stdout to the official MCP transport; diagnostics stay on stderr. Host removal of the managed runtime requires repairing/updating the host or selecting an explicitly verified runtime. No automatic runtime installation is attempted.
 
 Quota continues to use the host’s Codex CLI and its existing login. Windows keeps the CLI’s sibling helpers together in a private cache, as required for launching Store-supplied executables outside their package.
+
+Portable `mcp.json` launches the same executable as the retained legacy configuration, using `${PLUGIN_ROOT}` paths. The host must implement Agent Plugins stdio expansion and environment inheritance. Legacy hosts use `.mcp.json` with explicit inherited environment names. See [distribution](distribution.md#package-layout-and-compatibility) for the retention/removal boundary.

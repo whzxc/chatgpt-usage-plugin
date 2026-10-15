@@ -1,4 +1,5 @@
 // Assemble the same dual-platform payload formerly hosted in a separate marketplace repository.
+import { checkManifests } from "./plugin-manifests.mjs";
 import { execFileSync } from "node:child_process";
 import {
   chmod,
@@ -59,22 +60,7 @@ if (mode === "assemble") {
         binaries[platform][file] = hash(
           await readFile(path.join(root, "plugins/usage/bin", file)),
         );
-      const config = JSON.parse(
-        await readFile(path.join(root, "plugins/usage/.mcp.json"), "utf8"),
-      );
-      if (
-        config.mcpServers.usage.command !== "./bin/chatgpt-usage" ||
-        config.mcpServers.usage.env
-      )
-        throw new Error("Unexpected MCP configuration");
-      const manifest = JSON.parse(
-        await readFile(
-          path.join(root, "plugins/usage/.codex-plugin/plugin.json"),
-          "utf8",
-        ),
-      );
-      if (manifest.name !== "usage" || manifest.version !== version)
-        throw new Error("Plugin version mismatch");
+      await checkManifests(path.join(root, "plugins/usage"), version);
       roots.push(root);
     }
     const common = await files(roots[0]);

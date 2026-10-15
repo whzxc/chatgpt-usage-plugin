@@ -30,6 +30,14 @@ await writeFile(
   path.join(plugin, ".mcp.json"),
   JSON.stringify(config, null, 2) + "\n",
 );
+const portableConfig = JSON.parse(
+  await readFile(path.join(plugin, "mcp.json"), "utf8"),
+);
+portableConfig.mcpServers.usage.env = config.mcpServers.usage.env;
+await writeFile(
+  path.join(plugin, "mcp.json"),
+  JSON.stringify(portableConfig, null, 2) + "\n",
+);
 await mkdir(path.join(marketplace, ".agents/plugins"), { recursive: true });
 await writeFile(
   path.join(marketplace, ".agents/plugins/marketplace.json"),

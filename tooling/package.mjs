@@ -28,10 +28,6 @@ await cp("runtime", path.join(root, "plugins/usage/bin"), { recursive: true });
 await cp("dist/server", path.join(root, "plugins/usage/bin"), {
   recursive: true,
 });
-const configPath = path.join(root, "plugins/usage/.mcp.json");
-const config = JSON.parse(await readFile(configPath, "utf8"));
-config.mcpServers.usage.command = "./bin/chatgpt-usage";
-await writeFile(configPath, JSON.stringify(config, null, 2) + "\n");
 execFileSync(
   process.execPath,
   ["tooling/check-plugin.mjs", path.join(root, "plugins/usage")],

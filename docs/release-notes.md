@@ -1,5 +1,11 @@
-- 总览提供账户额度、周期进度、六项汇总、模型图表和任务排序搜索；从任务返回会恢复筛选与滚动位置。
-- 任务页提供四项汇总、逐请求上下文曲线、当前占用分类、多轮展开、分页时间线和工具输入输出对话框。两种入口共用同一组件，首屏使用入口返回的数据。
-- 后端使用共享 SQLite WAL 关系索引，当前占用在写入时计算。旧 snapshot 工具、投影表双写和旧界面已移除。
-- 面板跟随宿主主题，支持键盘操作、焦点恢复和不可见时停止轮询。额度失败按退避间隔重试。
-- 费用为 API 价格估算；上下文分类按日志文本估算，分类之和与最后一次请求实际输入一致。原始日志、任务及登录文件保持只读。原生 .jsonl.zst 归档暂不支持。
+# Release notes
+
+## Unreleased — P1–P5 (version remains 0.2.1)
+
+- **P1 — Shared indexing:** one index worker per MCP process, CODEX_HOME-isolated SQLite WAL storage and cross-process scan leases. Quota uses a shared five-minute cache; cycle-equivalent cost is aggregated on the server.
+- **P2 — View-specific data:** normalized relational rows, SQL aggregation and generation-keyed responses. Two entry tools provide initial panel data; six app-only tools serve summary, tasks, quota, thread, turn and tool details with output schemas.
+- **P3 — Overview:** account quota and cycle progress, six summary metrics, model charts and searchable/sortable tasks. Filters and scroll position survive navigation back from a task.
+- **P4 — Task view:** four summary metrics, per-request context chart, estimated current context allocation, expandable turns, paginated timelines and tool input/output dialogs. Shared host-themed UI preserves keyboard interaction and focus restoration; hidden panels stop polling. Removed the old refresh tool, projection-table double writes, old UI and heavy chart/theme/animation dependencies. The embedded panel uses compressed JavaScript without remote scripts.
+- **P5 — Packaging:** portable root plugin/MCP manifests with vendored offline schema validation, retained legacy manifests pending host acceptance, 20×20 monochrome entrypoint icons and explicit fullscreen resource preference. Thread entrypoints open in the conversation side panel. Installation, privacy, runtime, distribution and data contracts are documented. Tool output trims boundary blank lines while retaining interior whitespace and copy behavior.
+
+Costs use API price estimates. Context categories are estimates whose sum matches the last observed input. Original logs, tasks and login files remain read-only; the plugin writes only its own caches. Native `.jsonl.zst` archives are not supported. Windows installed-host acceptance and portable-only manifest loading remain unverified. These changes do not publish a release or change the package version.

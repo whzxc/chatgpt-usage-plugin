@@ -5,7 +5,7 @@ import { devReload } from "../plugin-dev";
 declare const __PLUGIN_VERSION__: string;
 const app = new App(
   { name: "chatgpt-usage", version: __PLUGIN_VERSION__ },
-  {},
+  { availableDisplayModes: ["fullscreen"] },
   { autoResize: false },
 );
 let stopSizing: (() => void) | undefined, stopReload: (() => void) | undefined;

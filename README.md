@@ -7,7 +7,7 @@ Two usage panels for **ChatGPT Desktop**: an overview of readable Codex history 
 - Account quota from the native Codex login, separate from log statistics.
 - Host theme integration and Chinese interface, keyboard controls and reduced motion.
 
-The TypeScript backend and React UI are bundled. Installed packages reuse a compatible ChatGPT/Codex host Node; users do not need to install Node, npm or Rust. This depends on host internals and is limited to the runtime layouts described in [runtime support](docs/runtime.md). No Connector Desktop or network ingress is required. The plugin does not create or modify Agent tasks. It does not include Kanban, task orchestration, a tray app or Tunnel management. It reports readable Codex history on this device, not all ChatGPT conversations or account-wide billing.
+The TypeScript backend and React UI are bundled. Installed packages reuse a compatible ChatGPT/Codex host Node; users do not need to install Node, npm or Rust. This depends on host internals and is limited to the runtime layouts described in [runtime support](docs/runtime.md). The plugin does not create or modify tasks. It reports readable Codex history on this device, not all ChatGPT conversations or account-wide billing.
 
 ## Installation
 
@@ -27,13 +27,15 @@ codex plugin add usage@chatgpt-usage
 
 For a development build, use a locally built package or the platform ZIP from the manually triggered [Plugin workflow](https://github.com/whzxc/chatgpt-usage-plugin/actions/workflows/plugin.yml). Extract the ZIP, register its root with `codex plugin marketplace add <directory>`, then install `usage@chatgpt-usage`. Do not register the source checkout: it contains no built server bundle.
 
-Open **Usage overview** from the host explorer/sidebar or **Task usage** from a task's additional tools. You can also select a task in the overview. A host that cannot bind a local task may require selecting it in the overview. Cloud or other-device history is outside this plugin's scope.
+Open **Usage overview** from the host explorer/sidebar (`global`, fullscreen preference) or **Task usage** from a task's additional tools (`thread`, conversation side panel). You can also select a task in the overview. A host that cannot bind a local task may require selecting it in the overview. Cloud or other-device history is outside this plugin's scope.
 
 Update with `codex plugin marketplace upgrade chatgpt-usage`, then reload the plugin and reopen its panels. The host owns installation and updates; no desktop application synchronizes or replaces the plugin.
 
-### Existing Local Connector users
+## Privacy
 
-`clc@local-connector` and `usage@chatgpt-usage` are different plugins. Install and verify Usage, then disable the old plugin if you no longer need its other tools. The old `whzxc/clc-plugins` marketplace remains a separate source for that plugin. This repository does not rewrite existing installations, remove task tools or migrate Connector state. Both plugins read the original Codex logs independently; no history import is required.
+Usage reads local Codex logs without modifying them. Task text, tool arguments and output stay in the local index and panel; opening an entrypoint sends the model only one short summary sentence plus scope/index-state fields. Initial detail lives in tool-result `_meta`; the six data tools are app-only and do not add their results to model context. The panel does not send messages or update model context.
+
+The plugin writes disposable index/cache files in its own state directory. Quota is fetched through the host CLI using its existing login; public price feeds receive no task records or credentials. This is not an offline-only plugin. Only readable local JSONL history is covered; compressed `.jsonl.zst` archives and other devices are excluded.
 
 ## Development
 
@@ -60,7 +62,7 @@ The workflow runs only when manually triggered. It builds and checks packages fo
 
 ## Data and architecture
 
-The host starts a small OS launcher, which locates and validates its bundled Node, then runs `main.mjs mcp` over stdio. The official MCP SDK owns server protocol handling; MCP Apps `App` owns panel transport, initialization, host context, sizing, teardown and resource reload. The browser preview uses `AppBridge`. The process serves the embedded React panel, indexes Codex JSONL logs and reads quota through a short-lived native `account/rateLimits/read` call. Two entry tools, `usage_overview` and `usage_task`, provide validated initial data in `_meta`. Six app-only data tools serve view-specific queries; see [data contracts](docs/data-tools.md). The backend starts no HTTP listener and has no dependency on Connector's Core, version or state.
+The host starts a small OS launcher, which locates and validates its bundled Node, then runs `main.mjs mcp` over stdio. The official MCP SDK owns server protocol handling; MCP Apps `App` owns panel transport, initialization, host context, sizing, teardown and resource reload. The browser preview uses `AppBridge`. The process serves the embedded React panel, indexes Codex JSONL logs and reads quota through a short-lived native `account/rateLimits/read` call. Two entry tools, `usage_overview` and `usage_task`, provide validated initial data in `_meta`. Six app-only data tools serve view-specific queries; see [data contracts](docs/data-tools.md). The backend starts no HTTP listener and runs independently of other plugins.
 
 `CODEX_HOME` selects the native history/login location. `CHATGPT_USAGE_STATE_DIR` selects the plugin's disposable cache; the default is `~/.local/state/chatgpt-usage-plugin` on macOS and `%LOCALAPPDATA%/chatgpt-usage-plugin` on Windows. Preview and development installations use their own directories under `dist`. Original logs, login files and tasks are not changed. Quota follows the installed host's bundled Codex CLI, falling back to `codex` on PATH.
 
@@ -70,7 +72,7 @@ Requests trigger incremental refreshes, coalesced within a process with a two-se
 
 Quota results share the index with a five-minute TTL and an independent lease. Manual refresh bypasses the TTL but cannot launch another native reader within 30 seconds. Window estimates are computed on the server from local usage within the quota period, subject to freshness, coverage and pool checks; per-record quota history is no longer sent to the panel. Task panels do not request quota. Visible tasks poll every three seconds while running, otherwise thirty seconds; only expanded running turns refresh details. Quota failures retry with exponential backoff capped at thirty seconds. Pricing tables rebuild only when their cached price files change.
 
-Schema upgrades drop obsolete projection tables. The plugin also removes its obsolete `usage-ts` checkpoint directory at startup. Old Rust caches under `usage` are neither read nor deleted. Hidden panels stop polling; host teardown unmounts the panel and clears its timers and subscriptions. Bundled panels and preview dependencies omit SDK `console.debug` calls so browser console history does not retain successive tool payloads; warnings and errors remain available. The standalone HTML embeds gzip-compressed JavaScript and starts it with native DecompressionStream, without remote scripts. Stopping the plugin terminates its index worker and quota reader, not external tasks.
+Schema upgrades rebuild the disposable index. Hidden panels stop polling; host teardown unmounts the panel and clears its timers and subscriptions. Bundled panels and preview dependencies omit SDK `console.debug` calls so browser console history does not retain successive tool payloads; warnings and errors remain available. The standalone HTML embeds gzip-compressed JavaScript and starts it with native DecompressionStream, without remote scripts. Stopping the plugin terminates its index worker and quota reader, not external tasks.
 
 Model prices use bundled snapshots and public feed refreshes. No task records or credentials are sent to price feeds. Cost figures are estimates; cached input and reasoning output are subsets, and missing fields remain unknown. Account quota and local history have different coverage and cannot establish exact per-task billing. HTTP_PROXY, HTTPS_PROXY and NO_PROXY apply to public pricing requests through Node’s environment proxy support.
 

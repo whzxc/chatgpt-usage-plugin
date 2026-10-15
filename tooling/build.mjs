@@ -35,6 +35,12 @@ export async function buildServer({ release = false } = {}) {
           "utf8",
         ),
       ),
+      __ENTRY_ICON_SVG__: JSON.stringify(
+        await readFile(
+          path.join(root, "plugins/usage/assets/entrypoint.svg"),
+          "utf8",
+        ),
+      ),
       __DEV__: String(!release),
     },
     banner: {

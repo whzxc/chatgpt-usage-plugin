@@ -2,49 +2,23 @@ import { readFile, stat, mkdtemp, rm, access } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { checkManifests } from "./plugin-manifests.mjs";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 
 const directory = path.resolve(
-  process.argv[2] || "dist/package/darwin-aarch64/plugins/usage",
-);
-const manifest = JSON.parse(
-  await readFile(path.join(directory, ".codex-plugin/plugin.json"), "utf8"),
+  process.argv[2] ||
+    `dist/package/${process.platform === "win32" ? "windows-x86_64" : "darwin-aarch64"}/plugins/usage`,
 );
 const pkg = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
-if (
-  manifest.name !== "usage" ||
-  manifest.version !== pkg.version ||
-  manifest.mcpServers !== "./.mcp.json" ||
-  manifest.apps
-)
-  throw new Error("Plugin identity/version/standalone entry mismatch");
-for (const file of ["LICENSE", "assets/icon.svg"])
+const server = await checkManifests(directory, pkg.version);
+for (const file of ["LICENSE", "assets/icon.svg", "assets/entrypoint.svg"])
   await access(path.join(directory, file));
-const config = JSON.parse(
-  await readFile(path.join(directory, ".mcp.json"), "utf8"),
-);
-const server = config.mcpServers.usage;
-const commands =
-  process.platform === "win32"
-    ? ["./bin/chatgpt-usage.cmd", "./bin/chatgpt-usage"]
-    : ["./bin/chatgpt-usage"];
-if (
-  Object.keys(config.mcpServers).length !== 1 ||
-  server.cwd !== "." ||
-  !commands.includes(server.command) ||
-  server.args.join() !== "mcp"
-)
-  throw new Error("Plugin must use its own relative runtime launcher");
-const binary = path.resolve(
-  directory,
-  server.command +
-    (process.platform === "win32" && !server.command.endsWith(".cmd")
-      ? ".cmd"
-      : ""),
-);
+const binary =
+  server.command.replace("${PLUGIN_ROOT}", directory) +
+  (process.platform === "win32" ? ".cmd" : "");
 const mode = (await stat(binary)).mode;
 if (process.platform !== "win32" && !(mode & 0o111))
   throw new Error("Plugin launcher is not executable");
@@ -116,12 +90,40 @@ try {
     )
       throw new Error(`Invalid data tool contract: ${tool.name}`);
   }
+  for (const [name, entry] of [
+    ["usage_overview", "global"],
+    ["usage_task", "thread"],
+  ]) {
+    const tool = tools.tools.find((tool) => tool.name === name);
+    const icon = tool.icons?.[0];
+    const expected = await readFile(
+      path.join(directory, "assets/entrypoint.svg"),
+      "utf8",
+    );
+    if (
+      tool._meta?.["openai/ui"]?.entrypoints?.[0]?.type !== entry ||
+      !tool._meta?.ui?.resourceUri ||
+      icon?.sizes?.join() !== "20x20" ||
+      icon?.src !==
+        `data:image/svg+xml;base64,${Buffer.from(expected).toString("base64")}` ||
+      !expected.includes('viewBox="0 0 20 20"') ||
+      !expected.includes('stroke="currentColor"') ||
+      !expected.includes('stroke-width="1.5"')
+    )
+      throw new Error(`Invalid entrypoint: ${name}`);
+  }
   const resources = await client.listResources();
   if (resources.resources.length !== 1)
     throw new Error("UI resources do not match build features");
   const resource = await client.readResource({
     uri: resources.resources[0].uri,
   });
+  const display = resource.contents[0]._meta?.["openai/ui"];
+  if (
+    display?.preferredDisplayMode !== "fullscreen" ||
+    display?.availableDisplayModes?.join() !== "fullscreen"
+  )
+    throw new Error("Invalid resource display modes");
   const html = resource.contents[0].text;
   if (
     typeof html !== "string" ||

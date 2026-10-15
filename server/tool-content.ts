@@ -143,6 +143,12 @@ export function toolOutput(value: unknown) {
     }
     return parsed;
   };
-  const text = value == null ? null : unpack(value);
+  const text =
+    value == null
+      ? null
+      : unpack(value).replace(
+          /^(?:[^\S\r\n]*\r?\n)+|(?:\r?\n[^\S\r\n]*)+$/g,
+          "",
+        );
   return { text, exitCode, durationMs: wrapperMs ?? durationMs };
 }
