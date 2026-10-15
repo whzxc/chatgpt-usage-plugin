@@ -1,9 +1,10 @@
+import { statSync } from "node:fs";
 // Pricing adapted from OpenUsage (MIT); see shared/pricing/LICENSE.OpenUsage.
 import path from "node:path";
 import modelsDev from "../shared/pricing/models_dev_snapshot.json";
 import litellm from "../shared/pricing/litellm_snapshot.json";
 import supplement from "../shared/pricing/supplement.json";
-import { root, load, save, localDay, type Json } from "./common.js";
+import { root, load, save, type Json } from "./common.js";
 import { type Response } from "./projection.js";
 const sources: [string, string, Json][] = [
   ["models_dev", "https://models.dev/api.json", modelsDev],
@@ -110,7 +111,20 @@ export class Pricing {
   constructor() {
     this.build();
   }
+  signature = "";
   build() {
+    const signature = sources
+      .map(([id]) => {
+        try {
+          const m = statSync(path.join(directory(), `${id}.json`));
+          return `${m.mtimeMs}:${m.size}`;
+        } catch {
+          return "bundled";
+        }
+      })
+      .join(";");
+    if (signature === this.signature) return;
+    this.signature = signature;
     this.models = Object.create(null);
     this.updatedAt = "";
     for (const [id, , bundled] of sources) {
@@ -249,107 +263,5 @@ export class Pricing {
       (((t.input - t.cached) * i + t.cached * cr + t.output * o) / 1e6) *
       multiplier
     );
-  }
-  history(rows: Response[], incomplete: boolean): Json {
-    const now = Date.now(),
-      coverageStart = now - 32 * 86400000,
-      today = localDay(now),
-      yesterday = localDay(new Date(now).setDate(new Date(now).getDate() - 1)),
-      since = localDay(new Date(now).setDate(new Date(now).getDate() - 29)),
-      week = localDay(new Date(now).setDate(new Date(now).getDate() - 6));
-    const keys = ["today", "yesterday", "last7", "last30"];
-    const buckets = new Map(
-      keys.map((key) => [
-        key,
-        {
-          tokens: 0,
-          usd: 0,
-          priced: 0,
-          unknown: new Set<string>(),
-          models: new Map<
-            string,
-            { tokens: number; usd: number; priced: number }
-          >(),
-        },
-      ]),
-    );
-    const timeline = new Map<number, [number, number, number]>();
-    let missing = incomplete;
-    for (const r of rows) {
-      const t = r.tokens;
-      if (
-        !r.reliable ||
-        t.input === null ||
-        t.cached === null ||
-        t.output === null ||
-        t.input < t.cached
-      ) {
-        missing = true;
-        continue;
-      }
-      const n = t.input + t.output,
-        day = localDay(r.at);
-      if (r.at < coverageStart || r.at > now || n === 0) continue;
-      const dollars = this.estimate(r),
-        entry = timeline.get(r.at) ?? [0, 0, 0];
-      entry[0] += n;
-      if (dollars !== null) {
-        entry[1] += dollars;
-        entry[2] += n;
-      }
-      timeline.set(r.at, entry);
-      if (day < since) continue;
-      for (const key of keys) {
-        if (
-          (key === "today" && day !== today) ||
-          (key === "yesterday" && day !== yesterday) ||
-          (key === "last7" && day < week)
-        )
-          continue;
-        const b = buckets.get(key)!,
-          model = r.model?.trim().toLowerCase() || "unknown",
-          m = b.models.get(model) ?? { tokens: 0, usd: 0, priced: 0 };
-        m.tokens += n;
-        b.tokens += n;
-        if (dollars !== null) {
-          m.usd += dollars;
-          m.priced += n;
-          b.usd += dollars;
-          b.priced += n;
-        } else b.unknown.add(r.model || "unknown");
-        b.models.set(model, m);
-      }
-    }
-    return {
-      timeline: [...timeline]
-        .sort(([a], [b]) => a - b)
-        .map(([at, v]) => [at, ...v]),
-      coverageStart: new Date(coverageStart).toISOString(),
-      periods: keys.map((id) => {
-        const b = buckets.get(id)!;
-        return {
-          id,
-          tokens: b.tokens,
-          estimatedUsd: b.priced ? b.usd : null,
-          pricedTokens: b.priced,
-          unknownModels: [...b.unknown].sort(),
-          models: [...b.models]
-            .sort(([a], [b]) => (a < b ? -1 : 1))
-            .map(([model, m]) => ({
-              model,
-              tokens: m.tokens,
-              estimatedUsd: m.priced ? m.usd : null,
-              pricedTokens: m.priced,
-            }))
-            .sort((a, b) => b.tokens - a.tokens),
-        };
-      }),
-      currency: "USD",
-      estimated: true,
-      scope: "local-device",
-      incomplete: missing,
-      pricingUpdatedAt: this.updatedAt,
-      observedAt: new Date(now).toISOString(),
-    };
   }
 }

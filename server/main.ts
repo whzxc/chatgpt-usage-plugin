@@ -9,7 +9,6 @@ import {
 import { z } from "zod";
 import { hash, version, text, type Json } from "./common.js";
 import { UsageService } from "./service.js";
-import { Quota } from "./quota.js";
 declare const __PANEL_HTML__: string, __ICON_SVG__: string, __DEV__: boolean;
 if (process.argv.includes("--version")) {
   console.log(version);
@@ -25,8 +24,7 @@ const icons = [
     sizes: ["any"],
   },
 ];
-const service = new UsageService(),
-  quota = new Quota(() => service.history());
+const service = new UsageService();
 const server = new McpServer({ name: "chatgpt-usage", version, icons });
 const inputSchema = z
   .object({
@@ -86,15 +84,7 @@ for (const [name, title, entry] of [
         thread_id: text(extra.mcpReq._meta, "thread_id"),
       };
       const snapshot = await service.query(args, meta, scope);
-      // Task panels never render account quota or its device-wide history.
-      // Do not start that index or transport it on every task refresh.
-      const data: Json = {
-        ...snapshot,
-        quota:
-          scope === "global"
-            ? quota.snapshot(args.refreshQuota === true)
-            : null,
-      };
+      const data = snapshot;
       return {
         content: [
           {
@@ -141,9 +131,9 @@ let stopped = false;
 const stop = () => {
   if (stopped) return;
   stopped = true;
-  quota.stop();
-  service.stop();
-  void server.close().finally(() => process.exit(0));
+  void service
+    .stop()
+    .finally(() => server.close().finally(() => process.exit(0)));
 };
 process.stdin.on("end", stop);
 process.on("SIGINT", stop);

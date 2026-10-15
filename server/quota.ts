@@ -1,3 +1,4 @@
+import type { IndexStore } from "./index-store.js";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { version, type Json } from "./common.js";
 import { installation } from "./installation.js";
@@ -11,39 +12,41 @@ const base = {
   blockedPoolIds: [],
 };
 export class Quota {
-  value: Json = { ...base, state: "loading" };
-  checked = 0;
-  refreshing = false;
   children = new Set<ChildProcessWithoutNullStreams>();
-  constructor(readonly history: () => Promise<Json>) {}
-  snapshot(force: boolean): Json {
-    if (!this.refreshing && (force || Date.now() - this.checked >= 60000)) {
-      this.refreshing = true;
-      void this.read()
-        .then(normalize, (error) => ({
-          ...base,
-          state: "unavailable",
-          error: { code: "request-failed", message: (error as Error).message },
-        }))
-        .then((value: Json) => {
-          value.rawUsage ??= {};
-          // Publish quota immediately; full history indexing has its own worker.
-          void this.history()
-            .then((history) => {
-              if (this.value === value) value.rawUsage.history = history;
-            })
-            .catch(() => {});
-          if (value.state === "unavailable" && this.value.observedAt) {
-            this.value.error = value.error;
-            this.value.state = "stale";
-          } else this.value = value;
-        })
-        .finally(() => {
-          this.checked = Date.now();
-          this.refreshing = false;
-        });
+  refreshing = false;
+  constructor(readonly index: IndexStore) {}
+  refresh(force: boolean) {
+    if (this.refreshing) return;
+    const now = Date.now(),
+      previous = this.index.get("quota");
+    if (now - (previous?.checked ?? 0) < (force ? 30000 : 300000)) return;
+    if (!this.index.claim("quota", 30000)) return;
+    // Check again after acquiring the cross-process lease.
+    const latest = this.index.get("quota");
+    if (
+      now - (latest?.checked ?? 0) < (force ? 30000 : 300000) ||
+      now - (this.index.get("quotaAttempt") ?? 0) < 30000
+    ) {
+      this.index.release("quota");
+      return;
     }
-    return { ...this.value, refreshing: this.refreshing };
+    this.index.set("quotaAttempt", now);
+    this.refreshing = true;
+    void this.read()
+      .then(normalize, (error) => ({
+        ...base,
+        state: "unavailable",
+        error: { code: "request-failed", message: (error as Error).message },
+      }))
+      .then((value: Json) => {
+        if (value.state === "unavailable" && latest?.value.observedAt)
+          value = { ...latest.value, state: "stale", error: value.error };
+        this.index.set("quota", { checked: Date.now(), value });
+      })
+      .finally(() => {
+        this.refreshing = false;
+        this.index.release("quota");
+      });
   }
   async read(): Promise<Json> {
     const child = spawn(installation(), ["app-server"], {
@@ -58,7 +61,7 @@ export class Quota {
         let bytes = Buffer.alloc(0),
           settled = false;
         const timeout = setTimeout(
-          () => reject(new Error("Quota request timed out")),
+          () => done(new Error("Quota request timed out")),
           25000,
         );
         const done = (error: Error | null, value?: Json) => {

@@ -1,93 +1,30 @@
+import type { Collector } from "./collector.js";
 import { Worker } from "node:worker_threads";
-import { stableJson, version, type Json } from "./common.js";
-class IndexWorker {
-  worker = new Worker(new URL("./worker.mjs", import.meta.url));
-  usedAt = Date.now();
-  failure?: Error;
-  sequence = 0;
-  pending = new Map<
-    number,
-    { resolve: (v: Json) => void; reject: (e: Error) => void }
-  >();
-  constructor() {
-    this.worker.on("message", (m) => {
-      const p = this.pending.get(m.id);
-      if (!p) return;
-      this.pending.delete(m.id);
-      this.usedAt = Date.now();
-      if (m.error) p.reject(new Error(m.error));
-      else p.resolve(m.value);
-    });
-    this.worker.on("error", (e) =>
-      this.fail(e instanceof Error ? e : new Error(String(e))),
-    );
-    this.worker.on("exit", () => this.fail(new Error("Usage index stopped")));
-  }
-  fail(error: Error) {
-    this.failure = error;
-    for (const p of this.pending.values()) p.reject(error);
-    this.pending.clear();
-  }
-  call(args: Json) {
-    this.usedAt = Date.now();
-    if (this.failure) return Promise.reject(this.failure);
-    return new Promise<Json>((resolve, reject) => {
-      const id = ++this.sequence;
-      this.pending.set(id, { resolve, reject });
-      this.worker.postMessage({ ...args, id });
-    });
-  }
-  stop() {
-    void this.worker.terminate();
-    this.fail(new Error("Usage index closed"));
-  }
-}
+import { IndexStore } from "./index-store.js";
+import { Pricing } from "./pricing.js";
+import { Views } from "./views.js";
+import { sortedValues, version, type Json } from "./common.js";
 export class UsageService {
-  workers = new Map<string, IndexWorker>();
-  inflight = new Map<string, Promise<Json>>();
-  cache = new Map<string, { value: Json; at: number; bytes: number }>();
-  sweep = setInterval(() => this.prune(), 30000).unref();
-  historyPending?: Promise<Json>;
-  prune() {
-    const now = Date.now();
-    for (const [key, worker] of this.workers)
-      if (!worker.pending.size && now - worker.usedAt >= 120000) {
-        worker.stop();
-        this.workers.delete(key);
-      }
-    for (const [key, cached] of this.cache)
-      if (now - cached.at >= 30000) this.cache.delete(key);
+  worker = new Worker(new URL("./worker.mjs", import.meta.url), {
+    resourceLimits: { maxOldGenerationSizeMb: 64, maxYoungGenerationSizeMb: 8 },
+  });
+  index?: IndexStore;
+  pricing = new Pricing();
+  failure?: string;
+  constructor() {
+    this.worker.on("error", (e) => {
+      this.failure = e instanceof Error ? e.message : String(e);
+    });
+    this.worker.on("message", (m) => {
+      this.failure = m.error;
+    });
   }
-  index(key: string) {
-    this.prune();
-    let worker = this.workers.get(key);
-    if (worker?.failure) {
-      worker.stop();
-      this.workers.delete(key);
-      worker = undefined;
-    }
-    if (!worker) {
-      // Retain a small set of active selections without cancelling another panel.
-      if (this.workers.size >= 4) {
-        const idle = [...this.workers]
-          .filter(([, w]) => !w.pending.size)
-          .sort(([, a], [, b]) => a.usedAt - b.usedAt)[0];
-        if (!idle) throw new Error("Too many usage indexes");
-        idle[1].stop();
-        this.workers.delete(idle[0]);
-      }
-      worker = new IndexWorker();
-      this.workers.set(key, worker);
-    }
-    worker.usedAt = Date.now();
-    return worker;
-  }
-  async history() {
-    if (this.historyPending) return this.historyPending;
-    const worker = this.index("history");
-    return (this.historyPending = worker.call({ history: true }).finally(() => {
-      this.historyPending = undefined;
-    }));
+  open() {
+    if (!this.index)
+      try {
+        this.index = new IndexStore(true);
+      } catch {}
+    return this.index;
   }
   async query(args: Json, meta: Json, scope: string): Promise<Json> {
     const selected =
@@ -97,67 +34,186 @@ export class UsageService {
             ? null
             : meta.threadId || meta.thread_id)
         : null;
-    const key = selected ? `thread:${selected}` : `period:${args.days ?? 7}`,
-      requestKey = stableJson({ args, meta, scope });
-    const worker = this.index(key);
-    const cached = this.cache.get(requestKey);
-    if (cached && Date.now() - cached.at < 4000) return cached.value;
-    let pending = this.inflight.get(requestKey);
-    if (!pending) {
-      if (this.inflight.size >= 8) throw new Error("Too many usage requests");
-      pending = worker
-        .call({ args, meta, scope })
-        .then((value) => {
-          this.cache.delete(requestKey);
-          const bytes = Buffer.byteLength(JSON.stringify(value));
-          // Retain at most 8 MiB, or one larger result so a collecting poll can
-          // retrieve it. Count alone allows many large expanded-turn payloads.
-          let total = [...this.cache.values()].reduce((n, v) => n + v.bytes, 0);
-          while (
-            this.cache.size &&
-            (this.cache.size >= 20 || total + bytes > 8 * 1024 * 1024)
-          ) {
-            const oldest = this.cache.keys().next().value!;
-            total -= this.cache.get(oldest)!.bytes;
-            this.cache.delete(oldest);
-          }
-          this.cache.set(requestKey, { value, at: Date.now(), bytes });
-          return value;
-        })
-        .finally(() => this.inflight.delete(requestKey));
-      this.inflight.set(requestKey, pending);
-    }
-    // Tools remain responsive during cold indexing; the panel polls collecting views.
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    const index = this.open();
+    this.worker.postMessage({
+      selected: index?.needsThread(selected) ? selected : null,
+      quota: scope === "global",
+      force: args.refreshQuota,
+    });
+    if (!index?.get("scan") || index.needsThread(selected))
+      return {
+        schemaVersion: 1,
+        pluginVersion: version,
+        scope,
+        state: this.failure ? "unavailable" : "collecting",
+        message: this.failure ?? "正在读取所选范围的本机用量。",
+        quota: scope === "global" ? this.quota() : null,
+      };
+    index.db.exec("BEGIN");
     try {
-      return await Promise.race([
-        pending,
-        new Promise<Json>((resolve) => {
-          timer = setTimeout(
-            () =>
-              resolve(
-                cached
-                  ? { ...cached.value, refreshing: true }
-                  : {
-                      schemaVersion: 1,
-                      pluginVersion: version,
-                      scope,
-                      state: "collecting",
-                      message: "正在读取所选范围的本机用量。",
-                    },
-              ),
-            100,
-          );
-        }),
-      ]);
+      this.pricing.build();
+      const collector = index.collector(
+          scope === "global" ? 32 : (args.days ?? 7),
+          selected,
+        ),
+        views = new Views(collector, this.pricing, index);
+      const quota = scope === "global" ? this.quota(collector) : null;
+      if (scope === "global") index.select(collector, args.days ?? 7);
+      if (scope === "thread" && args.toolId) {
+        try {
+          return {
+            schemaVersion: 1,
+            scope,
+            state: "ready",
+            quota: null,
+            toolDetail: views.toolDetail({ ...args, threadId: selected }),
+          };
+        } catch (error) {
+          return {
+            schemaVersion: 1,
+            scope,
+            state: "unavailable",
+            message: (error as Error).message,
+            quota: null,
+          };
+        }
+      }
+      return { ...views.snapshot(args, meta, scope), quota };
     } finally {
-      clearTimeout(timer);
+      index.db.exec("COMMIT");
     }
   }
-  stop() {
-    clearInterval(this.sweep);
-    for (const worker of this.workers.values()) worker.stop();
-    this.workers.clear();
-    this.cache.clear();
+  quota(collector?: Collector): Json {
+    const index = this.open(),
+      stored = index?.get("quota");
+    const lease = index?.db
+      .prepare("SELECT until FROM leases WHERE key='quota'")
+      .get();
+    const value = stored?.value ?? {
+      providerId: "codex",
+      agentId: "codex",
+      name: "Codex",
+      eligible: true,
+      selected: true,
+      windows: [],
+      blockedPoolIds: [],
+      state: "loading",
+    };
+    const result = {
+      ...value,
+      refreshing: !stored || Number(lease?.until ?? 0) > Date.now(),
+    };
+    if (!index?.get("scan") || value.state !== "ready" || value.error)
+      return result;
+    const now = Date.now(),
+      observed = Date.parse(value.observedAt ?? "");
+    if (
+      !Number.isFinite(observed) ||
+      now - observed > 300000 ||
+      observed > now + 30000
+    )
+      return result;
+    const windows = value.windows.filter(
+      (w: Json) =>
+        w.poolId !== "base_model_inference" && w.scope !== "gpt-reserve",
+    );
+    const eligible = windows.filter((w: Json) => {
+      const duration = /^(\d+) min$/.exec(w.label),
+        reset = Date.parse(w.resetsAt ?? "");
+      return (
+        duration &&
+        Number(duration[1]) > 0 &&
+        Number.isFinite(reset) &&
+        now < reset &&
+        w.usedPercent >= 1 &&
+        w.usedPercent < 100 &&
+        (new Set(windows.map((v: Json) => v.poolId)).size <= 1 ||
+          w.poolId === "codex") &&
+        reset - Number(duration[1]) * 60000 >= now - 32 * 86400000
+      );
+    });
+    if (!eligible.length) return result;
+    if (!collector) return result;
+    const historyAt = Date.parse(collector.observedAt ?? "");
+    if (
+      !Number.isFinite(historyAt) ||
+      now - historyAt > 300000 ||
+      historyAt > now + 30000 ||
+      Math.abs(observed - historyAt) > 300000
+    )
+      return result;
+    const c = collector,
+      rows = [...c.threads.values()].flatMap((t) =>
+        sortedValues(t.modern ? t.responses : t.legacy),
+      );
+    const incomplete =
+      c.issues.size > 0 ||
+      [...c.threads.values()].some((t) => t.issues.size > 0);
+    result.windows = value.windows.map((w: Json) => {
+      if (!eligible.includes(w)) return w;
+      const start =
+          Date.parse(w.resetsAt) - Number(/^(\d+)/.exec(w.label)![1]) * 60000,
+        end = Math.min(now, observed, historyAt);
+      if (start >= end) return w;
+      let tokens = 0,
+        pricedTokens = 0,
+        estimatedUsd = 0;
+      for (const r of rows) {
+        const t = r.tokens;
+        if (
+          r.at < start ||
+          r.at > end ||
+          !r.reliable ||
+          t.input === null ||
+          t.cached === null ||
+          t.output === null ||
+          t.input < t.cached
+        )
+          continue;
+        const n = t.input + t.output,
+          usd = this.pricing.estimate(r);
+        tokens += n;
+        if (usd !== null) {
+          pricedTokens += n;
+          estimatedUsd += usd;
+        }
+      }
+      if (
+        tokens <= 0 ||
+        pricedTokens <= 0 ||
+        estimatedUsd <= 0 ||
+        !Number.isFinite(estimatedUsd)
+      )
+        return w;
+      return {
+        ...w,
+        estimate: {
+          estimatedUsd,
+          tokens,
+          pricedTokens,
+          projectedUsd: (estimatedUsd * 100) / w.usedPercent,
+          start,
+          end,
+          incomplete: incomplete || pricedTokens !== tokens,
+        },
+      };
+    });
+    return result;
+  }
+  async stop() {
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 30000).unref();
+      const done = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      this.worker.once("exit", done);
+      this.worker.on("message", (m) => {
+        if (m.stopped) done();
+      });
+      this.worker.postMessage({ stop: true });
+    });
+    await this.worker.terminate();
+    this.index?.close();
   }
 }

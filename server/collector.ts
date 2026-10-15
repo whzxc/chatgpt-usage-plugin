@@ -5,27 +5,18 @@ import {
   fstatSync,
   statSync,
   readdirSync,
-  readFileSync,
-  existsSync,
-  unlinkSync,
   createReadStream,
 } from "node:fs";
-import { gunzipSync, gzipSync } from "node:zlib";
-import { DatabaseSync } from "node:sqlite";
 import { pipeline } from "node:stream/promises";
 import parser from "stream-json/parser.js";
 import filter from "stream-json/filters/filter.js";
 import path from "node:path";
 import {
-  codexHome,
-  root,
   hash,
   text,
   time,
   sortedValues,
   stableJson,
-  saveBytes,
-  rangeStart,
   type Json,
 } from "./common.js";
 import {
@@ -51,8 +42,9 @@ export type FileState = {
   projection: Projection;
   catalogueOnly: boolean;
   detail: boolean;
+  contentTurn: string | null;
 };
-const fresh = (): FileState => ({
+export const fresh = (): FileState => ({
   schema: 0,
   offset: 0,
   length: 0,
@@ -64,8 +56,9 @@ const fresh = (): FileState => ({
   projection: projection(),
   catalogueOnly: false,
   detail: false,
+  contentTurn: null,
 });
-const identity = (m: NonNullable<ReturnType<typeof statSync>>) =>
+export const identity = (m: NonNullable<ReturnType<typeof statSync>>) =>
   `${m.dev}:${m.ino}:${m.birthtimeMs}`;
 function readRange(fd: number, offset: number, length: number): Buffer {
   const bytes = Buffer.alloc(length);
@@ -109,11 +102,16 @@ export function* lines(
         if (length > MAX_LINE) {
           parts = [];
           oversized = true;
-        } else if (!oversized) parts.push(Buffer.from(part));
+        } else if (!oversized)
+          parts.push(part.at(-1) === 10 ? part : Buffer.from(part));
         cursor = end;
         if (part.at(-1) === 10) {
           yield {
-            bytes: oversized ? Buffer.alloc(0) : Buffer.concat(parts, length),
+            bytes: oversized
+              ? Buffer.alloc(0)
+              : parts.length === 1
+                ? parts[0]
+                : Buffer.concat(parts, length),
             offset: start,
             length,
             complete: true,
@@ -129,7 +127,11 @@ export function* lines(
     }
     if (length)
       yield {
-        bytes: oversized ? Buffer.alloc(0) : Buffer.concat(parts, length),
+        bytes: oversized
+          ? Buffer.alloc(0)
+          : parts.length === 1
+            ? parts[0]
+            : Buffer.concat(parts, length),
         offset: start,
         length,
         complete: false,
@@ -179,7 +181,7 @@ async function oversizedCompaction(
       }
     : null;
 }
-function catalogue(file: string): FileState {
+export function catalogue(file: string): FileState {
   const fd = openSync(file, "r");
   try {
     const meta = fstatSync(fd);
@@ -221,10 +223,16 @@ function catalogue(file: string): FileState {
     closeSync(fd);
   }
 }
-async function scan(
+export async function scan(
   file: string,
   state: FileState,
   detail: boolean,
+  record?: (
+    v: Json,
+    offset: number,
+    length: number,
+    turn: string | null,
+  ) => void,
 ): Promise<{ state: FileState; bytesRead: number; changed: boolean }> {
   let s = state;
   if (s.catalogueOnly || s.detail !== detail) s = fresh();
@@ -286,14 +294,14 @@ async function scan(
         } else s.projection.issues.add("oversized-line-not-indexed");
       } else {
         try {
-          ingest(
-            s.projection,
-            JSON.parse(line.bytes.toString("utf8")),
-            file,
-            line.offset,
-            line.bytes,
-            detail,
-          );
+          const v = JSON.parse(line.bytes.toString("utf8"));
+          if (
+            v.type === "turn_context" ||
+            (v.type === "event_msg" && v.payload?.type === "task_started")
+          )
+            s.contentTurn = text(v.payload, "turn_id");
+          record?.(v, line.offset, line.length, s.contentTurn);
+          ingest(s.projection, v, file, line.offset, line.bytes, detail);
         } catch {
           s.projection.issues.add("invalid-json-line");
         }
@@ -318,7 +326,12 @@ async function scan(
     closeSync(fd);
   }
 }
-function discover(dir: string, out: string[], issues: Set<string>, depth = 0) {
+export function discover(
+  dir: string,
+  out: string[],
+  issues: Set<string>,
+  depth = 0,
+) {
   if (depth > 8 || out.length >= 50000) {
     issues.add("file-discovery-limit");
     return;
@@ -338,28 +351,6 @@ function discover(dir: string, out: string[], issues: Set<string>, depth = 0) {
       issues.add("directory-unreadable");
   }
 }
-function restore(file: string, detail: boolean): FileState {
-  try {
-    const s = JSON.parse(
-      gunzipSync(readFileSync(file), {
-        maxOutputLength: 128 * 1024 * 1024,
-      }).toString("utf8"),
-    ) as FileState;
-    if (s.schema !== CACHE_SCHEMA || s.detail !== detail) return fresh();
-    s.projection.issues = new Set(s.projection.issues);
-    for (const key of [
-      "responses",
-      "legacy",
-      "turns",
-      "tools",
-      "compactions",
-    ] as const)
-      s.projection[key] = Object.assign(Object.create(null), s.projection[key]);
-    return s;
-  } catch {
-    return fresh();
-  }
-}
 export function readPrompt(source: PromptSource): Json {
   if (source.bytes > MAX_LINE) throw new Error("prompt-source-too-large");
   const fd = openSync(source.path, "r");
@@ -375,168 +366,18 @@ export class Collector {
   files = new Map<string, FileState>();
   titles = new Map<string, string>();
   issues = new Set<string>();
-  checked = 0;
   observedAt: string | null = null;
   bytesRead = 0;
   scanMs = 0;
-  prunedAt = 0;
   threads = new Map<string, Projection>();
   sources = new Map<string, string[]>();
-  async refresh(period: number | null, selected: string | null) {
-    if (Date.now() - this.checked < 4000) return;
-    const start = performance.now();
-    this.issues.clear();
-    this.bytesRead = 0;
-    this.titles.clear();
-    const home = codexHome();
-    try {
-      for (const l of lines(path.join(home, "session_index.jsonl")))
-        try {
-          const r = JSON.parse(l.bytes.toString("utf8"));
-          if (text(r, "id") && text(r, "thread_name"))
-            this.titles.set(r.id, r.thread_name);
-        } catch {}
-    } catch {}
-    try {
-      const databases = readdirSync(home)
-        .map((n) => ({
-          name: n,
-          version: Number(/^state_(\d+)\.sqlite$/.exec(n)?.[1] ?? -1),
-        }))
-        .filter((n) => n.version >= 0)
-        .sort((a, b) => b.version - a.version);
-      if (databases.length) {
-        const db = new DatabaseSync(path.join(home, databases[0].name), {
-          readOnly: true,
-        });
-        try {
-          for (const r of db
-            .prepare("SELECT id, name, title FROM threads")
-            .iterate())
-            if (typeof r.id === "string") {
-              if (typeof r.name === "string" && r.name)
-                this.titles.set(r.id, r.name);
-              else if (
-                typeof r.title === "string" &&
-                r.title &&
-                !this.titles.has(r.id)
-              )
-                this.titles.set(r.id, r.title);
-            }
-        } finally {
-          db.close();
-        }
-      }
-    } catch {}
-    const paths: string[] = [];
-    for (const dir of ["sessions", "archived_sessions"])
-      discover(path.join(home, dir), paths, this.issues);
-    const live = new Set(paths);
-    for (const p of this.files.keys()) if (!live.has(p)) this.files.delete(p);
-    const cutoff = period === null ? null : rangeStart(period);
-    const metadata = new Map(
-      paths.map((p) => {
-        try {
-          return [p, statSync(p)] as const;
-        } catch {
-          return [p, null] as const;
-        }
-      }),
-    );
-    paths.sort(
-      (a, b) =>
-        (metadata.get(b)?.mtimeMs ?? 0) - (metadata.get(a)?.mtimeMs ?? 0),
-    );
-    for (const file of paths) {
-      const meta = metadata.get(file);
-      if (!meta) {
-        this.issues.add("file-metadata-unavailable");
-        continue;
-      }
-      let detail = !!selected && path.basename(file).includes(selected);
-      const cachePath = () =>
-        path.join(
-          root(),
-          "usage-ts",
-          detail ? "tasks" : "files",
-          `${hash(file)}.json.gz`,
-        );
-      const old = cutoff !== null && meta.mtimeMs < cutoff;
-      let other = selected !== null && !detail;
-      let s =
-        this.files.get(file) ??
-        (old || other ? fresh() : restore(cachePath(), detail));
-      if (old || other) {
-        if (
-          !s.catalogueOnly ||
-          s.schema !== CACHE_SCHEMA ||
-          s.length !== meta.size ||
-          s.stamp !== meta.mtimeMs ||
-          s.identity !== identity(meta)
-        )
-          try {
-            s = catalogue(file);
-          } catch {}
-        if (other && selected === s.projection.threadId) {
-          detail = true;
-          other = false;
-          s = restore(cachePath(), true);
-        }
-        if (
-          s.schema === CACHE_SCHEMA &&
-          s.length === meta.size &&
-          s.stamp === meta.mtimeMs &&
-          s.identity === identity(meta) &&
-          (other ||
-            (cutoff !== null &&
-              s.projection.lastEventAt !== null &&
-              s.projection.lastEventAt < cutoff))
-        ) {
-          this.files.set(file, s);
-          continue;
-        }
-      }
-      try {
-        const result = await scan(file, s, detail);
-        s = result.state;
-        this.bytesRead += result.bytesRead;
-        if (result.changed)
-          try {
-            saveBytes(
-              cachePath(),
-              gzipSync(
-                JSON.stringify(s, (_key, v) =>
-                  v instanceof Set ? [...v].sort() : v,
-                ),
-                { level: 1 },
-              ),
-            );
-          } catch {
-            this.issues.add("checkpoint-unavailable");
-          }
-      } catch {
-        this.issues.add("file-read-failed");
-      }
-      this.files.set(file, s);
-    }
-    this.threads = this.merge();
-    this.sources.clear();
-    for (const [p, f] of [...this.files].sort(([a], [b]) =>
-      a.localeCompare(b),
-    )) {
-      const paths = this.sources.get(f.projection.threadId) ?? [];
-      paths.push(p);
-      this.sources.set(f.projection.threadId, paths);
-    }
-    this.observedAt = new Date().toISOString();
-    this.checked = Date.now();
-    this.scanMs = Math.round(performance.now() - start);
-    if (Date.now() - this.prunedAt >= 60000) {
-      this.prune();
-      this.prunedAt = Date.now();
-    }
-  }
   merge(): Map<string, Projection> {
+    const counts = new Map<string, number>();
+    for (const f of this.files.values())
+      counts.set(
+        f.projection.threadId,
+        (counts.get(f.projection.threadId) ?? 0) + 1,
+      );
     const threads = new Map<string, Projection>(),
       indexed = new Set<string>();
     for (const [, f] of [...this.files].sort(([a], [b]) =>
@@ -547,7 +388,7 @@ export class Collector {
       if (!f.catalogueOnly) indexed.add(p.threadId);
       let t = threads.get(p.threadId);
       if (!t) {
-        t = structuredClone(p);
+        t = counts.get(p.threadId)! > 1 ? structuredClone(p) : p;
         for (const k of [
           "responses",
           "legacy",
@@ -652,50 +493,5 @@ export class Collector {
     return new Map(
       [...threads].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
     );
-  }
-  prune() {
-    const live = new Map(
-      [...this.files].map(([p, s]) => [`${hash(p)}.json.gz`, s.length]),
-    );
-    const entries: {
-      path: string;
-      size: number;
-      source: number;
-      stamp: number;
-    }[] = [];
-    for (const dir of ["files", "tasks"]) {
-      const folder = path.join(root(), "usage-ts", dir);
-      if (!existsSync(folder)) continue;
-      for (const name of readdirSync(folder)) {
-        if (!/^[a-f0-9]{64}\.json\.gz$/.test(name)) continue;
-        const file = path.join(folder, name);
-        try {
-          const m = statSync(file);
-          if (!m.isFile()) continue;
-          const source = live.get(name);
-          if (source !== undefined)
-            entries.push({
-              path: file,
-              size: m.size,
-              source,
-              stamp: m.mtimeMs,
-            });
-          else if (!this.issues.size) unlinkSync(file);
-        } catch {}
-      }
-    }
-    let total = entries.reduce((n, e) => n + e.size, 0);
-    entries.sort(
-      (a, b) =>
-        a.source / Math.max(a.size, 1) - b.source / Math.max(b.size, 1) ||
-        a.stamp - b.stamp,
-    );
-    for (const e of entries) {
-      if (total <= 40 * 1024 * 1024) break;
-      try {
-        unlinkSync(e.path);
-        total -= e.size;
-      } catch {}
-    }
   }
 }

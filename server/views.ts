@@ -1,3 +1,5 @@
+import { openSync, closeSync, readSync } from "node:fs";
+import type { IndexStore } from "./index-store.js";
 import type { Metrics } from "../shared/usage.js";
 import {
   version,
@@ -9,7 +11,7 @@ import {
   rangeStart,
   type Json,
 } from "./common.js";
-import { Collector, lines, readPrompt } from "./collector.js";
+import { Collector, readPrompt } from "./collector.js";
 import {
   type Response,
   type Projection,
@@ -28,10 +30,15 @@ export class Views {
   constructor(
     readonly collector: Collector,
     readonly pricing: Pricing,
+    readonly index: IndexStore,
   ) {}
+  prices = new WeakMap<Response, number | null>();
   metrics(rows: Response[]): Metrics {
     const prices = rows
-      .map((r) => this.pricing.estimate(r))
+      .map((r) => {
+        if (!this.prices.has(r)) this.prices.set(r, this.pricing.estimate(r));
+        return this.prices.get(r)!;
+      })
       .filter((n): n is number => n !== null);
     return {
       ...totals(rows),
@@ -169,25 +176,39 @@ export class Views {
       })),
     };
   }
-  visitRecords(threadId: string, visit: (v: Json) => void) {
-    for (const source of this.collector.sources.get(threadId) ?? [])
-      for (const line of lines(source)) {
-        if (line.oversized || !line.complete) continue;
+  visitRecords(
+    threadId: string,
+    turnId: string | null,
+    toolId: string | null,
+    visit: (v: Json) => void,
+  ) {
+    for (const row of this.index.locations(threadId, turnId, toolId)) {
+      const fd = openSync(String(row.path), "r");
+      try {
+        const bytes = Buffer.alloc(Number(row.length));
+        if (
+          readSync(fd, bytes, 0, bytes.length, Number(row.offset)) !==
+          bytes.length
+        )
+          continue;
         let record: Json;
         try {
-          record = JSON.parse(line.bytes.toString("utf8"));
+          record = JSON.parse(bytes.toString("utf8"));
         } catch {
           continue;
         }
         visit(record);
+      } finally {
+        closeSync(fd);
       }
+    }
   }
   turnContent(threadId: string, turnId: string): Json {
-    let turn: string | null = null;
+    let turn: string | null = turnId;
     const entries = new Map<string, Json>(),
       messages = new Map<string, Json>(),
       previews: Json = Object.create(null);
-    this.visitRecords(threadId, (record) => {
+    this.visitRecords(threadId, turnId, null, (record) => {
       const p = record.payload ?? {},
         kind = record.type;
       if (
@@ -286,7 +307,7 @@ export class Views {
       throw new Error("tool-turn-mismatch");
     let input: unknown = null,
       output: unknown = null;
-    this.visitRecords(args.threadId, (record) => {
+    this.visitRecords(args.threadId, null, args.toolId, (record) => {
       const p = record.payload ?? {};
       if (record.type !== "response_item" || p.call_id !== args.toolId) return;
       if (p.type === "function_call") input = p.arguments ?? null;

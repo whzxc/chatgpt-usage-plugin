@@ -26,6 +26,15 @@ export interface UsageHistory {
   observedAt?: string;
 }
 export interface QuotaWindow {
+  estimate?: {
+    estimatedUsd: number;
+    tokens: number;
+    pricedTokens: number;
+    projectedUsd: number;
+    start: number;
+    end: number;
+    incomplete: boolean;
+  };
   id: string;
   poolId: string;
   label: string;
