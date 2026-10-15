@@ -20,6 +20,8 @@ import {
   lines,
   type FileState,
 } from "./collector.js";
+import { relationalSchema, writeThread, reprice } from "./relational.js";
+import type { Pricing } from "./pricing.js";
 import { projection } from "./projection.js";
 
 const families = [
@@ -29,7 +31,7 @@ const families = [
   "tools",
   "compactions",
 ] as const;
-const schema = 2;
+const schema = 3;
 export function indexPath() {
   let home = path.resolve(codexHome());
   try {
@@ -57,7 +59,9 @@ export class IndexStore {
     const file = indexPath();
     if (!readOnly) privateDir(path.dirname(file));
     this.db = new DatabaseSync(file, { readOnly });
-    this.db.exec("PRAGMA busy_timeout=3000; PRAGMA cache_size=-4096;");
+    this.db.exec(
+      `PRAGMA busy_timeout=${readOnly ? 0 : 3000}; PRAGMA cache_size=-4096;`,
+    );
     if (readOnly) {
       if (this.prepare("PRAGMA user_version").get()!.user_version !== schema) {
         this.db.close();
@@ -69,6 +73,12 @@ export class IndexStore {
     this.transaction(() => {
       if (this.prepare("PRAGMA user_version").get()!.user_version !== schema) {
         for (const table of [
+          "threads",
+          "turns",
+          "requests",
+          "compactions",
+          "tools",
+          "content_locations",
           "files",
           "entries",
           "locations",
@@ -90,6 +100,7 @@ export class IndexStore {
         CREATE TABLE IF NOT EXISTS titles(id TEXT PRIMARY KEY, session TEXT, name TEXT, title TEXT);
         CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS leases(key TEXT PRIMARY KEY, owner TEXT NOT NULL, until INTEGER NOT NULL);
+        ${relationalSchema}
         PRAGMA user_version=${schema};
       `);
     });
@@ -164,7 +175,10 @@ export class IndexStore {
     }
     return s;
   }
-  async refresh(selected: string | null) {
+  bump() {
+    this.set("generation", (this.get("generation") ?? 0) + 1);
+  }
+  async refresh(selected: string | null, pricing: Pricing) {
     if (!this.claim("scan")) return false;
     const started = performance.now(),
       issues = new Set<string>();
@@ -175,9 +189,23 @@ export class IndexStore {
       const paths: string[] = [];
       for (const dir of ["sessions", "archived_sessions"])
         discover(path.join(codexHome(), dir), paths, issues);
+      this.set("progress", {
+        state: "indexing",
+        processed: 0,
+        total: paths.length,
+        reason: null,
+      });
+      reprice(this, pricing);
+      let processed = 0;
       const live = new Set(paths),
         cutoff = rangeStart(32);
       for (const file of paths.sort()) {
+        this.set("progress", {
+          state: "indexing",
+          processed: processed++,
+          total: paths.length,
+          reason: null,
+        });
         if (Date.now() - renewed >= 10000) {
           if (!this.claim("scan")) return false;
           renewed = Date.now();
@@ -203,6 +231,7 @@ export class IndexStore {
             (!full || !s.catalogueOnly)
           )
             continue;
+          const contentLocations: any[][] = [];
           const locations: [number, number, string | null, string | null][] =
             [];
           if (!full && (!s.schema || s.catalogueOnly)) s = catalogue(file);
@@ -228,6 +257,73 @@ export class IndexStore {
                   current;
                 const tool =
                   v.type === "response_item" ? text(p, "call_id") : null;
+                let kind: string | null = null,
+                  value: any = null;
+                if (v.type === "response_item") {
+                  if (["function_call", "custom_tool_call"].includes(p.type)) {
+                    kind = "input";
+                    value = p.type === "function_call" ? p.arguments : p.input;
+                  } else if (
+                    [
+                      "function_call_output",
+                      "custom_tool_call_output",
+                    ].includes(p.type)
+                  ) {
+                    kind = "output";
+                    value = p.output;
+                  } else if (
+                    p.type === "reasoning" ||
+                    (p.type === "message" && p.role === "assistant")
+                  )
+                    kind = "narrative";
+                } else if (
+                  v.type === "event_msg" &&
+                  p.type === "item_completed" &&
+                  p.item?.type === "Reasoning"
+                )
+                  kind = "narrative";
+                if (kind) {
+                  const body =
+                    value == null
+                      ? null
+                      : typeof value === "string"
+                        ? value
+                        : JSON.stringify(value);
+                  let preview = body;
+                  if (kind === "input") {
+                    let parsed = value;
+                    try {
+                      if (typeof value === "string") parsed = JSON.parse(value);
+                    } catch {}
+                    preview =
+                      [
+                        "title",
+                        "description",
+                        "cmd",
+                        "command",
+                        "query",
+                        "url",
+                        "path",
+                      ]
+                        .map((k) =>
+                          typeof parsed?.[k] === "string" ? parsed[k] : null,
+                        )
+                        .find(Boolean) ??
+                      (typeof parsed === "string" ? parsed : null);
+                  }
+                  contentLocations.push([
+                    offset,
+                    length,
+                    turn,
+                    tool,
+                    kind,
+                    body === null ? null : Buffer.byteLength(body),
+                    kind === "input"
+                      ? (preview?.trim().replace(/\s+/g, " ").slice(0, 200) ??
+                        null)
+                      : null,
+                  ]);
+                }
                 if (
                   v.type === "response_item" ||
                   (v.type === "event_msg" && p.type === "item_completed")
@@ -265,9 +361,16 @@ export class IndexStore {
             for (const [family, id, value] of changed)
               write.run(file, family, id, value);
             if (rebuilt) {
+              this.prepare("DELETE FROM content_locations WHERE path=?").run(
+                file,
+              );
               this.prepare("DELETE FROM locations WHERE path=?").run(file);
               this.prepare("DELETE FROM turn_ranges WHERE path=?").run(file);
             }
+            for (const row of contentLocations)
+              this.prepare(
+                "INSERT OR REPLACE INTO content_locations VALUES (?,?,?,?,?,?,?,?)",
+              ).run(file, ...row);
             const locate = this.prepare(
               "INSERT OR REPLACE INTO locations VALUES (?,?,?,?,?)",
             );
@@ -289,6 +392,16 @@ export class IndexStore {
             this.db
               .prepare("INSERT OR REPLACE INTO files VALUES (?,?,?)")
               .run(file, s.projection.threadId, encodedHeader);
+            writeThread(this, s.projection.threadId, pricing, {
+              file,
+              state: s,
+            });
+            if (before) {
+              const oldId = this.state(before).projection.threadId;
+              if (oldId !== s.projection.threadId)
+                writeThread(this, oldId, pricing);
+            }
+            this.bump();
           });
         } catch {
           issues.add("file-read-failed");
@@ -299,17 +412,21 @@ export class IndexStore {
           !issues.has("directory-unreadable") &&
           !issues.has("file-discovery-limit")
         )
-          for (const r of this.prepare("SELECT path FROM files").all())
-            if (!live.has(String(r.path)))
+          for (const r of this.prepare("SELECT path,thread FROM files").all())
+            if (!live.has(String(r.path))) {
               for (const table of [
                 "files",
                 "entries",
                 "locations",
                 "turn_ranges",
+                "content_locations",
               ])
                 this.db
                   .prepare(`DELETE FROM ${table} WHERE path=?`)
                   .run(r.path);
+              writeThread(this, String(r.thread), pricing);
+              this.bump();
+            }
       });
       this.refreshTitles();
       const totals = this.get("scanTotals") ?? { files: 0, bytes: 0 };
@@ -324,10 +441,21 @@ export class IndexStore {
         scanned,
         issues: [...issues],
       });
+      this.set("progress", {
+        state: "ready",
+        processed: paths.length,
+        total: paths.length,
+        reason: issues.size ? [...issues].join(",") : null,
+      });
       return true;
     } finally {
       this.release("scan");
     }
+  }
+  syncTitles() {
+    this.prepare(
+      "UPDATE threads SET title=(SELECT COALESCE(NULLIF(name,''),session,NULLIF(title,'')) FROM titles WHERE id=threadId) WHERE title IS NOT (SELECT COALESCE(NULLIF(name,''),session,NULLIF(title,'')) FROM titles WHERE id=threadId)",
+    ).run();
   }
   refreshTitles() {
     const file = path.join(codexHome(), "session_index.jsonl");
@@ -361,6 +489,8 @@ export class IndexStore {
                   .run(r.id, r.thread_name);
             } catch {}
           }
+          this.syncTitles();
+          this.bump();
           this.set("titleCursor", {
             offset,
             size: m.size,
@@ -395,6 +525,8 @@ export class IndexStore {
           );
           for (const r of rows)
             if (typeof r.id === "string") write.run(r.id, r.name, r.title);
+          this.syncTitles();
+          this.bump();
           this.set("titleDatabase", stamp);
         });
       } finally {
@@ -411,6 +543,7 @@ export class IndexStore {
         .some((r) => this.state(String(r.state)).catalogueOnly)
     );
   }
+  // P4 removes the P1 entries/files projection and legacy query path after both panels migrate.
   collector(days: number, selected: string | null) {
     const c = new Collector(),
       info = this.get("scan");

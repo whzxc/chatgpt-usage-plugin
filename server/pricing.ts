@@ -4,7 +4,7 @@ import path from "node:path";
 import modelsDev from "../shared/pricing/models_dev_snapshot.json";
 import litellm from "../shared/pricing/litellm_snapshot.json";
 import supplement from "../shared/pricing/supplement.json";
-import { root, load, save, type Json } from "./common.js";
+import { root, load, save, hash, type Json } from "./common.js";
 import { type Response } from "./projection.js";
 const sources: [string, string, Json][] = [
   ["models_dev", "https://models.dev/api.json", modelsDev],
@@ -112,6 +112,7 @@ export class Pricing {
     this.build();
   }
   signature = "";
+  version = "";
   build() {
     const signature = sources
       .map(([id]) => {
@@ -155,6 +156,13 @@ export class Pricing {
         if (typeof source[key] === "string" && source[key] > this.updatedAt)
           this.updatedAt = source[key];
     }
+    this.version = hash(
+      JSON.stringify([
+        this.models,
+        this.fast,
+        this.aliases.map(([r, v]) => [r.source, v]),
+      ]),
+    );
   }
   refresh() {
     if (this.refreshing || Date.now() < this.next) return;
@@ -206,7 +214,6 @@ export class Pricing {
         } catch {}
       }),
     ).finally(() => {
-      this.build();
       this.next = Date.now() + 60000;
       this.refreshing = false;
     });

@@ -16,8 +16,8 @@ parentPort!.on("message", (request: Json) => {
     return;
   }
   if (request.quota) quota.refresh(request.force === true);
-  pricing.refresh();
-  if (request.selected || Date.now() - checked >= 3000)
+  if (request.scan === false) return;
+  if (request.selected || Date.now() - checked >= 2000)
     selections.add(request.selected ?? null);
   if (!running) void refresh();
 });
@@ -26,10 +26,17 @@ async function refresh() {
   try {
     for (const selected of selections) {
       selections.delete(selected);
-      if (await index.refresh(selected)) checked = Date.now();
+      pricing.build();
+      pricing.refresh();
+      if (await index.refresh(selected, pricing)) checked = Date.now();
     }
     parentPort!.postMessage({ ready: true });
   } catch (error) {
+    index.set("progress", {
+      ...index.get("progress"),
+      state: "unavailable",
+      reason: "index-refresh-failed",
+    });
     parentPort!.postMessage({ error: (error as Error).message });
   } finally {
     running = false;

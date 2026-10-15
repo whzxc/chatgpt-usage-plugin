@@ -8,6 +8,7 @@ import {
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 import { hash, version, text, type Json } from "./common.js";
+import { dataTools } from "./data-tools.js";
 import { UsageService } from "./service.js";
 declare const __PANEL_HTML__: string, __ICON_SVG__: string, __DEV__: boolean;
 if (process.argv.includes("--version")) {
@@ -96,6 +97,26 @@ for (const [name, title, entry] of [
         _meta: { ui: { resourceUri: uri }, usage: data },
       };
     },
+  );
+}
+for (const [name, schemas] of Object.entries(dataTools)) {
+  server.registerTool(
+    name,
+    {
+      description: "Read indexed local usage data.",
+      inputSchema: schemas.input,
+      outputSchema: schemas.output,
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+      _meta: { ui: { visibility: ["app"] } },
+    },
+    async (args: Json, extra: ServerContext) => ({
+      content: [{ type: "text" as const, text: "Local usage data." }],
+      structuredContent: service.data(name, args, extra.mcpReq._meta ?? {}),
+    }),
   );
 }
 registerAppResource(server, "Usage Insights", uri, {}, async () => {

@@ -87,12 +87,36 @@ try {
     }),
   );
   const tools = await client.listTools();
-  for (const name of ["usage_overview", "usage_task", "usage_refresh"]) {
+  for (const name of [
+    "usage_overview",
+    "usage_task",
+    "usage_refresh",
+    "usage_summary",
+    "usage_tasks",
+    "usage_quota",
+    "usage_thread",
+    "usage_turn",
+    "usage_tool",
+  ]) {
     if (!tools.tools.some((tool) => tool.name === name))
       throw new Error(`Missing plugin tool: ${name}`);
   }
-  if (tools.tools.length !== 3)
-    throw new Error("Usage plugin must expose only its three panel tools");
+  if (tools.tools.length !== 9)
+    throw new Error(
+      "Usage plugin must expose three panel tools and six data tools",
+    );
+  for (const tool of tools.tools.filter(
+    (t) => !["usage_overview", "usage_task", "usage_refresh"].includes(t.name),
+  )) {
+    if (
+      !tool.inputSchema ||
+      !tool.outputSchema ||
+      tool._meta?.ui?.visibility?.join() !== "app" ||
+      tool._meta?.ui?.resourceUri ||
+      tool._meta?.["openai/ui"]
+    )
+      throw new Error(`Invalid data tool contract: ${tool.name}`);
+  }
   const resources = await client.listResources();
   if (resources.resources.length !== 1)
     throw new Error("UI resources do not match build features");

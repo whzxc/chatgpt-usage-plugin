@@ -41,7 +41,10 @@ export class Quota {
       .then((value: Json) => {
         if (value.state === "unavailable" && latest?.value.observedAt)
           value = { ...latest.value, state: "stale", error: value.error };
-        this.index.set("quota", { checked: Date.now(), value });
+        this.index.transaction(() => {
+          this.index.set("quota", { checked: Date.now(), value });
+          this.index.bump();
+        });
       })
       .finally(() => {
         this.refreshing = false;
