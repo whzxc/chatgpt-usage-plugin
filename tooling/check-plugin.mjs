@@ -90,7 +90,6 @@ try {
   for (const name of [
     "usage_overview",
     "usage_task",
-    "usage_refresh",
     "usage_summary",
     "usage_tasks",
     "usage_quota",
@@ -101,12 +100,12 @@ try {
     if (!tools.tools.some((tool) => tool.name === name))
       throw new Error(`Missing plugin tool: ${name}`);
   }
-  if (tools.tools.length !== 9)
+  if (tools.tools.length !== 8)
     throw new Error(
-      "Usage plugin must expose three panel tools and six data tools",
+      "Usage plugin must expose two panel tools and six data tools",
     );
   for (const tool of tools.tools.filter(
-    (t) => !["usage_overview", "usage_task", "usage_refresh"].includes(t.name),
+    (t) => !["usage_overview", "usage_task"].includes(t.name),
   )) {
     if (
       !tool.inputSchema ||

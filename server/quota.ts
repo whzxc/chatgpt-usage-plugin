@@ -2,15 +2,7 @@ import type { IndexStore } from "./index-store.js";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { version, type Json } from "./common.js";
 import { installation } from "./installation.js";
-const base = {
-  providerId: "codex",
-  agentId: "codex",
-  name: "Codex",
-  eligible: true,
-  selected: true,
-  windows: [],
-  blockedPoolIds: [],
-};
+const base = { windows: [], plan: null, credits: null, availableResets: null };
 export class Quota {
   children = new Set<ChildProcessWithoutNullStreams>();
   refreshing = false;
@@ -144,15 +136,9 @@ function normalize(raw: Json): Json {
       (raw.rateLimits
         ? { [raw.rateLimits.limitId ?? "codex"]: raw.rateLimits }
         : {}),
-    windows: Json[] = [],
-    blocked: string[] = [];
+    windows: Json[] = [];
   for (const pool of Object.keys(groups).sort()) {
     const group = groups[pool];
-    if (
-      typeof group.rateLimitReachedType === "string" ||
-      group.spendControlReached === true
-    )
-      blocked.push(pool);
     for (const slot of ["primary", "secondary"]) {
       const q = group[slot],
         used = q?.usedPercent;
@@ -174,16 +160,19 @@ function normalize(raw: Json): Json {
       });
     }
   }
+  const accounts = Object.values(groups) as Json[];
+  const account =
+    accounts.find((g) => g.limitId === "codex") ?? accounts[0] ?? {};
   return {
-    ...base,
+    plan: account.planType ?? null,
+    credits:
+      account.credits?.balance != null &&
+      Number.isFinite(Number(account.credits.balance))
+        ? Number(account.credits.balance)
+        : null,
+    availableResets: raw.rateLimitResetCredits?.availableCount ?? null,
     state: windows.length ? "ready" : "unavailable",
     windows,
-    blockedPoolIds: blocked,
     observedAt: new Date().toISOString(),
-    accountBlocked:
-      typeof raw.ordinaryUsageAllowed === "boolean"
-        ? !raw.ordinaryUsageAllowed
-        : null,
-    rawUsage: raw,
   };
 }

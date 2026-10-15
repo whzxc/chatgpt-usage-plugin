@@ -43,6 +43,24 @@ const toolBody = z.object({
   bytes: nullable,
   truncated: z.boolean(),
 });
+const context = z.object({
+  used: nullable,
+  window: nullable,
+  parts: z.array(
+    z.object({
+      kind: z.enum([
+        "toolResults",
+        "reasoning",
+        "toolCalls",
+        "compaction",
+        "messages",
+        "fixed",
+      ]),
+      tokens: n,
+      details: z.array(z.object({ name: z.string(), tokens: n })).optional(),
+    }),
+  ),
+});
 export const dataTools = {
   usage_summary: {
     input: z.object({ range }).strict(),
@@ -130,6 +148,7 @@ export const dataTools = {
           threadId: z.string(),
           title: str,
           model: str,
+          models: z.array(z.string()),
           serviceTier: str,
           lastActivity: nullable,
           running: z.boolean(),
@@ -140,7 +159,9 @@ export const dataTools = {
             ttftMaxMs: nullable,
           }),
           contextWindow: nullable,
+          context,
           requestInputs: z.array(nullable),
+          requestDetails: z.array(z.tuple([n, nullable, nullable])),
           turnStarts: z.array(
             z.object({ turnId: z.string(), requestSequence: nullable }),
           ),
@@ -161,11 +182,19 @@ export const dataTools = {
     }),
   },
   usage_turn: {
-    input: z.object({ threadId: id, turnId: id }).strict(),
+    input: z
+      .object({
+        threadId: id,
+        turnId: id,
+        offset: z.number().int().nonnegative().default(0),
+        limit: z.number().int().min(1).max(100).default(100),
+      })
+      .strict(),
     output: z.object({
       turn: z
         .object({
           turnId: z.string(),
+          prompt: str,
           metrics: z.object({
             cost: nullable,
             tokens: nullable,
@@ -216,6 +245,11 @@ export const dataTools = {
               }),
             ]),
           ),
+          timelineTotal: n,
+          requestTotal: n,
+          nextOffset: nullable,
+          offset: n,
+          limit: n,
         })
         .nullable(),
       index,
@@ -249,3 +283,4 @@ export const overviewInitial = z.object({
   tasks: dataTools.usage_tasks.output,
   quota: dataTools.usage_quota.output,
 });
+export const taskInitial = dataTools.usage_thread.output;

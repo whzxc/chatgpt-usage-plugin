@@ -12,6 +12,12 @@ import parser from "stream-json/parser.js";
 import filter from "stream-json/filters/filter.js";
 import path from "node:path";
 import {
+  freshContext,
+  ingestContext,
+  estimate,
+  type ContextState,
+} from "./context.js";
+import {
   hash,
   text,
   time,
@@ -43,6 +49,7 @@ export type FileState = {
   catalogueOnly: boolean;
   detail: boolean;
   contentTurn: string | null;
+  context: ContextState;
 };
 export const fresh = (): FileState => ({
   schema: 0,
@@ -57,6 +64,7 @@ export const fresh = (): FileState => ({
   catalogueOnly: false,
   detail: false,
   contentTurn: null,
+  context: freshContext(),
 });
 export const identity = (m: NonNullable<ReturnType<typeof statSync>>) =>
   `${m.dev}:${m.ino}:${m.birthtimeMs}`;
@@ -72,6 +80,10 @@ function readRange(fd: number, offset: number, length: number): Buffer {
 }
 const fingerprint = (fd: number, offset: number, length: number) =>
   hash(readRange(fd, offset, length));
+// The writer scans files serially. Reuse bounded byte storage across files;
+// yielded bytes are consumed before the iterator advances.
+const lineChunk = Buffer.allocUnsafe(64 * 1024);
+let linePending = Buffer.alloc(0);
 export function* lines(
   file: string,
   offset = 0,
@@ -84,12 +96,10 @@ export function* lines(
 }> {
   const fd = openSync(file, "r");
   try {
-    const chunk = Buffer.alloc(256 * 1024);
+    const chunk = lineChunk;
     let position = offset,
       start = offset,
-      length = 0,
-      parts: Buffer[] = [],
-      oversized = false;
+      length = 0;
     for (;;) {
       const n = readSync(fd, chunk, 0, chunk.length, position);
       if (!n) break;
@@ -97,21 +107,29 @@ export function* lines(
       while (cursor < n) {
         const found = chunk.indexOf(10, cursor),
           end = found >= 0 && found < n ? found + 1 : n;
-        const part = chunk.subarray(cursor, end);
+        const part = chunk.subarray(cursor, end),
+          previous = length;
         length += part.length;
-        if (length > MAX_LINE) {
-          parts = [];
-          oversized = true;
-        } else if (!oversized)
-          parts.push(part.at(-1) === 10 ? part : Buffer.from(part));
-        cursor = end;
-        if (part.at(-1) === 10) {
+        const oversized = length > MAX_LINE,
+          complete = part.at(-1) === 10;
+        let bytes = part;
+        if (!oversized && (previous > 0 || !complete)) {
+          if (linePending.length < length) {
+            const next = Buffer.allocUnsafe(
+              Math.min(
+                MAX_LINE,
+                Math.max(length, linePending.length * 2, 65536),
+              ),
+            );
+            linePending.copy(next, 0, 0, previous);
+            linePending = next;
+          }
+          part.copy(linePending, previous);
+          bytes = linePending.subarray(0, length);
+        }
+        if (complete) {
           yield {
-            bytes: oversized
-              ? Buffer.alloc(0)
-              : parts.length === 1
-                ? parts[0]
-                : Buffer.concat(parts, length),
+            bytes: oversized ? Buffer.alloc(0) : bytes,
             offset: start,
             length,
             complete: true,
@@ -119,23 +137,19 @@ export function* lines(
           };
           start += length;
           length = 0;
-          parts = [];
-          oversized = false;
         }
+        cursor = end;
       }
       position += n;
     }
     if (length)
       yield {
-        bytes: oversized
-          ? Buffer.alloc(0)
-          : parts.length === 1
-            ? parts[0]
-            : Buffer.concat(parts, length),
+        bytes:
+          length > MAX_LINE ? Buffer.alloc(0) : linePending.subarray(0, length),
         offset: start,
         length,
         complete: false,
-        oversized,
+        oversized: length > MAX_LINE,
       };
   } finally {
     closeSync(fd);
@@ -148,20 +162,31 @@ async function oversizedCompaction(
 ): Promise<Json | null> {
   // Stream skipped histories without packing their strings or materializing arrays.
   const filtered = filter.asStream({
-    filter: /^(timestamp|type|payload\.compaction_response_id)$/,
+    filter:
+      /^(timestamp|type|payload\.(compaction_response_id|replacement_history|message))(\.|$)/,
   });
   const strings: Record<string, string> = Object.create(null);
   // Filter emits streamed primitive tokens; pack only the retained metadata.
   let key = "",
     value = "",
-    objectDepth = 0;
+    objectDepth = 0,
+    replacementTokens = 0,
+    messageTokens = 0,
+    history = false;
   filtered.on("data", (token) => {
     if (token.name === "startObject") objectDepth++;
     if (token.name === "endObject") objectDepth--;
-    if (token.name === "keyValue") key = token.value;
+    if (token.name === "keyValue" && objectDepth <= 2) {
+      key = token.value;
+      if (key === "replacement_history") history = true;
+    }
     if (token.name === "startString") value = "";
-    if (token.name === "stringChunk" && value.length < 4096)
-      value += token.value;
+    if (token.name === "stringChunk") {
+      if (key === "replacement_history")
+        replacementTokens += estimate(token.value);
+      else if (key === "message") messageTokens += estimate(token.value);
+      else if (value.length < 4096) value += token.value;
+    }
     if (token.name === "endString" && objectDepth <= 2) strings[key] = value;
   });
   await pipeline(
@@ -177,7 +202,10 @@ async function oversizedCompaction(
     ? {
         timestamp: strings.timestamp,
         type: "compacted",
-        payload: { compaction_response_id: strings.compaction_response_id },
+        payload: {
+          compaction_response_id: strings.compaction_response_id,
+          replacement_tokens: history ? replacementTokens : messageTokens,
+        },
       }
     : null;
 }
@@ -195,6 +223,7 @@ export function catalogue(file: string): FileState {
     if (v.type !== "session_meta") throw new Error("invalid-session-header");
     const s = fresh();
     ingest(s.projection, v, file, 0, first.bytes, false);
+    s.projection.lastEventAt = s.projection.createdAt;
     const offset = Math.max(0, meta.size - 64 * 1024);
     const tail = readRange(fd, offset, meta.size - offset)
       .toString("utf8")
@@ -276,15 +305,16 @@ export async function scan(
         break;
       }
       if (line.oversized) {
-        const record = await oversizedCompaction(
+        const value = await oversizedCompaction(
           file,
           line.offset,
           line.length,
         ).catch(() => null);
-        if (record) {
+        if (value) {
+          ingestContext(s.context, value, s.projection.threadId);
           ingest(
             s.projection,
-            record,
+            value,
             file,
             line.offset,
             Buffer.alloc(0),
@@ -295,6 +325,7 @@ export async function scan(
       } else {
         try {
           const v = JSON.parse(line.bytes.toString("utf8"));
+          ingestContext(s.context, v, s.projection.threadId || v.payload?.id);
           if (
             v.type === "turn_context" ||
             (v.type === "event_msg" && v.payload?.type === "task_started")
@@ -362,136 +393,124 @@ export function readPrompt(source: PromptSource): Json {
     closeSync(fd);
   }
 }
-export class Collector {
-  files = new Map<string, FileState>();
-  titles = new Map<string, string>();
-  issues = new Set<string>();
-  observedAt: string | null = null;
-  bytesRead = 0;
-  scanMs = 0;
-  threads = new Map<string, Projection>();
-  sources = new Map<string, string[]>();
-  merge(): Map<string, Projection> {
-    const counts = new Map<string, number>();
-    for (const f of this.files.values())
-      counts.set(
-        f.projection.threadId,
-        (counts.get(f.projection.threadId) ?? 0) + 1,
-      );
-    const threads = new Map<string, Projection>(),
-      indexed = new Set<string>();
-    for (const [, f] of [...this.files].sort(([a], [b]) =>
-      a < b ? -1 : a > b ? 1 : 0,
-    )) {
-      const p = f.projection;
-      if (!p.threadId) continue;
-      if (!f.catalogueOnly) indexed.add(p.threadId);
-      let t = threads.get(p.threadId);
-      if (!t) {
-        t = counts.get(p.threadId)! > 1 ? structuredClone(p) : p;
-        for (const k of [
-          "responses",
-          "legacy",
-          "turns",
-          "tools",
-          "compactions",
-        ] as const)
-          t[k] = Object.assign(Object.create(null), t[k]);
-        threads.set(p.threadId, t);
-        if (f.partial) t.issues.add("partial-tail-pending");
-        continue;
-      }
-      t.modern ||= p.modern;
-      p.issues.forEach((i) => t!.issues.add(i));
+export function mergeFiles(
+  files: Map<string, FileState>,
+): Map<string, Projection> {
+  const counts = new Map<string, number>();
+  for (const f of files.values())
+    counts.set(
+      f.projection.threadId,
+      (counts.get(f.projection.threadId) ?? 0) + 1,
+    );
+  const threads = new Map<string, Projection>(),
+    indexed = new Set<string>();
+  for (const [, f] of [...files].sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
+    const p = f.projection;
+    if (!p.threadId) continue;
+    if (!f.catalogueOnly) indexed.add(p.threadId);
+    let t = threads.get(p.threadId);
+    if (!t) {
+      t = counts.get(p.threadId)! > 1 ? structuredClone(p) : p;
+      for (const k of [
+        "responses",
+        "legacy",
+        "turns",
+        "tools",
+        "compactions",
+      ] as const)
+        t[k] = Object.assign(Object.create(null), t[k]);
+      threads.set(p.threadId, t);
       if (f.partial) t.issues.add("partial-tail-pending");
-      for (const family of ["responses", "legacy"] as const)
-        for (const r of sortedValues(p[family])) {
-          const old = t[family][r.id];
-          if (!old) t[family][r.id] = structuredClone(r);
-          else {
-            old.reliable &&= r.reliable;
-            if (stableJson(old.tokens) !== stableJson(r.tokens)) {
-              old.reliable = false;
-              t.issues.add(
-                family === "responses"
-                  ? "conflicting-response-usage"
-                  : "legacy-overlap-baseline-conflict",
-              );
-            }
+      continue;
+    }
+    t.modern ||= p.modern;
+    p.issues.forEach((i) => t!.issues.add(i));
+    if (f.partial) t.issues.add("partial-tail-pending");
+    for (const family of ["responses", "legacy"] as const)
+      for (const r of sortedValues(p[family])) {
+        const old = t[family][r.id];
+        if (!old) t[family][r.id] = structuredClone(r);
+        else {
+          old.reliable &&= r.reliable;
+          if (stableJson(old.tokens) !== stableJson(r.tokens)) {
+            old.reliable = false;
+            t.issues.add(
+              family === "responses"
+                ? "conflicting-response-usage"
+                : "legacy-overlap-baseline-conflict",
+            );
           }
         }
-      for (const incoming of sortedValues(p.turns)) {
-        const old = t.turns[incoming.id];
-        if (
-          !old ||
-          (incoming.completedAt ?? incoming.startedAt ?? -Infinity) >
-            (old.completedAt ?? old.startedAt ?? -Infinity)
-        )
-          t.turns[incoming.id] = structuredClone(incoming);
-        else {
-          old.contextWindow ??= incoming.contextWindow;
-          old.promptImages = Math.max(old.promptImages, incoming.promptImages);
-          old.prompt ??= incoming.prompt;
-          old.model ??= incoming.model;
-          old.effort ??= incoming.effort;
-        }
       }
-      for (const incoming of sortedValues(p.tools)) {
-        const old = t.tools[incoming.id];
-        if (!old) {
-          t.tools[incoming.id] = structuredClone(incoming);
-          continue;
-        }
-        old.outputBytes ??= incoming.outputBytes;
-        old.name ??= incoming.name;
-        old.turnId ??= incoming.turnId;
-        if (
-          (incoming.completedAt ?? -Infinity) > (old.completedAt ?? -Infinity)
-        ) {
-          old.startedAt = incoming.startedAt;
-          old.completedAt = incoming.completedAt;
-          old.status = incoming.status;
-        }
-      }
-      Object.assign(t.compactions, p.compactions);
-      t.lastEventAt =
-        t.lastEventAt === null
-          ? p.lastEventAt
-          : p.lastEventAt === null
-            ? t.lastEventAt
-            : Math.max(t.lastEventAt, p.lastEventAt);
+    for (const incoming of sortedValues(p.turns)) {
+      const old = t.turns[incoming.id];
       if (
-        (p.reportedTotal?.[0] ?? -Infinity) >
-        (t.reportedTotal?.[0] ?? -Infinity)
+        !old ||
+        (incoming.completedAt ?? incoming.startedAt ?? -Infinity) >
+          (old.completedAt ?? old.startedAt ?? -Infinity)
       )
-        t.reportedTotal = p.reportedTotal;
-    }
-    for (const t of threads.values()) {
-      if (!indexed.has(t.threadId)) continue;
-      if (t.modern) {
-        for (const id of Object.keys(t.compactions))
-          if (!t.responses[id])
-            t.issues.add("compaction-response-not-observed");
-        if (
-          !t.related &&
-          t.reportedTotal &&
-          totals(sortedValues(t.responses)).total !==
-            tokenTotal(t.reportedTotal[1])
-        )
-          t.issues.add("response-sum-cumulative-mismatch");
-        const first = Object.values(t.responses).reduce(
-          (at, r) => Math.min(at, r.at),
-          Infinity,
-        );
-        if (Object.values(t.legacy).some((r) => r.at < first))
-          t.issues.add("legacy-prefix-excluded-from-response-family");
-      } else {
-        t.issues.add("legacy-coverage-response-and-compaction-unknown");
-        if (t.related) t.issues.add("legacy-related-history-partial");
+        t.turns[incoming.id] = structuredClone(incoming);
+      else {
+        old.contextWindow ??= incoming.contextWindow;
+        old.promptImages = Math.max(old.promptImages, incoming.promptImages);
+        old.prompt ??= incoming.prompt;
+        old.model ??= incoming.model;
+        old.effort ??= incoming.effort;
       }
     }
-    return new Map(
-      [...threads].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
-    );
+    for (const incoming of sortedValues(p.tools)) {
+      const old = t.tools[incoming.id];
+      if (!old) {
+        t.tools[incoming.id] = structuredClone(incoming);
+        continue;
+      }
+      old.outputBytes ??= incoming.outputBytes;
+      old.name ??= incoming.name;
+      old.turnId ??= incoming.turnId;
+      if (
+        (incoming.completedAt ?? -Infinity) > (old.completedAt ?? -Infinity)
+      ) {
+        old.startedAt = incoming.startedAt;
+        old.completedAt = incoming.completedAt;
+        old.status = incoming.status;
+      }
+    }
+    Object.assign(t.compactions, p.compactions);
+    t.lastEventAt =
+      t.lastEventAt === null
+        ? p.lastEventAt
+        : p.lastEventAt === null
+          ? t.lastEventAt
+          : Math.max(t.lastEventAt, p.lastEventAt);
+    if (
+      (p.reportedTotal?.[0] ?? -Infinity) > (t.reportedTotal?.[0] ?? -Infinity)
+    )
+      t.reportedTotal = p.reportedTotal;
   }
+  for (const t of threads.values()) {
+    if (!indexed.has(t.threadId)) continue;
+    if (t.modern) {
+      for (const id of Object.keys(t.compactions))
+        if (!t.responses[id]) t.issues.add("compaction-response-not-observed");
+      if (
+        !t.related &&
+        t.reportedTotal &&
+        totals(sortedValues(t.responses)).total !==
+          tokenTotal(t.reportedTotal[1])
+      )
+        t.issues.add("response-sum-cumulative-mismatch");
+      const first = Object.values(t.responses).reduce(
+        (at, r) => Math.min(at, r.at),
+        Infinity,
+      );
+      if (Object.values(t.legacy).some((r) => r.at < first))
+        t.issues.add("legacy-prefix-excluded-from-response-family");
+    } else {
+      t.issues.add("legacy-coverage-response-and-compaction-unknown");
+      if (t.related) t.issues.add("legacy-related-history-partial");
+    }
+  }
+  return new Map([...threads].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 }

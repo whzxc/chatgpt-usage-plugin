@@ -11,7 +11,6 @@ import {
   text,
 } from "./common.js";
 import {
-  Collector,
   fresh,
   scan,
   catalogue,
@@ -31,7 +30,7 @@ const families = [
   "tools",
   "compactions",
 ] as const;
-const schema = 3;
+const schema = 4;
 export function indexPath() {
   let home = path.resolve(codexHome());
   try {
@@ -73,6 +72,8 @@ export class IndexStore {
     this.transaction(() => {
       if (this.prepare("PRAGMA user_version").get()!.user_version !== schema) {
         for (const table of [
+          "cursors",
+          "context_parts",
           "threads",
           "turns",
           "requests",
@@ -90,13 +91,8 @@ export class IndexStore {
           this.db.exec(`DROP TABLE IF EXISTS ${table}`);
       }
       this.db.exec(`
-        CREATE TABLE IF NOT EXISTS files(path TEXT PRIMARY KEY, thread TEXT NOT NULL, state TEXT NOT NULL);
-        CREATE INDEX IF NOT EXISTS files_thread ON files(thread);
-        CREATE TABLE IF NOT EXISTS entries(path TEXT NOT NULL, family TEXT NOT NULL, id TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY(path,family,id));
-        CREATE TABLE IF NOT EXISTS locations(path TEXT NOT NULL, offset INTEGER NOT NULL, length INTEGER NOT NULL, turn TEXT, tool TEXT, PRIMARY KEY(path,offset));
-        CREATE INDEX IF NOT EXISTS locations_turn ON locations(path,turn);
-        CREATE INDEX IF NOT EXISTS locations_tool ON locations(path,tool);
-        CREATE TABLE IF NOT EXISTS turn_ranges(path TEXT NOT NULL, turn TEXT NOT NULL, start INTEGER NOT NULL, end INTEGER NOT NULL, PRIMARY KEY(path,turn));
+        CREATE TABLE IF NOT EXISTS cursors(path TEXT PRIMARY KEY, thread TEXT NOT NULL, state TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS cursors_thread ON cursors(thread);
         CREATE TABLE IF NOT EXISTS titles(id TEXT PRIMARY KEY, session TEXT, name TEXT, title TEXT);
         CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS leases(key TEXT PRIMARY KEY, owner TEXT NOT NULL, until INTEGER NOT NULL);
@@ -151,28 +147,70 @@ export class IndexStore {
     };
     return s;
   }
-  load(file: string, value: string, detail = true): FileState {
-    const s = this.state(value);
-    const singleModern =
-      !detail &&
-      s.projection.modern &&
-      this.prepare("SELECT count(*) AS n FROM files WHERE thread=?").get(
-        s.projection.threadId,
-      )!.n === 1;
-    const query = detail
-      ? "SELECT family,('{' || group_concat(json_quote(id) || ':' || value) || '}') AS value FROM entries WHERE path=? GROUP BY family"
-      : `SELECT family,('{' || group_concat(json_quote(id) || ':' || value) || '}') AS value FROM entries WHERE path=? AND family != 'tools' ${singleModern ? "AND family != 'legacy'" : ""} GROUP BY family`;
-    for (const r of this.prepare(query).iterate(file))
-      (s.projection as any)[String(r.family)] = Object.assign(
-        Object.create(null),
-        JSON.parse(String(r.value)),
-      );
-    if (singleModern) {
-      const r = this.prepare(
-        "SELECT id,value FROM entries WHERE path=? AND family='legacy' ORDER BY json_extract(value,'$.at') LIMIT 1",
-      ).get(file);
-      if (r) s.projection.legacy[String(r.id)] = JSON.parse(String(r.value));
+  load(value: string): FileState {
+    const s = this.state(value),
+      p = s.projection,
+      id = p.threadId;
+    for (const r of this.prepare(
+      "SELECT * FROM requests WHERE threadId=?",
+    ).iterate(id)) {
+      const response = {
+        id: String(r.id),
+        threadId: id,
+        turnId: r.turnId,
+        at: r.at,
+        model: r.model,
+        effort: r.effort,
+        serviceTier: r.serviceTier,
+        reliable: !!r.reliable,
+        family: r.family,
+        tokens: {
+          input: r.input,
+          cached: r.cached,
+          output: r.output,
+          reasoning: r.reasoning,
+        },
+      };
+      (p.modern ? p.responses : p.legacy)[String(r.id)] = response as any;
     }
+    for (const r of this.prepare(
+      "SELECT * FROM turns WHERE threadId=?",
+    ).iterate(id))
+      p.turns[String(r.turnId)] = {
+        id: String(r.turnId),
+        prompt: r.promptSource ? JSON.parse(String(r.promptSource)) : null,
+        promptImages: r.promptImages,
+        contextWindow: r.contextWindow,
+        startedAt: r.startedAt,
+        completedAt: r.completedAt,
+        durationMs: r.durationMs,
+        ttftMs: r.ttftMs,
+        status: r.status,
+        model: r.model,
+        effort: r.effort,
+        serviceTier: r.serviceTier,
+      } as any;
+    for (const r of this.prepare(
+      "SELECT * FROM tools WHERE threadId=?",
+    ).iterate(id))
+      p.tools[String(r.toolId)] = {
+        id: r.toolId,
+        turnId: r.turnId,
+        name: r.name,
+        at: r.at,
+        outputBytes: r.outputBytes,
+        startedAt: r.startedAt,
+        completedAt: r.completedAt,
+        status: r.status,
+      } as any;
+    for (const r of this.prepare(
+      "SELECT * FROM compactions WHERE threadId=?",
+    ).iterate(id))
+      p.compactions[String(r.id)] = {
+        responseId: r.id,
+        turnId: r.turnId,
+        at: r.at,
+      };
     return s;
   }
   bump() {
@@ -182,27 +220,20 @@ export class IndexStore {
     if (!this.claim("scan")) return false;
     const started = performance.now(),
       issues = new Set<string>();
-    let renewed = Date.now();
-    let bytesRead = 0,
+    let renewed = Date.now(),
+      bytesRead = 0,
       scanned = 0;
     try {
       const paths: string[] = [];
       for (const dir of ["sessions", "archived_sessions"])
         discover(path.join(codexHome(), dir), paths, issues);
-      this.set("progress", {
-        state: "indexing",
-        processed: 0,
-        total: paths.length,
-        reason: null,
-      });
-      reprice(this, pricing);
-      let processed = 0;
       const live = new Set(paths),
         cutoff = rangeStart(32);
-      for (const file of paths.sort()) {
+      reprice(this, pricing);
+      for (const [i, file] of paths.sort().entries()) {
         this.set("progress", {
           state: "indexing",
-          processed: processed++,
+          processed: i,
           total: paths.length,
           reason: null,
         });
@@ -210,196 +241,120 @@ export class IndexStore {
           if (!this.claim("scan")) return false;
           renewed = Date.now();
         }
-        const row = this.db
-          .prepare("SELECT state FROM files WHERE path=?")
-          .get(file);
-        const before = row ? String(row.state) : null;
-        let s = before ? this.state(before) : fresh();
-        let rebuilt = !before;
-        let previousRows = new Map<string, string>();
+        const before = this.prepare(
+          "SELECT state FROM cursors WHERE path=?",
+        ).get(file)?.state;
+        let state = before ? this.state(String(before)) : fresh();
         try {
-          const m = statSync(file);
-          const full =
-            m.mtimeMs >= cutoff ||
-            s.projection.threadId === selected ||
-            (!!selected && path.basename(file).includes(selected));
+          const m = statSync(file),
+            full =
+              m.mtimeMs >= cutoff ||
+              state.projection.threadId === selected ||
+              (!!selected && path.basename(file).includes(selected));
           if (
-            s.schema &&
-            s.length === m.size &&
-            s.stamp === m.mtimeMs &&
-            s.identity === identity(m) &&
-            (!full || !s.catalogueOnly)
+            state.schema &&
+            state.length === m.size &&
+            state.stamp === m.mtimeMs &&
+            state.identity === identity(m) &&
+            (!full || !state.catalogueOnly)
           )
             continue;
-          const contentLocations: any[][] = [];
-          const locations: [number, number, string | null, string | null][] =
-            [];
-          if (!full && (!s.schema || s.catalogueOnly)) s = catalogue(file);
-          else {
-            if (before) {
-              s = this.load(file, before);
-              for (const family of families)
-                for (const [id, value] of Object.entries(s.projection[family]))
-                  previousRows.set(`${family}:${id}`, encode(value));
-            }
-            const result = await scan(
-              file,
-              s,
-              true,
-              (v, offset, length, current) => {
-                const p = v.payload ?? {};
-                const turn =
-                  text(p, "turn_id") ??
-                  text(
-                    p.internal_chat_message_metadata_passthrough,
-                    "turn_id",
-                  ) ??
-                  current;
-                const tool =
-                  v.type === "response_item" ? text(p, "call_id") : null;
-                let kind: string | null = null,
-                  value: any = null;
-                if (v.type === "response_item") {
-                  if (["function_call", "custom_tool_call"].includes(p.type)) {
-                    kind = "input";
-                    value = p.type === "function_call" ? p.arguments : p.input;
-                  } else if (
-                    [
-                      "function_call_output",
-                      "custom_tool_call_output",
-                    ].includes(p.type)
-                  ) {
-                    kind = "output";
-                    value = p.output;
-                  } else if (
-                    p.type === "reasoning" ||
-                    (p.type === "message" && p.role === "assistant")
-                  )
-                    kind = "narrative";
-                } else if (
-                  v.type === "event_msg" &&
-                  p.type === "item_completed" &&
-                  p.item?.type === "Reasoning"
-                )
-                  kind = "narrative";
-                if (kind) {
-                  const body =
-                    value == null
-                      ? null
-                      : typeof value === "string"
-                        ? value
-                        : JSON.stringify(value);
-                  let preview = body;
-                  if (kind === "input") {
-                    let parsed = value;
-                    try {
-                      if (typeof value === "string") parsed = JSON.parse(value);
-                    } catch {}
-                    preview =
-                      [
-                        "title",
-                        "description",
-                        "cmd",
-                        "command",
-                        "query",
-                        "url",
-                        "path",
-                      ]
-                        .map((k) =>
-                          typeof parsed?.[k] === "string" ? parsed[k] : null,
-                        )
-                        .find(Boolean) ??
-                      (typeof parsed === "string" ? parsed : null);
-                  }
-                  contentLocations.push([
-                    offset,
-                    length,
-                    turn,
-                    tool,
-                    kind,
-                    body === null ? null : Buffer.byteLength(body),
-                    kind === "input"
-                      ? (preview?.trim().replace(/\s+/g, " ").slice(0, 200) ??
-                        null)
-                      : null,
-                  ]);
-                }
-                if (
-                  v.type === "response_item" ||
-                  (v.type === "event_msg" && p.type === "item_completed")
-                )
-                  locations.push([offset, length, turn, tool]);
-              },
-            );
-            rebuilt ||= result.state !== s;
-            s = result.state;
-            bytesRead += result.bytesRead;
-            scanned++;
-          }
-          const changed: [string, string, string][] = [];
-          const header = { ...s, projection: { ...s.projection } };
-          for (const family of families) {
-            for (const [id, value] of Object.entries(s.projection[family])) {
-              const encoded = encode(value);
-              if (rebuilt || previousRows.get(`${family}:${id}`) !== encoded)
-                changed.push([family, id, encoded]);
-            }
-            (header.projection as any)[family] = {};
-          }
-          const encodedHeader = encode(header);
-          // Parse and serialize outside the short cursor-checked write transaction.
-          this.transaction(() => {
-            const current = this.db
-              .prepare("SELECT state FROM files WHERE path=?")
-              .get(file);
-            if ((current ? String(current.state) : null) !== before) return;
-            const write = this.prepare(
-              "INSERT OR REPLACE INTO entries VALUES (?,?,?,?)",
-            );
-            if (rebuilt)
-              this.prepare("DELETE FROM entries WHERE path=?").run(file);
-            for (const [family, id, value] of changed)
-              write.run(file, family, id, value);
-            if (rebuilt) {
-              this.prepare("DELETE FROM content_locations WHERE path=?").run(
-                file,
+          if (
+            !before ||
+            state.identity !== identity(m) ||
+            m.size < state.length ||
+            (m.size === state.length && m.mtimeMs !== state.stamp)
+          )
+            state = catalogue(file);
+          const id = state.projection.threadId;
+          const oldId = before
+            ? this.state(String(before)).projection.threadId
+            : id;
+          const siblings = this.prepare(
+            "SELECT path FROM cursors WHERE thread IN (?,?) AND path!=?",
+          )
+            .all(id, oldId, file)
+            .map((r) => String(r.path))
+            .filter((p) => live.has(p));
+          const files = new Map<string, FileState>(),
+            locations: any[][] = [],
+            rebuiltPaths: string[] = [];
+          // A normal thread resumes from relational rows. Multiple source copies are
+          // merged only in the writer, so rewrites/removals cannot retain stale rows.
+          const sources = [file, ...siblings].sort();
+          let restored = false;
+          for (const source of sources) {
+            // A newly discovered copy can merge with the already indexed thread.
+            // Rewrites still rescan all copies, since their old rows must be removed.
+            if (!before && source !== file) {
+              const saved = String(
+                this.prepare("SELECT state FROM cursors WHERE path=?").get(
+                  source,
+                )!.state,
               );
-              this.prepare("DELETE FROM locations WHERE path=?").run(file);
-              this.prepare("DELETE FROM turn_ranges WHERE path=?").run(file);
+              files.set(
+                source,
+                restored ? this.state(saved) : this.load(saved),
+              );
+              restored = true;
+              continue;
             }
-            for (const row of contentLocations)
+            let current =
+              source === file && before && !siblings.length
+                ? this.load(String(before))
+                : fresh();
+            if (source === file && !full && (!before || state.catalogueOnly))
+              current = state = catalogue(file);
+            else {
+              const prior = current;
+              const result = await scan(
+                source,
+                current,
+                true,
+                (v, offset, length, turn) =>
+                  this.locate(locations, source, v, offset, length, turn),
+              );
+              current = result.state;
+              if (!prior.schema || current !== prior) rebuiltPaths.push(source);
+              bytesRead += result.bytesRead;
+              scanned++;
+            }
+            files.set(source, current);
+            for (const row of this.prepare(
+              "SELECT path FROM cursors WHERE thread=?",
+            ).all(current.projection.threadId)) {
+              const sibling = String(row.path);
+              if (live.has(sibling) && !sources.includes(sibling))
+                sources.push(sibling);
+            }
+          }
+          this.transaction(() => {
+            for (const source of rebuiltPaths)
+              this.prepare("DELETE FROM content_locations WHERE path=?").run(
+                source,
+              );
+            for (const row of locations)
               this.prepare(
                 "INSERT OR REPLACE INTO content_locations VALUES (?,?,?,?,?,?,?,?)",
-              ).run(file, ...row);
-            const locate = this.prepare(
-              "INSERT OR REPLACE INTO locations VALUES (?,?,?,?,?)",
-            );
-            for (const [offset, length, turn, tool] of locations)
-              locate.run(file, offset, length, turn, tool);
-            const ranges = new Map<string, [number, number]>();
-            for (const [offset, length, turn] of locations)
-              if (turn) {
-                const range = ranges.get(turn) ?? [offset, offset + length];
-                range[0] = Math.min(range[0], offset);
-                range[1] = Math.max(range[1], offset + length);
-                ranges.set(turn, range);
-              }
-            const rangeWrite = this.prepare(
-              "INSERT INTO turn_ranges VALUES (?,?,?,?) ON CONFLICT(path,turn) DO UPDATE SET start=min(turn_ranges.start,excluded.start),end=max(turn_ranges.end,excluded.end)",
-            );
-            for (const [turn, [start, end]] of ranges)
-              rangeWrite.run(file, turn, start, end);
-            this.db
-              .prepare("INSERT OR REPLACE INTO files VALUES (?,?,?)")
-              .run(file, s.projection.threadId, encodedHeader);
-            writeThread(this, s.projection.threadId, pricing, {
-              file,
-              state: s,
-            });
-            if (before) {
-              const oldId = this.state(before).projection.threadId;
-              if (oldId !== s.projection.threadId)
-                writeThread(this, oldId, pricing);
+              ).run(...row);
+            for (const thread of new Set([
+              id,
+              oldId,
+              ...[...files.values()].map((s) => s.projection.threadId),
+            ]))
+              writeThread(this, thread, pricing, files);
+            for (const [source, current] of files) {
+              const header = {
+                ...current,
+                projection: { ...current.projection },
+              };
+              for (const family of families)
+                (header.projection as any)[family] = {};
+              this.prepare("INSERT OR REPLACE INTO cursors VALUES (?,?,?)").run(
+                source,
+                current.projection.threadId,
+                encode(header),
+              );
             }
             this.bump();
           });
@@ -407,27 +362,32 @@ export class IndexStore {
           issues.add("file-read-failed");
         }
       }
-      this.transaction(() => {
-        if (
-          !issues.has("directory-unreadable") &&
-          !issues.has("file-discovery-limit")
-        )
-          for (const r of this.prepare("SELECT path,thread FROM files").all())
-            if (!live.has(String(r.path))) {
-              for (const table of [
-                "files",
-                "entries",
-                "locations",
-                "turn_ranges",
-                "content_locations",
-              ])
-                this.db
-                  .prepare(`DELETE FROM ${table} WHERE path=?`)
-                  .run(r.path);
-              writeThread(this, String(r.thread), pricing);
-              this.bump();
+      if (
+        !issues.has("directory-unreadable") &&
+        !issues.has("file-discovery-limit")
+      ) {
+        for (const r of this.prepare("SELECT path,thread FROM cursors").all())
+          if (!live.has(String(r.path))) {
+            const files = new Map<string, FileState>();
+            for (const source of this.prepare(
+              "SELECT path FROM cursors WHERE thread=? AND path!=?",
+            ).all(r.thread, r.path)) {
+              if (!live.has(String(source.path))) continue;
+              const result = await scan(String(source.path), fresh(), true);
+              files.set(String(source.path), result.state);
+              bytesRead += result.bytesRead;
+              scanned++;
             }
-      });
+            this.transaction(() => {
+              this.prepare("DELETE FROM cursors WHERE path=?").run(r.path);
+              this.prepare("DELETE FROM content_locations WHERE path=?").run(
+                r.path,
+              );
+              writeThread(this, String(r.thread), pricing, files);
+              this.bump();
+            });
+          }
+      }
       this.refreshTitles();
       const totals = this.get("scanTotals") ?? { files: 0, bytes: 0 };
       this.set("scanTotals", {
@@ -450,6 +410,79 @@ export class IndexStore {
       return true;
     } finally {
       this.release("scan");
+    }
+  }
+  locate(
+    locations: any[][],
+    file: string,
+    v: any,
+    offset: number,
+    length: number,
+    current: string | null,
+  ) {
+    const p = v.payload ?? {};
+    const turn =
+      text(p, "turn_id") ??
+      text(p.internal_chat_message_metadata_passthrough, "turn_id") ??
+      current;
+    const tool = v.type === "response_item" ? text(p, "call_id") : null;
+    let kind: string | null = null,
+      value: any = null;
+    if (v.type === "response_item") {
+      if (["function_call", "custom_tool_call"].includes(p.type)) {
+        kind = "input";
+        value = p.type === "function_call" ? p.arguments : p.input;
+      } else if (
+        ["function_call_output", "custom_tool_call_output"].includes(p.type)
+      ) {
+        kind = "output";
+        value = p.output;
+      } else if (
+        p.type === "reasoning" ||
+        (p.type === "message" && p.role === "assistant")
+      )
+        kind = "narrative";
+    } else if (
+      v.type === "event_msg" &&
+      p.type === "item_completed" &&
+      p.item?.type === "Reasoning"
+    )
+      kind = "narrative";
+    if (kind) {
+      const body =
+        value == null
+          ? null
+          : typeof value === "string"
+            ? value
+            : JSON.stringify(value);
+      let preview = body;
+      if (kind === "input") {
+        let parsed = value;
+        try {
+          if (typeof value === "string") parsed = JSON.parse(value);
+        } catch {}
+        preview =
+          ["title", "description", "cmd", "command", "query", "url", "path"]
+            .map((k) => (typeof parsed?.[k] === "string" ? parsed[k] : null))
+            .find(Boolean) ?? (typeof parsed === "string" ? parsed : null);
+      }
+      locations.push([
+        file,
+        offset,
+        length,
+        turn,
+        tool,
+        kind,
+        body === null ? null : Buffer.byteLength(body),
+        kind === "input"
+          ? preview == null
+            ? null
+            : Buffer.from(
+                preview.trim().replace(/\s+/g, " ").slice(0, 200),
+                "utf16le",
+              ).toString("utf16le")
+          : null,
+      ]);
     }
   }
   syncTitles() {
@@ -533,101 +566,6 @@ export class IndexStore {
         source.close();
       }
     } catch {}
-  }
-  needsThread(id: string | null) {
-    return (
-      !!id &&
-      this.db
-        .prepare("SELECT state FROM files WHERE thread=?")
-        .all(id)
-        .some((r) => this.state(String(r.state)).catalogueOnly)
-    );
-  }
-  // P4 removes the P1 entries/files projection and legacy query path after both panels migrate.
-  collector(days: number, selected: string | null) {
-    const c = new Collector(),
-      info = this.get("scan");
-    if (info) {
-      c.observedAt = info.observedAt;
-      c.scanMs = info.scanMs;
-      c.bytesRead = info.bytesRead;
-      c.issues = new Set(info.issues);
-    }
-    const cutoff = rangeStart(days);
-    for (const r of this.db
-      .prepare("SELECT path,state FROM files ORDER BY path")
-      .iterate()) {
-      const file = String(r.path),
-        s = this.state(String(r.state));
-      const include = selected
-        ? s.projection.threadId === selected
-        : s.stamp >= cutoff || (s.projection.lastEventAt ?? 0) >= cutoff;
-      if (include && !s.catalogueOnly) {
-        const full = this.load(file, String(r.state), !!selected);
-        c.files.set(file, full);
-      } else {
-        const p = projection();
-        for (const key of [
-          "threadId",
-          "createdAt",
-          "parentId",
-          "forkedFromId",
-          "related",
-          "cliVersion",
-          "lastEventAt",
-        ] as const)
-          (p as any)[key] = s.projection[key];
-        c.files.set(file, {
-          ...s,
-          projection: p,
-          catalogueOnly: true,
-          partial: false,
-        });
-      }
-      const sources = c.sources.get(s.projection.threadId) ?? [];
-      sources.push(file);
-      c.sources.set(s.projection.threadId, sources);
-    }
-    for (const r of this.db
-      .prepare(
-        "SELECT id,COALESCE(NULLIF(name,''),session,NULLIF(title,'')) AS label FROM titles",
-      )
-      .iterate())
-      if (r.label) c.titles.set(String(r.id), String(r.label));
-    c.threads = c.merge();
-    return c;
-  }
-  select(c: Collector, days: number) {
-    const cutoff = rangeStart(days);
-    for (const [file, s] of c.files) {
-      if (s.stamp >= cutoff || (s.projection.lastEventAt ?? 0) >= cutoff)
-        continue;
-      const p = projection();
-      for (const key of [
-        "threadId",
-        "createdAt",
-        "parentId",
-        "forkedFromId",
-        "related",
-        "cliVersion",
-        "lastEventAt",
-      ] as const)
-        (p as any)[key] = s.projection[key];
-      c.files.set(file, {
-        ...s,
-        projection: p,
-        catalogueOnly: true,
-        partial: false,
-      });
-    }
-    c.threads = c.merge();
-  }
-  locations(thread: string, turn: string | null, tool: string | null) {
-    return this.db
-      .prepare(
-        `SELECT l.path,l.offset,l.length FROM locations l JOIN files f ON f.path=l.path WHERE f.thread=? AND l.${tool ? "tool" : "turn"}=? ORDER BY l.path,l.offset`,
-      )
-      .all(thread, tool ?? turn);
   }
   close() {
     this.db.close();

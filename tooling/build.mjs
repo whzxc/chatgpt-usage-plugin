@@ -72,13 +72,6 @@ export async function buildServer({ release = false } = {}) {
     const texts = await Promise.all(
       licenses.map((name) => readFile(path.join(directory, name), "utf8")),
     );
-    if (["react-remove-scroll-bar", "victory-vendor"].includes(pkg.name))
-      texts.unshift(
-        await readFile(
-          path.join(root, "shared/licenses", `${pkg.name}.LICENSE`),
-          "utf8",
-        ),
-      );
     if (!texts.length)
       throw new Error(`Missing bundled dependency license: ${pkg.name}`);
     notices.push({
@@ -86,6 +79,13 @@ export async function buildServer({ release = false } = {}) {
       text: `${pkg.name} ${pkg.version}\n` + texts.join("\n"),
     });
   }
+  notices.push({
+    name: "Lucide",
+    text: await readFile(
+      path.join(root, "shared/licenses/lucide.LICENSE"),
+      "utf8",
+    ),
+  });
   notices.push({
     name: "OpenUsage",
     text:

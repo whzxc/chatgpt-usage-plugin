@@ -1,7 +1,9 @@
 import { openSync, closeSync, readSync } from "node:fs";
 import type { IndexStore } from "./index-store.js";
 import { rangeStart, type Json } from "./common.js";
-import { readTurnContent } from "./views.js";
+import { readTurnContent } from "./content.js";
+import { readPrompt } from "./collector.js";
+import { promptText } from "./projection.js";
 
 const sum = (field: string) =>
   `CASE WHEN count(*)>0 AND min(reliable)=1 AND count(${field})=count(*) AND sum(${field})<=9007199254740991 THEN sum(${field}) END`;
@@ -149,7 +151,7 @@ export class DataViews {
     if (!t.threadId)
       return { thread: null, index: this.status(), reason: "thread-not-found" };
     const rows = this.all(
-      `SELECT sequence,CASE WHEN reliable AND family='response' THEN input END AS input FROM requests WHERE threadId=? ORDER BY sequence`,
+      `SELECT sequence,at,output,cost,CASE WHEN reliable AND family='response' THEN input END AS input FROM requests WHERE threadId=? ORDER BY sequence`,
       t.threadId,
     );
     const turns: Json[] = this.all(
@@ -176,6 +178,10 @@ export class DataViews {
         threadId: t.threadId,
         title: t.title,
         model: t.model,
+        models: this.all(
+          "SELECT DISTINCT model FROM requests WHERE threadId=? ORDER BY model",
+          t.threadId,
+        ).map((r) => r.model),
         serviceTier: t.serviceTier,
         lastActivity: t.lastAt,
         running: !!t.running,
@@ -189,7 +195,9 @@ export class DataViews {
           ).n,
         },
         contextWindow: t.contextWindow,
+        context: this.context(t.threadId, t.contextWindow),
         requestInputs: rows.map((r) => r.input),
+        requestDetails: rows.map((r) => [r.at, r.output, r.cost]),
         turnStarts: turns.map((r) => ({
           turnId: r.turnId,
           requestSequence: r.startRequest,
@@ -202,6 +210,40 @@ export class DataViews {
       },
       index: this.status(),
       reason: null,
+    };
+  }
+  context(threadId: string, window: number | null) {
+    const rows = this.all(
+      "SELECT kind,tokens FROM context_parts WHERE threadId=? ORDER BY position",
+      threadId,
+    );
+    const fixed = rows.filter((r) => r.kind.startsWith("fixed:"));
+    const details = fixed.map((r) => ({
+      name: (
+        {
+          system: "系统指令",
+          tools: "工具定义（推算）",
+          skills: "Skills",
+          environment: "环境与其他",
+        } as Json
+      )[r.kind.slice(6)],
+      tokens: r.tokens,
+    }));
+    return {
+      used: rows.length ? rows.reduce((n, r) => n + r.tokens, 0) : null,
+      window,
+      parts: [
+        ...rows.filter((r) => !r.kind.startsWith("fixed:")),
+        ...(fixed.length
+          ? [
+              {
+                kind: "fixed",
+                tokens: fixed.reduce((n, r) => n + r.tokens, 0),
+                details,
+              },
+            ]
+          : []),
+      ],
     };
   }
   turn(args: Json) {
@@ -240,7 +282,7 @@ export class DataViews {
         turnId,
         (thread, turn, _tool, visit) => {
           for (const r of this.all(
-            `SELECT l.* FROM content_locations l JOIN files f ON f.path=l.path WHERE f.thread=? AND l.turn=? AND l.kind='narrative' ORDER BY l.path,l.offset`,
+            `SELECT l.* FROM content_locations l JOIN cursors f ON f.path=l.path WHERE f.thread=? AND l.turn=? AND l.kind IN ('narrative','message','reasoning') ORDER BY l.path,l.offset`,
             thread,
             turn,
           ))
@@ -265,9 +307,28 @@ export class DataViews {
     timeline.sort(
       (a, b) => a.at - b.at || String(a.id).localeCompare(String(b.id)),
     );
+    const timelineTotal = timeline.length,
+      offset = Math.min(args.offset ?? 0, timelineTotal),
+      limit = args.limit ?? 100;
+    let prompt = t.prompt;
+    try {
+      if (t.promptSource)
+        prompt = promptText(readPrompt(JSON.parse(t.promptSource)));
+    } catch {
+      reason = "content-read-failed";
+    }
+    const page: Json[] = [];
+    let size = Buffer.byteLength(JSON.stringify(prompt));
+    for (const row of timeline.slice(offset, offset + limit)) {
+      const bytes = Buffer.byteLength(JSON.stringify(row));
+      if (page.length && size + bytes > 30000) break;
+      page.push(row);
+      size += bytes;
+    }
     return {
       turn: {
         turnId,
+        prompt,
         metrics: {
           cost: totals.cost,
           tokens: totals.tokens,
@@ -288,7 +349,13 @@ export class DataViews {
             limit: t.contextWindow,
           },
         },
-        timeline,
+        timeline: page,
+        timelineTotal,
+        requestTotal: totals.requests,
+        nextOffset:
+          offset + page.length < timelineTotal ? offset + page.length : null,
+        offset,
+        limit,
       },
       index: this.status(),
       reason,
@@ -350,14 +417,7 @@ export class DataViews {
     }
   }
   quota() {
-    const value = this.index.get("quota")?.value,
-      raw = value?.rawUsage ?? {};
-    const groups = Object.values(
-      raw.rateLimitsByLimitId ??
-        (raw.rateLimits ? { codex: raw.rateLimits } : {}),
-    ) as Json[];
-    const account =
-      groups.find((g) => g.limitId === "codex") ?? groups[0] ?? {};
+    const value = this.index.get("quota")?.value;
     const observed = Date.parse(value?.observedAt ?? "");
     const pools = new Set(
       (value?.windows ?? [])
@@ -429,14 +489,9 @@ export class DataViews {
       };
     });
     return {
-      plan: account.planType ?? null,
-      credits:
-        account.credits?.balance == null
-          ? null
-          : Number.isFinite(Number(account.credits.balance))
-            ? Number(account.credits.balance)
-            : null,
-      availableResets: raw.rateLimitResetCredits?.availableCount ?? null,
+      plan: value?.plan ?? null,
+      credits: value?.credits ?? null,
+      availableResets: value?.availableResets ?? null,
       windows,
       state: value?.state ?? "loading",
       reason: value?.error?.code ?? null,

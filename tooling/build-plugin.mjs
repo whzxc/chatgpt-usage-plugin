@@ -2,6 +2,7 @@ import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import { readFile, mkdir, writeFile, rename } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { gzipSync } from "node:zlib";
 const root = new URL("../", import.meta.url);
 const pkg = JSON.parse(await readFile(new URL("package.json", root), "utf8"));
 // Keep light-dark() native so host color-scheme updates remain reactive.
@@ -23,7 +24,7 @@ const result = await build({
       treeshake: { manualPureFunctions: ["console.debug"] },
     },
     lib: {
-      entry: fileURLToPath(new URL("ui/usage-insights/main.tsx", root)),
+      entry: fileURLToPath(new URL("ui/app/main.tsx", root)),
       name: "UsageInsights",
       formats: ["iife"],
     },
@@ -41,7 +42,10 @@ const css = outputs
   .filter((o) => o.type === "asset" && o.fileName.endsWith(".css"))
   .map((o) => o.source)
   .join("\n");
-const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Usage Insights</title><style>${css}</style></head><body><div id="root"></div><script>${js}</script></body></html>`;
+// The resource is self-contained. Native browser decompression keeps the full
+// official SDK and React while avoiding their uncompressed MCP transfer cost.
+const packed = gzipSync(js, { level: 9 }).toString("base64");
+const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Usage Insights</title><style>${css}</style></head><body><div id="root"></div><script type="module">const bytes=Uint8Array.from(atob("${packed}"),c=>c.charCodeAt(0));const source=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text();const script=document.createElement("script");script.textContent=source;document.body.append(script);</script></body></html>`;
 await mkdir(new URL("dist/plugin/", root), { recursive: true });
 await writeFile(new URL("dist/plugin/app.html.tmp", root), html);
 await rename(

@@ -1,0 +1,16 @@
+import type { z } from "zod";
+import type { dataTools, overviewInitial } from "../../server/data-tools";
+export type Range = "today" | "7d" | "30d";
+export type Summary = z.infer<typeof dataTools.usage_summary.output>;
+export type IndexState = Summary["index"];
+export type Tasks = z.infer<typeof dataTools.usage_tasks.output>;
+export type Quota = z.infer<typeof dataTools.usage_quota.output>;
+export type OverviewInitial = z.infer<typeof overviewInitial>;
+export type ThreadData = z.infer<typeof dataTools.usage_thread.output>;
+export type Thread = NonNullable<ThreadData["thread"]>;
+export type TurnSummary = Thread["turns"][number];
+export type ContextPart = Thread["context"]["parts"][number];
+export type TurnData = z.infer<typeof dataTools.usage_turn.output>;
+export type Turn = NonNullable<TurnData["turn"]>;
+export type TimelineRow = Turn["timeline"][number];
+export type ToolData = z.infer<typeof dataTools.usage_tool.output>;

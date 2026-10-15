@@ -8,8 +8,22 @@ import {
   stableJson,
   type Json,
 } from "./common.js";
-import type { Tokens, Tool, OutputPerformance } from "../shared/usage.js";
-export type { Tokens } from "../shared/usage.js";
+export type Tokens = {
+  input: number | null;
+  cached: number | null;
+  output: number | null;
+  reasoning: number | null;
+};
+export type Tool = {
+  id: string;
+  turnId: string | null;
+  name: string | null;
+  at: number;
+  outputBytes: number | null;
+  startedAt: number | null;
+  completedAt: number | null;
+  status: string | null;
+};
 export type Response = {
   id: string;
   threadId: string;
@@ -487,45 +501,5 @@ export function totals(rows: Response[]) {
     knownTotal: known.length ? uint(known.reduce((a, b) => a + b, 0)) : null,
     uncertainRecords: rows.length - known.length,
     records: rows.length,
-  };
-}
-export function performanceOf(
-  thread: Projection,
-  rows: Response[],
-  range?: [number, number],
-): OutputPerformance & { output: number; durationMs: number } {
-  let output = 0,
-    durationMs = 0,
-    turns = 0;
-  const grouped = new Map<string, Response[]>();
-  for (const r of rows)
-    if (r.turnId) {
-      const rs = grouped.get(r.turnId) ?? [];
-      rs.push(r);
-      grouped.set(r.turnId, rs);
-    }
-  for (const [id, rs] of grouped) {
-    const t = thread.turns[id];
-    if (!t || !["completed", "interrupted"].includes(t.status)) continue;
-    if (
-      range &&
-      (t.startedAt === null ||
-        t.completedAt === null ||
-        t.startedAt < range[0] ||
-        t.completedAt > range[1] ||
-        rs.some((r) => r.at < range[0] || r.at > range[1]))
-    )
-      continue;
-    const n = totals(rs).output;
-    if (!t.durationMs || n === null) continue;
-    output += n;
-    durationMs += t.durationMs;
-    turns++;
-  }
-  return {
-    output,
-    durationMs,
-    turns,
-    wholeTurnOutputTps: durationMs > 0 ? (output * 1000) / durationMs : null,
   };
 }

@@ -1,6 +1,7 @@
 node_modules/
 native/target/
 dist/
+.playwright-cli/
 plugins/usage/bin/
 .DS_Store
 .env
