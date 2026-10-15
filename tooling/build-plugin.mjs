@@ -44,7 +44,10 @@ const css = outputs
   .join("\n");
 // The resource is self-contained. Native browser decompression keeps the full
 // official SDK and React while avoiding their uncompressed MCP transfer cost.
-const packed = gzipSync(js, { level: 9 }).toString("base64");
+// RFC 1952 OS=255 (unknown) makes the same payload byte-identical on all hosts.
+const compressed = gzipSync(js, { level: 9 });
+compressed[9] = 255;
+const packed = compressed.toString("base64");
 const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Usage Insights</title><style>${css}</style></head><body><div id="root"></div><script type="module">const bytes=Uint8Array.from(atob("${packed}"),c=>c.charCodeAt(0));const source=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text();const script=document.createElement("script");script.textContent=source;document.body.append(script);</script></body></html>`;
 await mkdir(new URL("dist/plugin/", root), { recursive: true });
 await writeFile(new URL("dist/plugin/app.html.tmp", root), html);
