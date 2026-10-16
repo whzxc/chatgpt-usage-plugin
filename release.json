@@ -1,13 +1,13 @@
 {
-  "version": "0.2.5",
-  "sourceCommit": "42e5a8921d02d9c26f77d443e44ac58523b122cf",
+  "version": "0.2.6",
+  "sourceCommit": "38db9f23b216bcb53e0b6793574bb918fac4b104",
   "files": {
     "THIRD_PARTY_NOTICES.txt": "c3418f958eebdcd6379c4346d61d69af8c0acc9f448af6502c0b31eb06b43663",
     "chatgpt-usage": "03a5f13efe617e920fdb7d8f2ed02b2ab21764d6a59bbac274fd118577837c93",
     "chatgpt-usage.cmd": "ceba7e56d2e6b35f5390272b58b3bfc88a433ec04704d179a2c2b77ea125b0d4",
     "check-runtime.cjs": "c413b7626aaa099a8a18a5f8f225f99b1db1af900f5ee4e50f48c7a76630c43e",
     "launch.ps1": "ca9f445c1fec75342182ca0af14ae5f4511de6a3c3fe28a9f4239bdf55112a41",
-    "main.mjs": "f704d21a0806bca5ca3bed12a82bc3e8a93534c1d447d3460dff8563fab78c40",
-    "worker.mjs": "c8cf8b5872e89c6da3e2f524496ede4e081da80941f289b42c1292709a34a4b3"
+    "main.mjs": "abcd0374a84733835b851fb4ffc02507a6551d44a45ca15520e5c0d1b663695c",
+    "worker.mjs": "b221955addb426fef6fa8d866502ed67405847bdf89967ccde7fcebe1916d16e"
   }
 }
