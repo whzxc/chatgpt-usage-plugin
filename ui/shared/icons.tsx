@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-// Lucide paths shared by both views; the package is unnecessary for five icons.
+// Lucide paths shared by both views.
 function Icon({ children, size = 16 }: { children: ReactNode; size?: number }) {
   return (
     <svg
@@ -44,5 +44,11 @@ export const WarningIcon = () => (
 export const CloseIcon = () => (
   <Icon>
     <path d="m18 6-12 12M6 6l12 12" />
+  </Icon>
+);
+
+export const ZapIcon = () => (
+  <Icon size={13}>
+    <path d="m4 14 12-12-2 8h6L8 22l2-8H4Z" />
   </Icon>
 );

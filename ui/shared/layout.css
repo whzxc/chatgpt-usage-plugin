@@ -137,14 +137,10 @@
 }
 .quota {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 72px;
+  grid-template-columns: minmax(0, 1fr) 80px;
   column-gap: 14px;
   row-gap: 10px;
   align-items: center;
-}
-.quota-name {
-  font-size: 13px;
-  color: var(--ink-2);
 }
 .meter {
   position: relative;
@@ -194,7 +190,7 @@
   text-align: right;
 }
 .quota-notes {
-  grid-column: 2/4;
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -308,7 +304,7 @@
 }
 .trend {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 248px;
+  grid-template-columns: minmax(0, 1fr) 270px;
   gap: 36px;
   align-items: start;
 }
@@ -448,7 +444,11 @@
   font-size: 13px;
   color: var(--ink);
 }
+.task-table-scroll {
+  overflow-x: auto;
+}
 .table {
+  min-width: 740px;
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;

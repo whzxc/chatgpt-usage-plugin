@@ -5,7 +5,7 @@ import type { Pricing } from "./pricing.js";
 
 export const relationalSchema = `
 CREATE TABLE IF NOT EXISTS threads(threadId TEXT PRIMARY KEY,title TEXT,session TEXT,firstAt INTEGER,lastAt INTEGER,model TEXT,serviceTier TEXT,running INTEGER,contextWindow INTEGER,incomplete INTEGER,catalogueOnly INTEGER);
-CREATE TABLE IF NOT EXISTS turns(threadId TEXT,turnId TEXT,sequence INTEGER,prompt TEXT,startedAt INTEGER,completedAt INTEGER,durationMs INTEGER,ttftMs INTEGER,status TEXT,contextWindow INTEGER,promptSource TEXT,promptImages INTEGER,model TEXT,effort TEXT,serviceTier TEXT,PRIMARY KEY(threadId,turnId));
+CREATE TABLE IF NOT EXISTS turns(threadId TEXT,turnId TEXT,sequence INTEGER,prompt TEXT,startedAt INTEGER,completedAt INTEGER,durationMs INTEGER,ttftMs INTEGER,status TEXT,contextWindow INTEGER,promptSource TEXT,promptImages INTEGER,model TEXT,effort TEXT,serviceTier TEXT,scheduled INTEGER,PRIMARY KEY(threadId,turnId));
 CREATE TABLE IF NOT EXISTS requests(threadId TEXT,id TEXT,turnId TEXT,sequence INTEGER,at INTEGER,model TEXT,serviceTier TEXT,input INTEGER,cached INTEGER,output INTEGER,reasoning INTEGER,reliable INTEGER,family TEXT,cost REAL,priceVersion TEXT,effort TEXT,PRIMARY KEY(threadId,id));
 CREATE INDEX IF NOT EXISTS requests_time ON requests(at);
 CREATE INDEX IF NOT EXISTS requests_model_time ON requests(model,at);
@@ -92,7 +92,7 @@ export function writeThread(
         prompt = promptText(readPrompt(t.prompt))?.slice(0, 300) ?? null;
     } catch {}
     index
-      .prepare("INSERT INTO turns VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+      .prepare("INSERT INTO turns VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
       .run(
         id,
         t.id,
@@ -109,6 +109,7 @@ export function writeThread(
         t.model,
         t.effort,
         t.serviceTier,
+        Number(t.scheduled),
       );
   }
   for (const e of Object.values(t.compactions)) {

@@ -14,6 +14,7 @@ import {
 import { usePoll } from "../shared/poll";
 import { Failure } from "../shared/status";
 import type { TimelineRow, Turn, TurnData, TurnSummary } from "../shared/types";
+import { ZapIcon } from "../shared/icons";
 import { ToolDialog } from "./tool-dialog";
 
 export function TurnRow({
@@ -120,13 +121,16 @@ export function TurnRow({
         <span className="turn-no">{summary.sequence}</span>
         <span className="turn-main">
           <span className="turn-prompt">
-            {open && data ? data.prompt : summary.prompt}
+            {(open && data ? data.prompt : summary.prompt) ||
+              (summary.scheduled ? (
+                <span className="turn-tag">定时任务</span>
+              ) : null)}
           </span>
           <span className="turn-meta">
             <span>{when(summary.startedAt)}</span>
             <span>{duration(summary.durationMs)}</span>
             <span>{integer(summary.requests)} 次请求</span>
-            <span>首 token {ttft(summary.ttftMs)}</span>
+            <span>TTFT {ttft(summary.ttftMs)}</span>
             <span>
               {summary.outputTps === null
                 ? "—"
@@ -134,6 +138,13 @@ export function TurnRow({
             </span>
             {summary.compacted && <span className="flag">压缩上下文</span>}
             {status && <span>{status}</span>}
+            {(summary.serviceTier === "fast" ||
+              summary.serviceTier === "priority") && (
+              <span className="turn-fast">
+                <ZapIcon />
+                Fast
+              </span>
+            )}
           </span>
         </span>
         <span className="turn-cost">
@@ -207,11 +218,8 @@ function Metrics({ turn }: { turn: Turn }) {
     ["缓存命中", m.cachePercent === null ? "—" : percent(m.cachePercent)],
     ["输出", compact(m.output)],
     ["用时", duration(m.durationMs)],
-    ["首个 token", ttft(m.ttftMs)],
-    [
-      "输出速度",
-      m.outputTps === null ? "—" : m.outputTps.toFixed(1) + " tok/s",
-    ],
+    ["TTFT", ttft(m.ttftMs)],
+    ["TPS", m.outputTps === null ? "—" : m.outputTps.toFixed(1) + " tok/s"],
     [
       "上下文",
       compact(m.context.start) +

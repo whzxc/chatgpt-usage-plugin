@@ -47,6 +47,7 @@ export type Turn = {
   id: string;
   prompt: PromptSource | null;
   promptImages: number;
+  scheduled: boolean;
   contextWindow: number | null;
   startedAt: number | null;
   completedAt: number | null;
@@ -120,6 +121,7 @@ const turn = (id: string): Turn => ({
   id,
   prompt: null,
   promptImages: 0,
+  scheduled: false,
   contextWindow: null,
   startedAt: null,
   completedAt: null,
@@ -451,6 +453,7 @@ export function ingest(
     const id = text(meta, "turn_id") ?? s.turn;
     if (id) {
       const t = (s.turns[id] ??= turn(id));
+      t.scheduled ||= Array.isArray(kinds) && kinds.includes("user.heartbeat");
       t.promptImages += images;
       t.prompt ??= promptSource();
     }

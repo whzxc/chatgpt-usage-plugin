@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.2.5
+
+- Show remaining account quota with matching cycle-progress markers and simplify the overview layout.
+- Add task-list TPS and TTFT, model TPS, and P90/P99 TTFT statistics. Model TPS uses completed or interrupted single-model turns within the selected period.
+- Identify scheduled heartbeat turns without prompts and show inline Fast indicators from turn service tiers.
+- Unify time units and metric labels, refine model statistics and timeline alignment, and remove redundant explanatory text.
+- Rebuild the disposable local index to capture scheduled-turn metadata.
+
 ## 0.2.4
 
 - Fix missing Usage overview and Task usage entrypoints: portable stdio commands must use `./bin/chatgpt-usage`; the host rejects `${PLUGIN_ROOT}` in the command token. Keep `${PLUGIN_ROOT}` as the working directory and validate the command semantics during package checks. Both entries were opened in ChatGPT Desktop on macOS with bundled CLI 0.162.0-alpha.17.2; Windows host acceptance remains separate.

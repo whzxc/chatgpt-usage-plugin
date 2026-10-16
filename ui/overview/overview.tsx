@@ -14,6 +14,7 @@ import {
   productName,
   quotaPercent,
   time,
+  ttft,
   when,
 } from "../shared/format";
 import type {
@@ -84,7 +85,8 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
             w.resetsAt != null &&
             w.exhaustsAt < w.resetsAt) ||
           (w.elapsedPercent != null && w.usedPercent > w.elapsedPercent + 10);
-        const now = Math.max(0, Math.min(100, w.elapsedPercent ?? 0));
+        const now = 100 - Math.max(0, Math.min(100, w.elapsedPercent ?? 0));
+        const remaining = Math.max(0, Math.min(100, 100 - w.usedPercent));
         const name =
           w.durationMinutes === 10080
             ? "每周"
@@ -93,18 +95,17 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
               : w.id;
         return (
           <div className="quota" key={w.id}>
-            <span className="quota-name">{name}</span>
             <div
               className="meter"
               role="meter"
-              aria-label={`${name}额度已用 ${quotaPercent(w.usedPercent)}，周期已过 ${quotaPercent(now)}`}
-              aria-valuenow={w.usedPercent}
+              aria-label={`${name}额度剩余 ${quotaPercent(remaining)}，周期剩余 ${quotaPercent(now)}`}
+              aria-valuenow={remaining}
               aria-valuemin={0}
               aria-valuemax={100}
             >
               <span
                 className={`meter-fill ${w.usedPercent >= 100 ? "critical" : over ? "over" : ""}`}
-                style={{ width: `${Math.min(100, w.usedPercent)}%` }}
+                style={{ width: `${remaining}%` }}
               />
               <span className="meter-now" style={{ left: `${now}%` }} />
               <span
@@ -115,7 +116,7 @@ function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
               </span>
             </div>
             <span className="quota-used num">
-              已用 {quotaPercent(w.usedPercent)}
+              剩余 {quotaPercent(remaining)}
             </span>
             {w === tense && (
               <div className="quota-notes">
@@ -156,9 +157,7 @@ function Figures({ summary }: { summary: Summary }) {
       "估算费用",
       money(t.cost),
       "",
-      t.costIncomplete
-        ? "部分模型未定价，费用偏低"
-        : "按 API 价格估算，不是账单",
+      t.costIncomplete ? "部分模型未定价，费用偏低" : "按 API 价格估算",
     ],
     [
       "Tokens",
@@ -169,16 +168,16 @@ function Figures({ summary }: { summary: Summary }) {
     ["缓存命中", percent(cache), "", `${compact(t.cached)} 来自缓存`],
     ["请求", integer(t.requests), "", `${integer(t.tasks)} 个任务`],
     [
-      "输出速度",
+      "TPS",
       t.outputTps == null ? "—" : t.outputTps.toFixed(1),
       t.outputTps == null ? "" : "tok/s",
       "整轮输出 tokens ÷ 用时",
     ],
     [
-      "首个 token",
+      "TTFT",
       t.ttftMedianMs == null ? "—" : (t.ttftMedianMs / 1000).toFixed(1),
-      t.ttftMedianMs == null ? "" : "秒",
-      `${integer(t.ttftTurns)} 轮中位数，P90 ${t.ttftP90Ms == null ? "—" : `${(t.ttftP90Ms / 1000).toFixed(1)} 秒`}`,
+      t.ttftMedianMs == null ? "" : "s",
+      `P90 ${ttft(t.ttftP90Ms)}, P99 ${ttft(t.ttftP99Ms)}`,
     ],
   ];
   return (
@@ -372,8 +371,9 @@ function UsageChart({ summary, range }: { summary: Summary; range: Range }) {
                   {metric === "tokens" ? compact(m.tokens) : money(m.cost)}
                 </strong>
                 <span className="sub">
-                  {percent(total ? (100 * (m[metric] ?? 0)) / total : 0)}，
-                  {money(m.cost)}，{integer(m.requests)} 次请求
+                  {percent(total ? (100 * (m[metric] ?? 0)) / total : 0)} ·{" "}
+                  {money(m.cost)} · {integer(m.requests)} req · TPS{" "}
+                  {m.outputTps == null ? "—" : m.outputTps.toFixed(1)}
                 </span>
               </li>
             );
@@ -482,53 +482,65 @@ function TaskTable({
           </label>
         </div>
       </div>
-      <table className="table">
-        <colgroup>
-          <col />
-          <col style={{ width: 96 }} />
-          <col className="col-hit" style={{ width: 96 }} />
-          <col style={{ width: 104 }} />
-          <col className="col-last" style={{ width: 112 }} />
-        </colgroup>
-        <thead>
-          <tr>
-            <th>任务</th>
-            <th>Tokens</th>
-            <th className="col-hit">缓存命中</th>
-            <th>估算费用</th>
-            <th className="col-last">最近活动</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.tasks.map((t) => {
-            const hit = t.input ? (100 * (t.cached ?? 0)) / t.input : 0;
-            return (
-              <tr key={t.threadId} onClick={() => open(t.threadId)}>
-                <td>
-                  <button
-                    className="task-name"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      open(t.threadId);
-                    }}
-                  >
-                    {t.title || t.threadId}
-                  </button>
-                  <span className="task-sub">
-                    {integer(t.turns)} 轮，{integer(t.requests)} 次请求
-                    {t.running ? "，进行中" : ""}
-                    <span className="task-when">，{when(t.lastActivity)}</span>
-                  </span>
-                </td>
-                <td>{compact(t.tokens)}</td>
-                <td className="cell-muted col-hit">{percent(hit)}</td>
-                <td>{money(t.cost)}</td>
-                <td className="cell-muted col-last">{when(t.lastActivity)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="task-table-scroll">
+        <table className="table">
+          <colgroup>
+            <col />
+            <col style={{ width: 96 }} />
+            <col className="col-hit" style={{ width: 96 }} />
+            <col style={{ width: 104 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 80 }} />
+            <col className="col-last" style={{ width: 112 }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>任务</th>
+              <th>Tokens</th>
+              <th className="col-hit">缓存命中</th>
+              <th>估算费用</th>
+              <th>TPS</th>
+              <th>TTFT</th>
+              <th className="col-last">最近活动</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.tasks.map((t) => {
+              const hit = t.input ? (100 * (t.cached ?? 0)) / t.input : 0;
+              return (
+                <tr key={t.threadId} onClick={() => open(t.threadId)}>
+                  <td>
+                    <button
+                      className="task-name"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        open(t.threadId);
+                      }}
+                    >
+                      {t.title || t.threadId}
+                    </button>
+                    <span className="task-sub">
+                      {integer(t.turns)} 轮，{integer(t.requests)} 次请求
+                      {t.running ? "，进行中" : ""}
+                      <span className="task-when">
+                        ，{when(t.lastActivity)}
+                      </span>
+                    </span>
+                  </td>
+                  <td>{compact(t.tokens)}</td>
+                  <td className="cell-muted col-hit">{percent(hit)}</td>
+                  <td>{money(t.cost)}</td>
+                  <td>{t.outputTps == null ? "—" : t.outputTps.toFixed(1)}</td>
+                  <td>{ttft(t.ttftMedianMs)}</td>
+                  <td className="cell-muted col-last">
+                    {when(t.lastActivity)}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <div className="pager">
         <span>
           第 {start}–{end} 个，共 {integer(data.total)} 个

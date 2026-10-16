@@ -53,14 +53,14 @@ export function fullTime(n: number | null) {
 }
 export function duration(n: number | null) {
   if (n == null) return "—";
-  if (n < 60000) return `${Number((Math.max(0, n) / 1000).toFixed(1))} 秒`;
+  if (n < 60000) return `${Number((Math.max(0, n) / 1000).toFixed(1))}s`;
   const seconds = Math.round(n / 1000);
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} 分 ${seconds % 60} 秒`;
-  return `${Math.floor(minutes / 60)} 小时 ${minutes % 60} 分`;
+  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 export function ttft(n: number | null) {
-  return n == null ? "—" : `${(n / 1000).toFixed(1)} 秒`;
+  return n == null ? "—" : `${(n / 1000).toFixed(1)}s`;
 }
 export function clock(n: number | null) {
   if (!n) return "—";

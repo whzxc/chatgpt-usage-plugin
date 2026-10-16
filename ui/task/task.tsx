@@ -205,16 +205,16 @@ function Figures({ thread }: { thread: Thread }) {
         compact(t.output),
     ],
     [
-      "输出速度",
+      "TPS",
       t.outputTps === null ? "—" : t.outputTps.toFixed(1),
       t.outputTps === null ? "" : "tok/s",
       "整轮输出 tokens ÷ 用时",
     ],
     [
-      "首个 token",
+      "TTFT",
       t.ttftMedianMs === null ? "—" : (t.ttftMedianMs / 1000).toFixed(1),
-      t.ttftMedianMs === null ? "" : "秒",
-      integer(t.ttftTurns) + " 轮中位数，最慢 " + ttft(t.ttftMaxMs),
+      t.ttftMedianMs === null ? "" : "s",
+      `P90 ${ttft(t.ttftP90Ms)}, P99 ${ttft(t.ttftP99Ms)}`,
     ],
   ];
   return (
@@ -316,9 +316,6 @@ function CurrentContext({ context }: { context: Thread["context"] }) {
           </li>
         ))}
       </ul>
-      <p className="use-note">
-        总量是最后一次请求的实际输入；各项按日志内容估算。
-      </p>
     </section>
   );
 }

@@ -21,6 +21,7 @@ const performance = {
   outputTps: nullable,
   ttftMedianMs: nullable,
   ttftP90Ms: nullable,
+  ttftP99Ms: nullable,
   ttftTurns: n,
 };
 export const range = z.enum(["today", "7d", "30d"]);
@@ -30,6 +31,8 @@ const turn = z
     turnId: z.string(),
     sequence: n,
     prompt: str,
+    scheduled: z.boolean(),
+    serviceTier: str,
     startedAt: nullable,
     durationMs: nullable,
     ttftMs: nullable,
@@ -70,6 +73,7 @@ export const dataTools = {
         z.object({
           id: z.string(),
           slot: n,
+          outputTps: nullable,
           tokens: nullable,
           cost: nullable,
           requests: n,
@@ -110,6 +114,8 @@ export const dataTools = {
           input: nullable,
           cached: nullable,
           cost: nullable,
+          outputTps: nullable,
+          ttftMedianMs: nullable,
           lastActivity: nullable,
           running: z.boolean(),
         }),

@@ -38,7 +38,7 @@ export class DataViews {
       ...(bounds ? [...bounds, ...bounds] : []),
     );
     const ttft = this.one(
-      `WITH ordered AS (SELECT ttftMs,row_number() OVER(ORDER BY ttftMs) AS position,count(*) OVER() AS n FROM turns WHERE ${filter} AND ttftMs IS NOT NULL ${bounds ? "AND startedAt>=? AND completedAt<=?" : ""}) SELECT avg(CASE WHEN position IN ((n+1)/2,(n+2)/2) THEN ttftMs END) AS ttftMedianMs,max(CASE WHEN position=(n*9+9)/10 THEN ttftMs END) AS ttftP90Ms,count(*) AS ttftTurns,max(ttftMs) AS ttftMaxMs FROM ordered`,
+      `WITH ordered AS (SELECT ttftMs,row_number() OVER(ORDER BY ttftMs) AS position,count(*) OVER() AS n FROM turns WHERE ${filter} AND ttftMs IS NOT NULL ${bounds ? "AND startedAt>=? AND completedAt<=?" : ""}) SELECT avg(CASE WHEN position IN ((n+1)/2,(n+2)/2) THEN ttftMs END) AS ttftMedianMs,max(CASE WHEN position=(n*9+9)/10 THEN ttftMs END) AS ttftP90Ms,max(CASE WHEN position=(n*99+99)/100 THEN ttftMs END) AS ttftP99Ms,count(*) AS ttftTurns,max(ttftMs) AS ttftMaxMs FROM ordered`,
       ...args,
       ...(bounds ?? []),
     );
@@ -68,6 +68,14 @@ export class DataViews {
       ...this.bounds("30d"),
       ...bounds,
     );
+    const speeds = this.all(
+      `WITH outputs AS (SELECT threadId,turnId,min(model) AS model,${sum("output")} AS output,min(at) AS firstAt,max(at) AS lastAt FROM requests WHERE turnId IS NOT NULL GROUP BY threadId,turnId HAVING count(DISTINCT model)=1) SELECT o.model,sum(o.output)*1000.0/sum(t.durationMs) AS outputTps FROM outputs o JOIN turns t ON t.threadId=o.threadId AND t.turnId=o.turnId WHERE t.status IN ('completed','interrupted') AND t.durationMs>0 AND o.output IS NOT NULL AND t.startedAt>=? AND t.completedAt<=? AND o.firstAt>=? AND o.lastAt<=? GROUP BY o.model`,
+      ...bounds,
+      ...bounds,
+    );
+    for (const model of models)
+      model.outputTps =
+        speeds.find((row) => row.model === model.id)?.outputTps ?? null;
     const intervals: number[][] = [];
     let day = new Date(bounds[0]);
     day.setHours(0, 0, 0, 0);
@@ -143,7 +151,13 @@ export class DataViews {
         query,
         args.pageSize,
         (page - 1) * args.pageSize,
-      ).map((r) => ({ ...r, running: !!r.running })),
+      ).map((r) => {
+        const { outputTps, ttftMedianMs } = this.performance(
+          r.threadId,
+          bounds,
+        );
+        return { ...r, running: !!r.running, outputTps, ttftMedianMs };
+      }),
       index: this.status(),
     };
   }
@@ -156,7 +170,7 @@ export class DataViews {
       t.threadId,
     );
     const turns: Json[] = this.all(
-      `SELECT t.turnId,t.sequence,t.prompt,t.startedAt,t.durationMs,t.ttftMs,t.status,(SELECT min(sequence) FROM requests r WHERE r.threadId=t.threadId AND r.turnId=t.turnId) AS startRequest,EXISTS(SELECT 1 FROM compactions c WHERE c.threadId=t.threadId AND c.turnId=t.turnId) AS compacted FROM turns t WHERE threadId=? ORDER BY sequence`,
+      `SELECT t.turnId,t.sequence,t.prompt,t.scheduled,t.serviceTier,t.startedAt,t.durationMs,t.ttftMs,t.status,(SELECT min(sequence) FROM requests r WHERE r.threadId=t.threadId AND r.turnId=t.turnId) AS startRequest,EXISTS(SELECT 1 FROM compactions c WHERE c.threadId=t.threadId AND c.turnId=t.turnId) AS compacted FROM turns t WHERE threadId=? ORDER BY sequence`,
       t.threadId,
     ).map((r) => {
       const usage = this.metrics(
@@ -167,6 +181,7 @@ export class DataViews {
       return {
         ...r,
         compacted: !!r.compacted,
+        scheduled: !!r.scheduled,
         ...usage,
         outputTps:
           r.durationMs > 0 && usage.output !== null

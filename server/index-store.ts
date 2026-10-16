@@ -32,7 +32,7 @@ const families = [
   "tools",
   "compactions",
 ] as const;
-const schema = 5;
+const schema = 6;
 export function indexPath() {
   let home = path.resolve(codexHome());
   try {
@@ -182,6 +182,7 @@ export class IndexStore {
         id: String(r.turnId),
         prompt: r.promptSource ? JSON.parse(String(r.promptSource)) : null,
         promptImages: r.promptImages,
+        scheduled: !!r.scheduled,
         contextWindow: r.contextWindow,
         startedAt: r.startedAt,
         completedAt: r.completedAt,

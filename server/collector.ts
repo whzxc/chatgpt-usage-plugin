@@ -34,7 +34,7 @@ import {
   type PromptSource,
 } from "./projection.js";
 // These caches are disposable. Never reinterpret another implementation's checkpoints.
-const CACHE_SCHEMA = 1;
+const CACHE_SCHEMA = 2;
 export const MAX_LINE = 8 * 1024 * 1024;
 export type FileState = {
   schema: number;
@@ -461,6 +461,7 @@ export function mergeFiles(
         old.contextWindow ??= incoming.contextWindow;
         old.promptImages = Math.max(old.promptImages, incoming.promptImages);
         old.prompt ??= incoming.prompt;
+        old.scheduled ||= incoming.scheduled;
         old.model ??= incoming.model;
         old.effort ??= incoming.effort;
       }

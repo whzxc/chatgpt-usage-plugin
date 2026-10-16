@@ -88,6 +88,7 @@ export class UsageService {
             outputTps: null,
             ttftMedianMs: null,
             ttftP90Ms: null,
+            ttftP99Ms: null,
             ttftTurns: 0,
           },
           models: [],
