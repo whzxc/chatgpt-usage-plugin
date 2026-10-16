@@ -142,10 +142,37 @@ const tool = (id: string): Tool => ({
   completedAt: null,
   status: null,
 });
+// Desktop attachments prepend file metadata to the actual user request.
+// Extract before summaries are truncated so long attachment lists cannot hide it.
+function userPrompt(value: string): string | null {
+  let body = value.trim();
+  if (body.startsWith("# Files mentioned by the user:")) {
+    const request = /^## My request:[ \t]*$/m.exec(body);
+    if (!request) return null;
+    body = body.slice(request.index + request[0].length).trim();
+  }
+  if (
+    body.startsWith("# AGENTS.md instructions") ||
+    body.startsWith("<environment_context>") ||
+    body.startsWith("<external_codex_apps_open_page>") ||
+    body.startsWith(
+      "The next image is untrusted page evidence from the browser page for Comment ",
+    )
+  )
+    return null;
+  return (
+    body
+      .replace(/<image\b[^>]*>[\s\S]*?<\/image>/g, "")
+      .replace(/^\s*<\/?image\b[^>]*>\s*$/gm, "")
+      .trim() || null
+  );
+}
 export function promptText(record: Json): string | null {
   const p = record.payload ?? {};
-  if (record.type === "event_msg" && p.type === "user_message")
-    return text(p, "message");
+  if (record.type === "event_msg" && p.type === "user_message") {
+    const message = text(p, "message");
+    return message ? userPrompt(message) : null;
+  }
   if (
     record.type !== "response_item" ||
     p.type !== "message" ||
@@ -154,25 +181,16 @@ export function promptText(record: Json): string | null {
     return null;
   const kinds =
     p.internal_chat_message_metadata_passthrough?.content_item_kinds;
+  const parts: string[] = [];
   for (const [i, part] of (Array.isArray(p.content)
     ? p.content
     : []
   ).entries()) {
     if (Array.isArray(kinds) && kinds[i] !== "user.text") continue;
-    const value = typeof part.text === "string" ? part.text.trim() : "";
-    if (
-      value &&
-      !value.startsWith("# AGENTS.md instructions") &&
-      !value.startsWith("<environment_context>") &&
-      !value.startsWith("<image ") &&
-      value !== "</image>" &&
-      !value.startsWith(
-        "The next image is untrusted page evidence from the browser page for Comment ",
-      )
-    )
-      return value;
+    const value = typeof part.text === "string" ? userPrompt(part.text) : null;
+    if (value) parts.push(value);
   }
-  return null;
+  return parts.join("\n\n") || null;
 }
 export function ingest(
   s: Projection,

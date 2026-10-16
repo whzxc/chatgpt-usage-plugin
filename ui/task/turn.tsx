@@ -124,7 +124,9 @@ export function TurnRow({
             {(open && data ? data.prompt : summary.prompt) ||
               (summary.scheduled ? (
                 <span className="turn-tag">定时任务</span>
-              ) : null)}
+              ) : (
+                "未提供文字请求"
+              ))}
           </span>
           <span className="turn-meta">
             <span>{when(summary.startedAt)}</span>

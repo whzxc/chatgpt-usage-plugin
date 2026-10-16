@@ -32,7 +32,7 @@ const families = [
   "tools",
   "compactions",
 ] as const;
-const schema = 6;
+const schema = 7;
 export function indexPath() {
   let home = path.resolve(codexHome());
   try {

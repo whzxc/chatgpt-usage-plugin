@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { callData } from "../app/bridge";
-import { RefreshIcon } from "../shared/icons";
+import { InboxIcon, RefreshIcon } from "../shared/icons";
 import {
   compact,
   integer,
@@ -87,23 +87,13 @@ export default function TaskPage({
   };
   return (
     <main className="task-page">
-      <header className="panel-top">
-        {onBack && (
+      {onBack && (
+        <nav className="task-nav">
           <button className="text-btn back" onClick={onBack}>
             ← 全部任务
           </button>
-        )}
-        <span className="grow" />
-        <span>{busy ? "正在更新" : time(updated) + " 更新"}</span>
-        <button
-          className={"icon-btn" + (busy ? " is-busy" : "")}
-          disabled={busy}
-          aria-label="刷新"
-          onClick={() => void load()}
-        >
-          <RefreshIcon />
-        </button>
-      </header>
+        </nav>
+      )}
       {error && <Failure error={error} retry={() => void load()} />}
       {!data ? (
         <p className="app-state">正在读取本机用量。</p>
@@ -116,6 +106,9 @@ export default function TaskPage({
         />
       ) : !thread ? (
         <section className="empty">
+          <div className="empty-icon">
+            <InboxIcon />
+          </div>
           <h1>这个任务还没有用量记录</h1>
           <p>
             任务发出第一次请求后，这里会显示它的费用、tokens
@@ -125,7 +118,20 @@ export default function TaskPage({
       ) : (
         <>
           <section className="task-heading">
-            <h1>{thread.title || thread.threadId}</h1>
+            <div className="task-title-row">
+              <h1>{thread.title || thread.threadId}</h1>
+              <div className="task-refresh">
+                <span>{busy ? "正在更新" : time(updated) + " 更新"}</span>
+                <button
+                  className={"icon-btn" + (busy ? " is-busy" : "")}
+                  disabled={busy}
+                  aria-label="刷新"
+                  onClick={() => void load()}
+                >
+                  <RefreshIcon />
+                </button>
+              </div>
+            </div>
             <div className="task-meta">
               <span>{integer(thread.totals.turns)} 轮</span>
               <span>

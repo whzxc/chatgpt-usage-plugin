@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.2.6
+
+- Center the task empty state with an inbox icon and hide its update controls.
+- Place task titles alongside refresh controls, with a compact layout on narrow panels.
+- Extract actual user requests before truncating turn prompts, omitting attachment metadata and image wrappers. Rebuild the disposable index so existing turns use the corrected prompts.
+- Keep turn prompts on one line with ellipsis, including expanded turns.
+
 ## 0.2.5
 
 - Show remaining account quota with matching cycle-progress markers and simplify the overview layout.
