@@ -234,6 +234,7 @@ export const dataTools = {
               limit: nullable,
             }),
           }),
+          calls: z.object({ tools: n, failed: n, model: str }),
           timeline: z.array(
             z.union([
               timelineTool.extend({ kind: z.literal("tool") }),

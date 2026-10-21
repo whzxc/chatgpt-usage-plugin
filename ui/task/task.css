@@ -265,36 +265,7 @@
   display: grid;
   gap: 14px;
 }
-.facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  background: var(--well);
-}
-.facts dt {
-  font-size: 12px;
-  color: var(--ink-3);
-}
-.facts dd {
-  font-size: 14px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-.steps-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.steps-head h3 {
-  font-size: 13px;
-  font-weight: 600;
-}
-.steps-head span {
-  font-size: 12px;
-  color: var(--ink-3);
-}
+
 .more {
   justify-self: start;
   margin-top: 4px;

@@ -61,8 +61,8 @@ test("axis transition interpolates both ends; reduced motion can select its endp
 });
 test("rounded ticks remain absolute to the turn, with distinct labels beyond an hour", () => {
   const ticks = rangeTicks({ start: 10081000, end: 10111000 });
-  assert.deepEqual(ticks, [10090000, 10100000, 10110000]);
-  assert.equal(axisTime(ticks[0]), "2:48:10");
+  assert.deepEqual(ticks, [10081000, 10089000, 10097000, 10105000]);
+  assert.equal(axisTime(ticks[0]), "2:48:01");
   assert.equal(new Set(ticks.map(axisTime)).size, ticks.length);
 });
 
@@ -73,4 +73,17 @@ test("bar metrics follow the tail and flip before the bar at the right edge", as
   assert.equal(barLabelLeft(1800, 100, range, 400, 70), 242);
   assert.equal(barLabelLeft(1100, 0, range, 400, 70), 54);
   assert.equal(barLabelLeft(1000, 1000, range, 400, 70), 4);
+});
+
+test("viewport ticks start within a second and provide four to five round references", () => {
+  for (const range of [
+    { start: 123456, end: 223456 },
+    { start: 0, end: 9000 },
+    { start: 11001, end: 900001 },
+  ]) {
+    const ticks = rangeTicks(range);
+    assert.ok(ticks.length >= 4 && ticks.length <= 5);
+    assert.ok(ticks[0] >= range.start && ticks[0] - range.start < 1000);
+    assert.ok(ticks.every((tick) => tick % 1000 === 0 && tick <= range.end));
+  }
 });

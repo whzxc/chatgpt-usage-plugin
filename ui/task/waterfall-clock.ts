@@ -171,6 +171,10 @@ export function useWaterfallClock(
     )
       scrollRoot = null;
     const observe = () => {
+      element.style.setProperty(
+        "--wf-head-height",
+        `${head.offsetHeight + 8}px`,
+      );
       observer?.disconnect();
       visible.clear();
       labels.clear();

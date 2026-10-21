@@ -41,10 +41,10 @@ export function interpolateRange(
 }
 
 export function rangeTicks(range: TimeRange): number[] {
-  const rough = Math.max(1000, (range.end - range.start) / 4);
-  const power = 10 ** Math.floor(Math.log10(rough));
-  const step = [1, 2, 5, 10].find((n) => n * power >= rough)! * power;
-  const first = Math.ceil(range.start / step) * step;
+  // Anchor the first label within one second of the visible start. Rounding
+  // to seconds avoids the large leading gap caused by global nice-step grids.
+  const first = Math.ceil(range.start / 1000) * 1000;
+  const step = Math.max(1000, Math.ceil((range.end - first) / 4 / 1000) * 1000);
   const ticks: number[] = [];
   for (let at = first; at <= range.end; at += step) ticks.push(at);
   return ticks;

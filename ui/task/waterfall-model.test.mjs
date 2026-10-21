@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { traceSpans } from "./waterfall-model.ts";
+import {
+  traceSpans,
+  defaultExpanded,
+  expandedByChoice,
+  toolLabel,
+  toolSummary,
+} from "./waterfall-model.ts";
 
 const tool = (overrides = {}) => ({
   toolId: "tool-1",
@@ -166,4 +172,108 @@ test("unowned reasoning and narration attach to the next request without adding 
     ["reasoning:gap", "reply:reply", "reply:trailing"],
   );
   assert.equal(spans[1].children.length, 0);
+});
+
+test("default expansion has stable duration and ratio thresholds", () => {
+  const span = (elapsed, end = 20000) =>
+    traceSpans(
+      [
+        request({
+          startedAt: 100,
+          at: end + 100,
+          tools: [
+            tool({
+              startedAt: 100,
+              completedAt: elapsed + 100,
+              durationMs: elapsed,
+            }),
+          ],
+        }),
+      ],
+      false,
+    )[0];
+  assert.equal(defaultExpanded(span(999, 1000), null), false);
+  assert.equal(defaultExpanded(span(1000, 2000), null), true);
+  assert.equal(defaultExpanded(span(1000, 2001), null), false);
+  assert.equal(defaultExpanded(span(9999), null), false);
+  assert.equal(defaultExpanded(span(10000), null), true);
+  assert.equal(
+    defaultExpanded(
+      traceSpans([request({ startedAt: null, tools: [] })], false)[0],
+      null,
+    ),
+    false,
+  );
+  const parallel = span(5000);
+  parallel.children.push({ ...parallel.children[0], id: "parallel" });
+  assert.equal(defaultExpanded(parallel, null), true);
+});
+
+test("failed, running and slowest owners expand, but explicit choices win across refresh and append", () => {
+  const [span] = traceSpans([request()], false);
+  assert.equal(defaultExpanded(span, null), false);
+  assert.equal(defaultExpanded(span, span.id), true);
+  assert.equal(defaultExpanded(span, span.children[0].id), true);
+  span.children[0].failed = true;
+  assert.equal(defaultExpanded(span, null), true);
+  span.children[0].failed = false;
+  span.children[0].running = true;
+  assert.equal(defaultExpanded(span, null), true);
+  const choices = new Map([[span.id, false]]);
+  assert.equal(expandedByChoice(span, null, choices), false);
+  const refreshed = traceSpans(
+    [request(), request({ id: "next", sequence: 2 })],
+    false,
+  );
+  assert.equal(expandedByChoice(refreshed[0], refreshed[0].id, choices), false);
+  assert.equal(expandedByChoice(refreshed[1], null, choices, true), true);
+  assert.equal(
+    expandedByChoice(refreshed[1], refreshed[1].id, choices, false),
+    false,
+  );
+  choices.set(refreshed[1].id, true);
+  assert.equal(expandedByChoice(refreshed[1], null, choices, false), true);
+});
+
+test("model titles never fall back to tool names; tools show informative arguments", () => {
+  const [span] = traceSpans(
+    [
+      request({
+        tools: [tool({ name: "exec" }), tool({ name: "exec", toolId: "two" })],
+      }),
+    ],
+    false,
+  );
+  assert.equal(span.label, "模型调用 #1");
+  assert.equal(toolSummary(span), "exec ×2");
+  assert.equal(
+    toolLabel({
+      name: "exec",
+      preview: "cd /some/project && rg -n replaceTab src",
+    }),
+    "rg -n replaceTab src",
+  );
+  assert.equal(
+    toolLabel({ name: "exec", preview: "python3 - <<'PY'\nprint(1)" }),
+    "python3 脚本",
+  );
+  assert.equal(
+    toolLabel({
+      name: "exec",
+      preview: 'exec {"cmd":"ls /some/long/project"}',
+    }),
+    "ls …/project",
+  );
+  assert.equal(
+    toolLabel({
+      name: "apply_patch",
+      preview: "*** Begin Patch\n*** Update File: src/app.ts\n@@",
+    }),
+    "src/app.ts",
+  );
+  assert.equal(
+    toolLabel({ name: "search", preview: '{"query":"useful words"}' }),
+    "useful words",
+  );
+  assert.equal(toolLabel({ name: "search", preview: null }), "search");
 });

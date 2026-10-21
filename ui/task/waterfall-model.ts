@@ -32,7 +32,7 @@ export function traceSpans(
     const failed = tool.status === "failed" || tool.status === "error";
     return {
       id: `tool:${tool.toolId}`,
-      label: tool.name || "工具调用",
+      label: toolLabel(tool),
       kind: "tool",
       at: time(tool.at),
       start,
@@ -55,7 +55,7 @@ export function traceSpans(
       ? [
           {
             id: `request:${row.id}`,
-            label: `请求 #${row.sequence}`,
+            label: `模型调用 #${row.sequence}`,
             kind: "request",
             at: time(row.at),
             start: row.startedAt,
@@ -120,9 +120,9 @@ export function traceSpans(
     );
     const heading = request.notes
       ?.find((note) => note.kind === "reasoning" && note.text)
-      ?.text?.split("\n")[0]
+      ?.text?.split(/[\n；]/)[0]
       .replace(/^[#*\s]+|[*\s]+$/g, "");
-    request.label = heading || request.children[0]?.label || request.label;
+    request.label = heading || request.label;
   }
   return roots;
 }
@@ -151,4 +151,102 @@ export function traceWindow(
     end: times.length ? Math.max(...times.map((item) => item.end)) : null,
     running: items.some((item) => item.running),
   };
+}
+
+export function toolCategory(name: string | null): string {
+  if (/exec|terminal|shell|stdin|command/i.test(name ?? "")) return "terminal";
+  if (/patch|edit|write.*file/i.test(name ?? "")) return "edit";
+  if (/search|find|grep|glob|web|fetch|browse|http/i.test(name ?? ""))
+    return "search";
+  if (/mcp/i.test(name ?? "")) return "mcp";
+  return "file";
+}
+
+export function toolLabel(tool: Pick<TraceTool, "name" | "preview">): string {
+  let text = tool.preview?.trim() ?? "";
+  if (tool.name && text.startsWith(tool.name + " "))
+    text = text.slice(tool.name.length).trim();
+  if (text.startsWith("{")) {
+    try {
+      const args = JSON.parse(text);
+      text =
+        [
+          "cmd",
+          "command",
+          "query",
+          "q",
+          "pattern",
+          "path",
+          "file_path",
+          "url",
+          "input",
+        ]
+          .map((key) => args[key])
+          .find((value) => typeof value === "string") ?? text;
+    } catch {
+      /* Indexed previews can be truncated JSON. */
+    }
+  }
+  const patch = text.match(/\*\*\* (?:Update|Add|Delete) File: (.+)/);
+  if (patch) text = patch[1];
+  if (toolCategory(tool.name) === "terminal") {
+    const commands = text.split(/(?:&&|;|；|\n)/).map((s) => s.trim());
+    text =
+      commands.find((s) => s && !/^(?:cd|pwd|echo|printf|export)\b/.test(s)) ||
+      commands[0];
+    if (/^(?:python[\d.]*|node|bash|sh)\s+.*<</.test(text))
+      return `${text.split(/\s/)[0]} 脚本`;
+  }
+  text = text.replace(
+    /(?:~|[A-Za-z]:)?\/(?:[\w.@-]+\/){2,}([\w.@-]+)(?:\/([\w.@-]+))?/g,
+    (_match, tail, last) => `…/${last ? `${tail}/${last}` : tail}`,
+  );
+  return text.replace(/\s+/g, " ").slice(0, 180) || tool.name || "工具调用";
+}
+
+export function toolSummary(span: TraceSpan): string {
+  const counts = new Map<string, number>();
+  for (const child of span.children) {
+    const name = child.tool?.name || "工具";
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
+  return [...counts]
+    .map(([name, count]) => (count > 1 ? `${name} ×${count}` : name))
+    .join(" · ");
+}
+
+export function defaultExpanded(
+  span: TraceSpan,
+  slowest: string | null,
+): boolean {
+  if (
+    span.running ||
+    span.failed ||
+    span.id === slowest ||
+    span.children.some(
+      (child) => child.running || child.failed || child.id === slowest,
+    )
+  )
+    return true;
+  const total = span.children.reduce(
+    (sum, child) => sum + (child.elapsed ?? 0),
+    0,
+  );
+  const end = Math.max(
+    span.end ?? 0,
+    ...span.children.map((child) => child.end ?? 0),
+  );
+  const window = span.start !== null ? end - span.start : 0;
+  return (
+    total >= 10_000 || (total >= 1000 && window > 0 && total / window >= 0.5)
+  );
+}
+
+export function expandedByChoice(
+  span: TraceSpan,
+  slowest: string | null,
+  choices: ReadonlyMap<string, boolean>,
+  all?: boolean,
+): boolean {
+  return choices.get(span.id) ?? all ?? defaultExpanded(span, slowest);
 }

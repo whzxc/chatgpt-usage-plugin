@@ -12,12 +12,19 @@ import type { TimelineRow, Turn, TurnData, TurnSummary } from "../shared/types";
 import { bytes, compact, duration, money, ttft } from "../shared/format";
 import { callData } from "../app/bridge";
 import { Failure } from "../shared/status";
-import { Chevron, TraceIcon, MessageIcon } from "../shared/icons";
-import { traceSpans, traceWindow } from "./waterfall-model";
+import { Chevron, TraceIcon, MessageIcon, WarningIcon } from "../shared/icons";
+import {
+  traceSpans,
+  traceWindow,
+  expandedByChoice,
+  toolSummary,
+  toolCategory,
+} from "./waterfall-model";
 import type { TraceSpan } from "./waterfall-model";
 import { useWaterfallClock } from "./waterfall-clock";
 import { axisTime } from "./waterfall-range";
 import "./waterfall.css";
+import { WaterfallHead } from "./waterfall-head";
 
 type VisibleSpan = {
   span: TraceSpan;
@@ -51,7 +58,23 @@ export function Waterfall({
     () => traceSpans(timeline, running),
     [timeline, running],
   );
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const slowest = turn.slowestCall
+    ? `${turn.slowestCall.kind}:${turn.slowestCall.id}`
+    : null;
+  const [choices, setChoices] = useState<Map<string, boolean>>(() => new Map());
+  const [all, setAll] = useState<boolean>();
+  const collapsed = useMemo(
+    () =>
+      new Set(
+        spans
+          .filter((span) => !expandedByChoice(span, slowest, choices, all))
+          .map((span) => span.id),
+      ),
+    [spans, slowest, choices, all],
+  );
+  const allOpen = spans
+    .filter((span) => span.children.length)
+    .every((span) => !collapsed.has(span.id));
   const [details, setDetails] = useState<string>();
   const [active, setActive] = useState<string>();
   const [jump, setJump] = useState<string>();
@@ -93,9 +116,6 @@ export function Waterfall({
     intervals,
     complete,
   );
-  const slowest = turn.slowestCall
-    ? `${turn.slowestCall.kind}:${turn.slowestCall.id}`
-    : null;
   const focus = useCallback((id: string) => {
     setActive(id);
     nodes.current.get(id)?.focus();
@@ -107,14 +127,9 @@ export function Waterfall({
   const toggle = useCallback(
     (span: TraceSpan) => {
       focus(span.id);
-      setCollapsed((old) => {
-        const next = new Set(old);
-        if (next.has(span.id)) next.delete(span.id);
-        else next.add(span.id);
-        return next;
-      });
+      setChoices((old) => new Map(old).set(span.id, collapsed.has(span.id)));
     },
-    [focus],
+    [focus, collapsed],
   );
   const activate = useCallback(
     (span: TraceSpan) => {
@@ -192,11 +207,7 @@ export function Waterfall({
       span.children.some((child) => child.id === jump),
     );
     if (parent && collapsed.has(parent.id)) {
-      setCollapsed((old) => {
-        const next = new Set(old);
-        next.delete(parent.id);
-        return next;
-      });
+      setChoices((old) => new Map(old).set(parent.id, true));
       return;
     }
     const node = nodes.current.get(jump);
@@ -217,18 +228,27 @@ export function Waterfall({
   return (
     <div className="waterfall-container">
       <div className="waterfall" ref={root}>
-        <p className="wf-hint">
-          {origin === null
-            ? "轮次开始时间缺失，无法定位时间条。"
-            : "时间轴跟随可见行；LLM 耗时为推算。"}{" "}
-          左右键折叠，回车查看详情。
-        </p>
         <div className="wf-sticky" ref={header}>
+          <WaterfallHead
+            turn={turn}
+            summary={summary}
+            allOpen={allOpen}
+            toggleAll={() => {
+              setAll(!allOpen);
+              setChoices(new Map());
+              const parent = spans.find((span) =>
+                span.children.some((child) => child.id === active),
+              );
+              if (allOpen && parent) setActive(parent.id);
+            }}
+          />
           {turn.overview && (
             <Minimap overview={turn.overview} busy={busy} navigate={navigate} />
           )}
           <div className="wf-heading">
-            <span>调用</span>
+            <span title="时间轴跟随可见行；LLM 耗时为推算。左右键折叠，回车查看详情。">
+              {origin === null ? "调用 · 起点时间缺失" : "调用 · 推算耗时"}
+            </span>
             <div className="wf-axis" ref={axis} aria-hidden="true" />
           </div>
         </div>
@@ -435,7 +455,7 @@ const TraceRow = memo(function TraceRow({
       tabIndex={active ? 0 : -1}
       data-wf-id={span.id}
       ref={(node) => register(span.id, node)}
-      className={`wf-item wf-${span.kind}${span.failed ? " wf-failed" : ""}${parent ? " wf-child" : ""}${span.id === slowest ? " wf-is-slowest" : ""}`}
+      className={`wf-item wf-${span.kind}${span.failed || span.children.some((child) => child.failed) ? " wf-failed" : ""}${parent ? " wf-child" : ""}${span.id === slowest ? " wf-is-slowest" : ""}`}
     >
       <div className="wf-row" onClick={() => activate(span)}>
         <div className="wf-name">
@@ -455,12 +475,19 @@ const TraceRow = memo(function TraceRow({
               </button>
             )}
           </span>
-          <TraceIcon
-            name={span.tool?.name || (span.tool ? "tool" : undefined)}
-          />
+          <span
+            className={`wf-icon-box wf-icon-${span.tool ? toolCategory(span.tool.name) : "model"}`}
+          >
+            <TraceIcon
+              name={span.tool?.name || (span.tool ? "tool" : undefined)}
+            />
+          </span>
           <span className="wf-label" title={span.label}>
             {span.label}
           </span>
+          {closed && span.children.length > 0 && (
+            <small className="wf-count">+{span.children.length}</small>
+          )}
           {span.notes?.some((note) => note.kind === "reply") && (
             <span className="wf-reply-icon" title="有回复" aria-label="有回复">
               <MessageIcon />
@@ -468,15 +495,23 @@ const TraceRow = memo(function TraceRow({
           )}
           <span
             className="wf-summary"
-            title={span.request?.model || span.tool?.preview || undefined}
+            title={
+              span.request ? toolSummary(span) : span.tool?.name || undefined
+            }
           >
-            {span.request?.model || span.tool?.preview}
+            {span.request ? toolSummary(span) : span.tool?.name}
           </span>
-          {span.failed && <span className="wf-badge">失败</span>}
+          {span.request?.model && span.request.model !== turn.calls.model && (
+            <span className="wf-model">{span.request.model}</span>
+          )}
+          {(span.failed || span.children.some((child) => child.failed)) && (
+            <span className="wf-warning" title="失败">
+              <WarningIcon />
+            </span>
+          )}
           {(span.id === slowest || childSlowest) && (
             <span className="wf-badge">{childSlowest ? "含最慢" : "最慢"}</span>
           )}
-          {closed && <small>{span.children.length}</small>}
           <span className="wf-mobile-duration">
             {timing}
             {span.request && (

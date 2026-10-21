@@ -5,7 +5,6 @@ import {
   duration,
   integer,
   money,
-  percent,
   ttft,
   when,
 } from "../shared/format";
@@ -158,11 +157,6 @@ export function TurnRow({
           {!data && !error && <p className="turn-meta">正在读取轮次。</p>}
           {data && (
             <>
-              <Metrics turn={data} />
-              <div className="steps-head">
-                <h3>请求 {summary.requests} 次</h3>
-                <span>共享时间轴</span>
-              </div>
               <Waterfall
                 timeline={timeline}
                 turn={data}
@@ -206,36 +200,5 @@ export function TurnRow({
         />
       )}
     </article>
-  );
-}
-function Metrics({ turn }: { turn: Turn }) {
-  const m = turn.metrics;
-  const rows = [
-    ["估算费用", money(m.cost)],
-    ["Tokens", compact(m.tokens)],
-    ["缓存命中", m.cachePercent === null ? "—" : percent(m.cachePercent)],
-    ["输出", compact(m.output)],
-    ["用时", duration(m.durationMs)],
-    ["TTFT", ttft(m.ttftMs)],
-    ["TPS", m.outputTps === null ? "—" : m.outputTps.toFixed(1) + " tok/s"],
-    [
-      "上下文",
-      compact(m.context.start) +
-        " → " +
-        compact(m.context.end) +
-        (m.context.limit && m.context.end !== null
-          ? "（" + Math.round((m.context.end * 100) / m.context.limit) + "%）"
-          : ""),
-    ],
-  ];
-  return (
-    <dl className="facts">
-      {rows.map(([label, value]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
   );
 }

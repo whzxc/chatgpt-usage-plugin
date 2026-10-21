@@ -442,6 +442,10 @@ export class DataViews {
       page.push(row);
       size += bytes;
     }
+    const models = new Map<string, number>();
+    for (const request of requests)
+      if (request.model)
+        models.set(request.model, (models.get(request.model) ?? 0) + 1);
     return {
       turn: {
         turnId,
@@ -465,6 +469,13 @@ export class DataViews {
             end: requests.at(-1)?.input ?? null,
             limit: t.contextWindow,
           },
+        },
+        calls: {
+          tools: requestTools.length,
+          failed: requestTools.filter(
+            (tool) => tool.status === "failed" || tool.status === "error",
+          ).length,
+          model: [...models].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
         },
         timeline: page,
         slowestCall: slowest.call,
