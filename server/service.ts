@@ -119,7 +119,9 @@ export class UsageService {
           ? Math.floor(Date.now() / 60000)
           : 0,
       ]);
-      if (!this.failure && !args.refresh && this.cache.has(key)) {
+      // Full narration is read on demand; do not retain large bodies in the LRU.
+      const cacheable = !(name === "usage_turn" && args.text);
+      if (cacheable && !this.failure && !args.refresh && this.cache.has(key)) {
         const r = this.cache.get(key)!;
         this.cache.delete(key);
         this.cache.set(key, r);
@@ -144,7 +146,7 @@ export class UsageService {
           state: "unavailable",
           reason: "index-worker-failed",
         };
-      if (!this.failure) {
+      if (cacheable && !this.failure) {
         this.cache.set(key, result);
         if (this.cache.size > 32)
           this.cache.delete(this.cache.keys().next().value!);

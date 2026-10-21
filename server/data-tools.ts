@@ -57,6 +57,7 @@ const timelineTool = z.object({
   durationMs: nullable,
   status: str,
 });
+const traceTarget = z.object({ id: z.string(), requests: n });
 const context = z.object({
   used: nullable,
   window: nullable,
@@ -203,11 +204,18 @@ export const dataTools = {
       .object({
         threadId: id,
         turnId: id,
+        text: z
+          .object({
+            id: z.string().min(1).max(256),
+            kind: z.enum(["reply", "reasoning"]),
+          })
+          .optional(),
         offset: z.number().int().nonnegative().default(0),
         limit: z.number().int().min(1).max(100).default(100),
       })
       .strict(),
     output: z.object({
+      text: z.string().optional(),
       turn: z
         .object({
           turnId: z.string(),
@@ -253,6 +261,19 @@ export const dataTools = {
               }),
             ]),
           ),
+          overview: z
+            .object({
+              durationMs: n,
+              buckets: z.array(
+                z.object({
+                  requests: n,
+                  tools: n,
+                  target: traceTarget.nullable(),
+                }),
+              ),
+              slowest: z.object({ at: n, target: traceTarget }).nullable(),
+            })
+            .nullable(),
           slowestCall: z
             .object({ kind: z.enum(["request", "tool"]), id: z.string() })
             .nullable(),

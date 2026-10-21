@@ -109,3 +109,43 @@ test("loading later requests preserves earlier span identity and timing", () => 
   );
   assert.deepEqual(before[0], after[0]);
 });
+
+test("folded requests include late child tools in the viewport range", async () => {
+  const { traceWindow } = await import("./waterfall-model.ts");
+  const [span] = traceSpans([request()], false);
+  assert.deepEqual(traceWindow(span, 100, false), {
+    id: "request:request-1",
+    start: 0,
+    end: 400,
+    running: false,
+  });
+  assert.deepEqual(traceWindow(span, 100, true), {
+    id: "request:request-1",
+    start: 0,
+    end: 600,
+    running: false,
+  });
+});
+test("narration retains an event position without becoming a timed bar", async () => {
+  const { traceWindow } = await import("./waterfall-model.ts");
+  const [span] = traceSpans(
+    [
+      {
+        kind: "reply",
+        id: "reply",
+        at: 500,
+        summary: "text",
+        durationMs: null,
+      },
+    ],
+    false,
+  );
+  assert.equal(span.start, null);
+  assert.equal(span.elapsed, null);
+  assert.deepEqual(traceWindow(span, 100, false), {
+    id: "reply:reply",
+    start: 400,
+    end: 400,
+    running: false,
+  });
+});

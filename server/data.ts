@@ -5,6 +5,7 @@ import { readTurnContent } from "./content.js";
 import { readPrompt } from "./collector.js";
 import { promptText } from "./projection.js";
 import { toolInput, toolOutput } from "./tool-content.js";
+import { traceOverview, type OverviewCall } from "./trace-overview.js";
 import { inferRequestStarts } from "./request-timing.js";
 
 const sum = (field: string) =>
@@ -272,6 +273,34 @@ export class DataViews {
     );
     if (!t.turnId)
       return { turn: null, index: this.status(), reason: "turn-not-found" };
+    const readContent = () =>
+      readTurnContent(threadId, turnId, (thread, turn, _tool, visit) => {
+        for (const r of this.all(
+          `SELECT l.* FROM content_locations l JOIN cursors f ON f.path=l.path WHERE f.thread=? AND l.turn=? AND l.kind IN ('narrative','message','reasoning') ORDER BY l.path,l.offset`,
+          thread,
+          turn,
+        ))
+          visit(readRecord(r.path, r.offset, r.length));
+      });
+    if (args.text) {
+      try {
+        const entries =
+          readContent()[args.text.kind === "reply" ? "messages" : "reasoning"];
+        const entry = entries.find((r: Json) => r.id === args.text.id);
+        return {
+          turn: null,
+          index: this.status(),
+          reason: entry ? null : "text-not-found",
+          ...(entry ? { text: entry.text } : {}),
+        };
+      } catch {
+        return {
+          turn: null,
+          index: this.status(),
+          reason: "content-read-failed",
+        };
+      }
+    }
     const totals = this.metrics("threadId=? AND turnId=?", threadId, turnId);
     const requests = this.all(
       `SELECT id,sequence,at,CASE WHEN reliable AND family='response' THEN input END AS input,CASE WHEN reliable AND family='response' THEN cached END AS cached,output,reasoning,CASE WHEN reliable THEN input+output END AS tokens,model,cost FROM requests WHERE threadId=? AND turnId=? ORDER BY sequence`,
@@ -288,16 +317,18 @@ export class DataViews {
       requests.map((r) => ({ at: r.at })),
       requestTools.map((tool) => ({ completedAt: tool.completedAt })),
     );
-    let slowestCall: { kind: "request" | "tool"; id: string } | null = null;
-    let longest = -1;
+    const slowest: {
+      call: { kind: "request" | "tool"; id: string } | null;
+      duration: number;
+    } = { call: null, duration: -1 };
     const consider = (
       kind: "request" | "tool",
       id: string,
       elapsed: number | null,
     ) => {
-      if (elapsed !== null && elapsed >= 0 && elapsed > longest) {
-        longest = elapsed;
-        slowestCall = { kind, id };
+      if (elapsed !== null && elapsed >= 0 && elapsed > slowest.duration) {
+        slowest.duration = elapsed;
+        slowest.call = { kind, id };
       }
     };
     requests.forEach((r, i) =>
@@ -319,18 +350,7 @@ export class DataViews {
       if (requestSequence === null) timeline.push({ kind: "tool", ...tool });
     let reason: string | null = null;
     try {
-      const content = readTurnContent(
-        threadId,
-        turnId,
-        (thread, turn, _tool, visit) => {
-          for (const r of this.all(
-            `SELECT l.* FROM content_locations l JOIN cursors f ON f.path=l.path WHERE f.thread=? AND l.turn=? AND l.kind IN ('narrative','message','reasoning') ORDER BY l.path,l.offset`,
-            thread,
-            turn,
-          ))
-            visit(readRecord(r.path, r.offset, r.length));
-        },
-      );
+      const content = readContent();
       for (const [key, kind] of [
         ["messages", "reply"],
         ["reasoning", "reasoning"],
@@ -358,6 +378,48 @@ export class DataViews {
     }
     timeline.sort(
       (a, b) => a.at - b.at || String(a.id).localeCompare(String(b.id)),
+    );
+    let requestCount = 0;
+    const calls: OverviewCall[] = [];
+    for (const row of timeline) {
+      if (row.kind === "request") {
+        requestCount++;
+        calls.push({
+          id: `request:${row.id}`,
+          kind: "request",
+          at: row.startedAt ?? row.at,
+          requests: requestCount,
+        });
+        for (const tool of row.tools)
+          calls.push({
+            id: `tool:${tool.toolId}`,
+            kind: "tool",
+            at: tool.startedAt ?? tool.at,
+            requests: requestCount,
+          });
+      } else if (row.kind === "tool")
+        calls.push({
+          id: `tool:${row.toolId}`,
+          kind: "tool",
+          at: row.startedAt ?? row.at,
+          requests: requestCount,
+        });
+    }
+    const overview = traceOverview(
+      t.startedAt,
+      requestTools.reduce(
+        (end, tool) =>
+          Math.max(end, tool.completedAt ?? tool.startedAt ?? tool.at),
+        requests.reduce(
+          (end, r) => Math.max(end, r.at),
+          Math.max(
+            t.completedAt ?? t.startedAt ?? 0,
+            t.status === "running-at-last-event" ? this.now : 0,
+          ),
+        ),
+      ),
+      calls,
+      slowest.call ? `${slowest.call.kind}:${slowest.call.id}` : null,
     );
     const timelineTotal = timeline.length,
       offset = Math.min(args.offset ?? 0, timelineTotal),
@@ -402,7 +464,8 @@ export class DataViews {
           },
         },
         timeline: page,
-        slowestCall,
+        slowestCall: slowest.call,
+        overview,
         timelineTotal,
         requestTotal: totals.requests,
         nextOffset:

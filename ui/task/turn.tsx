@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { callData } from "../app/bridge";
 import {
   compact,
@@ -41,7 +41,7 @@ export function TurnRow({
     };
   }, []);
   const load = async (reset = false, target = shown) => {
-    if (pending.current) return;
+    if (pending.current) return false;
     pending.current = true;
     setBusy(true);
     try {
@@ -71,8 +71,10 @@ export function TurnRow({
         setData(result);
         setError("");
       }
+      return true;
     } catch (e) {
       if (alive.current) setError(String(e));
+      return false;
     } finally {
       pending.current = false;
       if (alive.current) setBusy(false);
@@ -94,11 +96,13 @@ export function TurnRow({
         : summary.status === "failed"
           ? "失败"
           : null;
-  let requestCount = 0;
-  const timeline = (data?.timeline ?? []).filter((row) => {
-    if (row.kind === "request") requestCount++;
-    return requestCount <= shown;
-  });
+  const timeline = useMemo(() => {
+    let requestCount = 0;
+    return (data?.timeline ?? []).filter((row) => {
+      if (row.kind === "request") requestCount++;
+      return requestCount <= shown;
+    });
+  }, [data?.timeline, shown]);
   const visibleRequests = timeline.filter((r) => r.kind === "request").length,
     remaining = Math.max(0, summary.requests - visibleRequests);
   return (
@@ -164,6 +168,17 @@ export function TurnRow({
                 turn={data}
                 summary={summary}
                 openTool={setTool}
+                threadId={threadId}
+                busy={busy}
+                complete={
+                  timeline.length === data.timeline.length &&
+                  data.nextOffset === null
+                }
+                reveal={async (requests) => {
+                  const target = Math.max(shown, requests);
+                  setShown(target);
+                  return load(false, target);
+                }}
               />
               {(remaining > 0 || data.nextOffset !== null) && (
                 <button

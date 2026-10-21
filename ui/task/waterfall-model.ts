@@ -6,6 +6,7 @@ export type TraceSpan = {
   id: string;
   label: string;
   kind: "request" | "tool" | "reasoning" | "reply";
+  at: number | null;
   start: number | null;
   end: number | null;
   elapsed: number | null;
@@ -32,6 +33,7 @@ export function traceSpans(
       id: `tool:${tool.toolId}`,
       label: tool.name || "工具调用",
       kind: "tool",
+      at: time(tool.at),
       start,
       end,
       elapsed: tool.durationMs ?? elapsed(start, end),
@@ -54,6 +56,7 @@ export function traceSpans(
             id: `request:${row.id}`,
             label: `LLM 请求 ${row.sequence}`,
             kind: "request",
+            at: time(row.at),
             start: row.startedAt,
             end: time(row.at),
             elapsed: elapsed(row.startedAt, time(row.at)),
@@ -82,6 +85,7 @@ export function traceSpans(
         id: `${row.kind}:${row.id}`,
         label: row.kind === "reasoning" ? "思考" : "回复",
         kind: row.kind,
+        at: start,
         start: measured ? start : null,
         end,
         elapsed: measured ? row.durationMs : null,
@@ -109,4 +113,31 @@ export function traceSpans(
       (a, b) => (a.start ?? Infinity) - (b.start ?? Infinity),
     );
   return roots;
+}
+
+// Folded parents keep child intervals in the viewport range; text contributes
+// its event position without pretending to have a measured duration.
+export function traceWindow(
+  span: TraceSpan,
+  origin: number | null,
+  folded: boolean,
+) {
+  const items = folded ? [span, ...span.children] : [span];
+  const times = items.flatMap((item) => {
+    const start = item.start ?? item.at;
+    return origin === null || start === null
+      ? []
+      : [
+          {
+            start: Math.max(0, start - origin),
+            end: Math.max(0, (item.end ?? start) - origin),
+          },
+        ];
+  });
+  return {
+    id: span.id,
+    start: times.length ? Math.min(...times.map((item) => item.start)) : null,
+    end: times.length ? Math.max(...times.map((item) => item.end)) : null,
+    running: items.some((item) => item.running),
+  };
 }
