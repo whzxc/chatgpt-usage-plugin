@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { inferRequestStarts } from "./request-timing.ts";
+import { inferRequestStarts as infer } from "./request-timing.ts";
+
+const inferRequestStarts = (start, requests, tools) =>
+  infer(
+    start,
+    requests.map((r, i) => ({ sequence: i + 1, ...r })),
+    tools.map((t) => ({ requestSequence: null, ...t })),
+  );
 
 test("first request uses the turn start even if tools finish before it", () => {
   assert.deepEqual(
@@ -58,4 +65,20 @@ test("inference happens before pagination and does not depend on the visible sli
   const requests = [{ at: 500 }, { at: 1200 }, { at: 1800 }];
   const result = inferRequestStarts(100, requests, [{ completedAt: 1100 }]);
   assert.deepEqual(result.slice(1, 3), [1100, 1200]);
+});
+
+test("a request never starts at completion of its own triggered tools", () => {
+  assert.deepEqual(
+    inferRequestStarts(
+      100,
+      [{ at: 500 }, { at: 900 }, { at: 1300 }],
+      [
+        { completedAt: 700, requestSequence: 1 },
+        { completedAt: 850, requestSequence: 2 },
+        { completedAt: 900, requestSequence: 2 },
+        { completedAt: 1100, requestSequence: 2 },
+      ],
+    ),
+    [100, 700, 1100],
+  );
 });

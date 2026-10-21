@@ -16,6 +16,7 @@ export type TraceSpan = {
   request?: RequestRow;
   tool?: TraceTool;
   text?: string;
+  notes?: TraceSpan[];
 };
 const time = (n: number | null) => (n !== null && n > 0 ? n : null);
 const elapsed = (start: number | null, end: number | null) =>
@@ -54,7 +55,7 @@ export function traceSpans(
       ? [
           {
             id: `request:${row.id}`,
-            label: `LLM 请求 ${row.sequence}`,
+            label: `请求 #${row.sequence}`,
             kind: "request",
             at: time(row.at),
             start: row.startedAt,
@@ -63,6 +64,7 @@ export function traceSpans(
             running: false,
             failed: false,
             request: row,
+            notes: [],
             children: row.tools.map(toolSpan),
           },
         ]
@@ -94,29 +96,38 @@ export function traceSpans(
         children: [],
         text: row.summary,
       };
+      // Containment is strongest evidence; otherwise narration belongs to the
+      // next completed request. Trailing text stays with the last loaded one.
       const parent =
-        row.kind === "reasoning" && end !== null
-          ? requests.find(
-              (r) =>
-                r.start !== null &&
-                r.end !== null &&
-                r.start <= start! &&
-                r.end >= end,
-            )
-          : undefined;
-      if (parent) parent.children.push(span);
-      else roots.push(span);
+        requests.find(
+          (r) =>
+            start !== null &&
+            r.start !== null &&
+            r.end !== null &&
+            r.start <= start &&
+            r.end >= (end ?? start),
+        ) ??
+        requests.find(
+          (r) => start !== null && r.end !== null && r.end >= start,
+        ) ??
+        requests.at(-1);
+      parent?.notes!.push(span);
     }
   }
-  for (const request of requests)
+  for (const request of requests) {
     request.children.sort(
       (a, b) => (a.start ?? Infinity) - (b.start ?? Infinity),
     );
+    const heading = request.notes
+      ?.find((note) => note.kind === "reasoning" && note.text)
+      ?.text?.split("\n")[0]
+      .replace(/^[#*\s]+|[*\s]+$/g, "");
+    request.label = heading || request.children[0]?.label || request.label;
+  }
   return roots;
 }
 
-// Folded parents keep child intervals in the viewport range; text contributes
-// its event position without pretending to have a measured duration.
+// Folded parents keep child tool intervals in the viewport range.
 export function traceWindow(
   span: TraceSpan,
   origin: number | null,

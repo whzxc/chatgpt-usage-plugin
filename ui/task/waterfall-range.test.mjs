@@ -65,3 +65,12 @@ test("rounded ticks remain absolute to the turn, with distinct labels beyond an 
   assert.equal(axisTime(ticks[0]), "2:48:10");
   assert.equal(new Set(ticks.map(axisTime)).size, ticks.length);
 });
+
+test("bar metrics follow the tail and flip before the bar at the right edge", async () => {
+  const { barLabelLeft } = await import("./waterfall-range.ts");
+  const range = { start: 1000, end: 2000 };
+  assert.equal(barLabelLeft(1100, 100, range, 400, 70), 88);
+  assert.equal(barLabelLeft(1800, 100, range, 400, 70), 242);
+  assert.equal(barLabelLeft(1100, 0, range, 400, 70), 54);
+  assert.equal(barLabelLeft(1000, 1000, range, 400, 70), 4);
+});

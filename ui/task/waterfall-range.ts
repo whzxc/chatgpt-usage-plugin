@@ -58,3 +58,19 @@ export function axisTime(ms: number): string {
     ? `${Math.floor(seconds / 60)}:${tail}`
     : `${Math.floor(seconds / 3600)}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}:${tail}`;
 }
+
+// Keep metrics next to the visible bar, moving before it at the right edge.
+export function barLabelLeft(
+  start: number,
+  elapsed: number,
+  range: TimeRange,
+  trackWidth: number,
+  labelWidth: number,
+): number {
+  const unit = trackWidth / (range.end - range.start);
+  const left = (start - range.start) * unit;
+  const tail = left + Math.max(6, elapsed * unit);
+  const x =
+    tail + 8 + labelWidth <= trackWidth ? tail + 8 : left - 8 - labelWidth;
+  return Math.max(4, Math.min(trackWidth - labelWidth - 4, x));
+}

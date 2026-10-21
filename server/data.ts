@@ -314,8 +314,11 @@ export class DataViews {
     );
     const starts = inferRequestStarts(
       t.startedAt,
-      requests.map((r) => ({ at: r.at })),
-      requestTools.map((tool) => ({ completedAt: tool.completedAt })),
+      requests.map((r) => ({ at: r.at, sequence: r.sequence })),
+      requestTools.map((tool) => ({
+        completedAt: tool.completedAt,
+        requestSequence: tool.requestSequence,
+      })),
     );
     const slowest: {
       call: { kind: "request" | "tool"; id: string } | null;

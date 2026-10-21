@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import {
   axisTime,
+  barLabelLeft,
   interpolateRange,
   rangeTicks,
   viewportRange,
@@ -17,7 +18,8 @@ export function useWaterfallClock(
 ) {
   const root = useRef<HTMLDivElement>(null),
     axis = useRef<HTMLDivElement>(null),
-    header = useRef<HTMLDivElement>(null);
+    header = useRef<HTMLDivElement>(null),
+    grid = useRef<HTMLDivElement>(null);
   const current = useRef<TimeRange | null>(null);
   useEffect(() => {
     const element = root.current!,
@@ -26,6 +28,18 @@ export function useWaterfallClock(
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     const byId = new Map(rows.map((row) => [row.id, row]));
     const visible = new Set<string>();
+    const labels = new Map<
+      string,
+      {
+        chart: HTMLElement;
+        label: HTMLElement;
+        width: number;
+        labelWidth: number;
+        start: number;
+        elapsed: number;
+        running: boolean;
+      }
+    >();
     let frame = 0,
       timer = 0,
       previous = 0,
@@ -45,6 +59,15 @@ export function useWaterfallClock(
         complete && visible.size === rows.length,
       );
     const write = (range: TimeRange) => {
+      // Batch first-visible measurements before any style writes. Offscreen
+      // rows never participate in animation or layout measurement.
+      for (const id of visible) {
+        const entry = labels.get(id);
+        if (entry && !entry.width) {
+          entry.width = entry.chart.clientWidth;
+          entry.labelWidth = entry.label.offsetWidth;
+        }
+      }
       current.current = range;
       element.style.setProperty("--wf-start", String(range.start));
       element.style.setProperty(
@@ -62,8 +85,24 @@ export function useWaterfallClock(
       );
       const ticks = rangeTicks(range),
         key = ticks.join();
+      for (const id of visible) {
+        const entry = labels.get(id);
+        if (!entry) continue;
+        if (!entry.labelWidth) continue; // Stacked layout has its own label.
+        entry.chart.style.setProperty(
+          "--wf-label-left",
+          `${barLabelLeft(entry.start, entry.running ? now() - entry.start : entry.elapsed, range, entry.width, entry.labelWidth)}px`,
+        );
+      }
       if (key !== ticksKey) {
         ticksKey = key;
+        grid.current!.replaceChildren(
+          ...ticks.map((at) => {
+            const line = document.createElement("i");
+            line.style.setProperty("--tick", String(at));
+            return line;
+          }),
+        );
         ruler.replaceChildren(
           ...ticks.map((at) => {
             const tick = document.createElement("span");
@@ -134,6 +173,7 @@ export function useWaterfallClock(
     const observe = () => {
       observer?.disconnect();
       visible.clear();
+      labels.clear();
       observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -145,9 +185,21 @@ export function useWaterfallClock(
         },
         { root: scrollRoot, rootMargin: `-${head.offsetHeight}px 0px 0px 0px` },
       );
-      element
-        .querySelectorAll<HTMLElement>("[data-wf-id]")
-        .forEach((node) => observer.observe(node));
+      element.querySelectorAll<HTMLElement>("[data-wf-id]").forEach((node) => {
+        const chart = node.querySelector<HTMLElement>(".wf-chart[data-start]");
+        const label = chart?.querySelector<HTMLElement>(".wf-values");
+        if (chart && label)
+          labels.set(node.dataset.wfId!, {
+            chart,
+            label,
+            width: 0,
+            labelWidth: 0,
+            start: Number(chart.dataset.start),
+            elapsed: Number(chart.dataset.elapsed),
+            running: !!chart.dataset.running,
+          });
+        observer.observe(node);
+      });
     };
     const resize = new ResizeObserver(observe);
     resize.observe(head);
@@ -162,5 +214,5 @@ export function useWaterfallClock(
       reduced.removeEventListener("change", update);
     };
   }, [origin, end, running, rows, complete]);
-  return { root, axis, header };
+  return { root, axis, header, grid };
 }

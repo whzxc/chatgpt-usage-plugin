@@ -52,16 +52,19 @@ test("measured reasoning uses its start, stays under its request, and tools rema
     ],
     false,
   );
-  assert.equal(spans.length, 2);
+  assert.equal(spans.length, 1);
   assert.deepEqual(
     spans[0].children.map(({ id, start, end }) => ({ id, start, end })),
+    [{ id: "tool:tool-1", start: 450, end: 700 }],
+  );
+  assert.equal(spans[0].label, "thinking");
+  assert.deepEqual(
+    spans[0].notes.map((n) => [n.kind, n.start, n.end]),
     [
-      { id: "reasoning:reason-1", start: 200, end: 400 },
-      { id: "tool:tool-1", start: 450, end: 700 },
+      ["reasoning", 200, 400],
+      ["reply", null, null],
     ],
   );
-  assert.equal(spans[1].start, null);
-  assert.equal(spans[1].elapsed, null);
 });
 test("only genuinely unfinished tools grow in a running turn", () => {
   const rows = [
@@ -126,26 +129,41 @@ test("folded requests include late child tools in the viewport range", async () 
     running: false,
   });
 });
-test("narration retains an event position without becoming a timed bar", async () => {
-  const { traceWindow } = await import("./waterfall-model.ts");
-  const [span] = traceSpans(
+test("unowned reasoning and narration attach to the next request without adding tree rows", () => {
+  const spans = traceSpans(
     [
+      request({ tools: [] }),
+      {
+        kind: "reasoning",
+        id: "gap",
+        at: 650,
+        durationMs: 100,
+        summary: "**Next step**",
+      },
       {
         kind: "reply",
         id: "reply",
-        at: 500,
-        summary: "text",
+        at: 780,
         durationMs: null,
+        summary: "reply preview",
+      },
+      request({ id: "next", sequence: 2, startedAt: 800, at: 950, tools: [] }),
+      {
+        kind: "reply",
+        id: "trailing",
+        at: 960,
+        durationMs: null,
+        summary: "final",
       },
     ],
     false,
   );
-  assert.equal(span.start, null);
-  assert.equal(span.elapsed, null);
-  assert.deepEqual(traceWindow(span, 100, false), {
-    id: "reply:reply",
-    start: 400,
-    end: 400,
-    running: false,
-  });
+  assert.equal(spans.length, 2);
+  assert.equal(spans[0].notes.length, 0);
+  assert.equal(spans[1].label, "Next step");
+  assert.deepEqual(
+    spans[1].notes.map((n) => n.id),
+    ["reasoning:gap", "reply:reply", "reply:trailing"],
+  );
+  assert.equal(spans[1].children.length, 0);
 });

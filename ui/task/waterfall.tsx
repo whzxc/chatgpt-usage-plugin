@@ -12,7 +12,7 @@ import type { TimelineRow, Turn, TurnData, TurnSummary } from "../shared/types";
 import { bytes, compact, duration, money, ttft } from "../shared/format";
 import { callData } from "../app/bridge";
 import { Failure } from "../shared/status";
-import { Chevron } from "../shared/icons";
+import { Chevron, TraceIcon, MessageIcon } from "../shared/icons";
 import { traceSpans, traceWindow } from "./waterfall-model";
 import type { TraceSpan } from "./waterfall-model";
 import { useWaterfallClock } from "./waterfall-clock";
@@ -86,7 +86,7 @@ export function Waterfall({
     [rows, origin, collapsed],
   );
   const end = turn.overview?.durationMs ?? summary.durationMs ?? 1000;
-  const { root, axis, header } = useWaterfallClock(
+  const { root, axis, header, grid } = useWaterfallClock(
     origin,
     end,
     running,
@@ -120,7 +120,7 @@ export function Waterfall({
     (span: TraceSpan) => {
       focus(span.id);
       if (span.tool) openTool(span.tool.toolId);
-      if (span.request || span.text)
+      if (span.request)
         setDetails((id) => (id === span.id ? undefined : span.id));
     },
     [focus, openTool],
@@ -154,7 +154,7 @@ export function Waterfall({
         if (span.children.length) {
           if (collapsed.has(span.id)) toggle(span);
           else focus(span.children[0].id);
-        } else if (span.request || span.text) setDetails(span.id);
+        } else if (span.request) setDetails(span.id);
         break;
       case "ArrowLeft":
         if (details === span.id) setDetails(undefined);
@@ -166,6 +166,7 @@ export function Waterfall({
         activate(span);
         break;
       case "Escape":
+        focus(span.id);
         setDetails(undefined);
         break;
       default:
@@ -232,6 +233,7 @@ export function Waterfall({
           </div>
         </div>
         <div className="wf-body">
+          <div className="wf-grid" ref={grid} aria-hidden="true" />
           {running && origin !== null && (
             <div className="wf-now-track" aria-hidden="true">
               <i className="wf-now">now</i>
@@ -411,13 +413,14 @@ const TraceRow = memo(function TraceRow({
   const { span, parent } = row;
   const childSlowest =
     closed && span.children.some((child) => child.id === slowest);
-  const timing = span.running ? "进行中" : duration(span.elapsed);
+  const timing = span.running
+    ? "进行中"
+    : span.elapsed !== null && span.elapsed < 100
+      ? "<0.1s"
+      : duration(span.elapsed);
   const metrics = span.request
     ? `${money(span.request.cost)} · ${compact(span.request.tokens)} tokens`
     : "";
-  const textOnly =
-    span.kind === "reply" ||
-    (span.kind === "reasoning" && span.elapsed === null);
   return (
     <div
       role="treeitem"
@@ -425,103 +428,131 @@ const TraceRow = memo(function TraceRow({
       aria-posinset={row.position}
       aria-setsize={row.size}
       aria-expanded={
-        span.children.length
-          ? !closed
-          : span.request || span.text
-            ? expanded
-            : undefined
+        span.children.length ? !closed : span.request ? expanded : undefined
       }
       aria-describedby={expanded ? detailsId : undefined}
-      aria-label={`${span.label}，${timing}${metrics ? `，${metrics}` : ""}${span.id === slowest ? "，本轮最慢" : ""}${span.failed ? "，失败" : ""}${span.text ? `，${span.text}` : ""}`}
+      aria-label={`${span.request ? `请求 #${span.request.sequence}，` : ""}${span.label}，${timing}${metrics ? `，${metrics}` : ""}${span.id === slowest ? "，本轮最慢" : ""}${span.failed ? "，失败" : ""}`}
       tabIndex={active ? 0 : -1}
       data-wf-id={span.id}
       ref={(node) => register(span.id, node)}
-      className={`wf-item wf-${span.kind}${span.failed ? " wf-failed" : ""}${parent ? " wf-child" : ""}`}
+      className={`wf-item wf-${span.kind}${span.failed ? " wf-failed" : ""}${parent ? " wf-child" : ""}${span.id === slowest ? " wf-is-slowest" : ""}`}
     >
-      <div
-        className={`wf-row${textOnly ? " wf-text-row" : ""}`}
-        onClick={() => activate(span)}
-      >
+      <div className="wf-row" onClick={() => activate(span)}>
         <div className="wf-name">
-          {span.children.length > 0 && (
-            <button
-              type="button"
-              tabIndex={-1}
-              className={`wf-fold${closed ? "" : " is-expanded"}`}
-              aria-label={closed ? "展开子调用" : "折叠子调用"}
-              onClick={(event) => {
-                event.stopPropagation();
-                toggle(span);
-              }}
-            >
-              <Chevron next />
-            </button>
-          )}
-          <span className="wf-label" title={span.tool?.preview || span.label}>
+          <span className="wf-fold-slot">
+            {span.children.length > 0 && (
+              <button
+                type="button"
+                tabIndex={-1}
+                className={`wf-fold${closed ? "" : " is-expanded"}`}
+                aria-label={closed ? "展开子调用" : "折叠子调用"}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggle(span);
+                }}
+              >
+                <Chevron next />
+              </button>
+            )}
+          </span>
+          <TraceIcon
+            name={span.tool?.name || (span.tool ? "tool" : undefined)}
+          />
+          <span className="wf-label" title={span.label}>
             {span.label}
           </span>
-          {span.text && !textOnly && (
-            <span className="wf-summary" title={span.text}>
-              {span.text}
+          {span.notes?.some((note) => note.kind === "reply") && (
+            <span className="wf-reply-icon" title="有回复" aria-label="有回复">
+              <MessageIcon />
             </span>
           )}
+          <span
+            className="wf-summary"
+            title={span.request?.model || span.tool?.preview || undefined}
+          >
+            {span.request?.model || span.tool?.preview}
+          </span>
           {span.failed && <span className="wf-badge">失败</span>}
           {(span.id === slowest || childSlowest) && (
             <span className="wf-badge">{childSlowest ? "含最慢" : "最慢"}</span>
           )}
           {closed && <small>{span.children.length}</small>}
-          {!textOnly && (
-            <span className="wf-mobile-duration">
-              {timing}
-              {span.request && (
-                <span className="wf-cost"> · {money(span.request.cost)}</span>
-              )}
-            </span>
-          )}
+          <span className="wf-mobile-duration">
+            {timing}
+            {span.request && (
+              <span className="wf-cost"> · {money(span.request.cost)}</span>
+            )}
+          </span>
         </div>
-        {textOnly ? (
-          <p className="wf-text">{span.text}</p>
-        ) : (
-          <div className="wf-chart">
-            <Bar span={span} origin={origin} collapsed={closed} />
-            <span className="wf-values">
-              <span className="wf-duration">{timing}</span>
-              {span.request && (
-                <>
-                  <span className="wf-cost"> · {money(span.request.cost)}</span>
-                  <span className="wf-tokens">
-                    {" "}
-                    · {compact(span.request.tokens)}
-                  </span>
-                </>
-              )}
-            </span>
-          </div>
-        )}
+        <div
+          className="wf-chart"
+          data-start={
+            origin !== null &&
+            span.start !== null &&
+            (span.end !== null || span.running)
+              ? Math.max(0, span.start - origin)
+              : undefined
+          }
+          data-elapsed={span.elapsed ?? 0}
+          data-running={span.running || undefined}
+        >
+          <Bar span={span} origin={origin} collapsed={closed} />
+          <span className="wf-values">
+            <span className="wf-duration">{timing}</span>
+            {span.request && (
+              <span className="wf-cost"> · {money(span.request.cost)}</span>
+            )}
+          </span>
+        </div>
       </div>
       {expanded && span.request && (
-        <RequestDetails id={detailsId} request={span.request} turn={turn} />
-      )}
-      {expanded && span.text && (
-        <TraceText
-          key={span.id}
-          id={detailsId}
-          span={span}
-          threadId={threadId}
-          turnId={turn.turnId}
-        />
+        <div className="wf-details" id={detailsId}>
+          <RequestDetails
+            request={span.request}
+            turn={turn}
+            unreliable={span.elapsed !== null && span.elapsed < 100}
+          />
+          {span.notes?.map((note) => (
+            <NoteDetails
+              key={note.id}
+              span={note}
+              threadId={threadId}
+              turnId={turn.turnId}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
 });
 
-function TraceText({
-  id,
+function NoteDetails({
   span,
   threadId,
   turnId,
 }: {
-  id: string;
+  span: TraceSpan;
+  threadId: string;
+  turnId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="wf-note">
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <Chevron next />
+        <span>{span.kind === "reasoning" ? "思考" : "回复"}</span>
+        <span className="wf-note-summary">{span.text}</span>
+      </button>
+      {open && <TraceText span={span} threadId={threadId} turnId={turnId} />}
+    </div>
+  );
+}
+
+function TraceText({
+  span,
+  threadId,
+  turnId,
+}: {
   span: TraceSpan;
   threadId: string;
   turnId: string;
@@ -554,7 +585,7 @@ function TraceText({
     return () => controller.abort();
   }, [threadId, turnId, span.id, span.kind, attempt]);
   return (
-    <div className="wf-full-text" id={id}>
+    <div className="wf-full-text">
       {error && (
         <Failure error={error} retry={() => setAttempt((n) => n + 1)} />
       )}
@@ -598,7 +629,29 @@ function Bar({
           style={{ "--extent": Math.max(0, extent - start) } as CSSProperties}
         />
       )}
-      <i className={`wf-bar${span.running ? " wf-growing" : ""}`} />
+      <i className={`wf-bar${span.running ? " wf-growing" : ""}`}>
+        {span.notes
+          ?.filter(
+            (note) =>
+              note.kind === "reasoning" &&
+              note.start !== null &&
+              note.end !== null &&
+              span.elapsed &&
+              note.end > span.start! &&
+              note.start < span.end!,
+          )
+          .map((note) => (
+            <b
+              key={note.id}
+              className="wf-reasoning-segment"
+              title={`思考 · ${duration(note.elapsed)}`}
+              style={{
+                left: `${(Math.max(0, note.start! - span.start!) * 100) / span.elapsed!}%`,
+                width: `${(Math.max(0, Math.min(note.end!, span.end!) - Math.max(note.start!, span.start!)) * 100) / span.elapsed!}%`,
+              }}
+            />
+          ))}
+      </i>
       {children.map((child) => (
         <i
           key={child.id}
@@ -613,11 +666,11 @@ function Bar({
   );
 }
 function RequestDetails({
-  id,
+  unreliable,
   request,
   turn,
 }: {
-  id: string;
+  unreliable: boolean;
   request: NonNullable<TraceSpan["request"]>;
   turn: Turn;
 }) {
@@ -644,8 +697,9 @@ function RequestDetails({
     ],
   ];
   return (
-    <div className="wf-details" id={id}>
+    <>
       <p>
+        请求 #{request.sequence}。{unreliable && "起点推算不可靠。"}
         起点由本轮开始或此前请求 / 工具完成时间推算，可能包含等待；无每请求
         TTFT。Esc 关闭详情。
       </p>
@@ -657,6 +711,6 @@ function RequestDetails({
           </div>
         ))}
       </dl>
-    </div>
+    </>
   );
 }
