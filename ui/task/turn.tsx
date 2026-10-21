@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { callData } from "../app/bridge";
 import {
-  bytes,
-  clock,
   compact,
   duration,
   integer,
@@ -13,8 +11,9 @@ import {
 } from "../shared/format";
 import { usePoll } from "../shared/poll";
 import { Failure } from "../shared/status";
-import type { TimelineRow, Turn, TurnData, TurnSummary } from "../shared/types";
+import type { Turn, TurnData, TurnSummary } from "../shared/types";
 import { ZapIcon } from "../shared/icons";
+import { Waterfall } from "./waterfall";
 import { ToolDialog } from "./tool-dialog";
 
 export function TurnRow({
@@ -102,11 +101,6 @@ export function TurnRow({
   });
   const visibleRequests = timeline.filter((r) => r.kind === "request").length,
     remaining = Math.max(0, summary.requests - visibleRequests);
-  const lastRequest = data?.timeline.filter((r) => r.kind === "request").at(-1);
-  const chunks = Array.from(
-    { length: Math.ceil(timeline.length / 100) },
-    (_, i) => timeline.slice(i * 100, (i + 1) * 100),
-  );
   return (
     <article
       className={"turn" + (open ? " is-open" : "")}
@@ -163,27 +157,14 @@ export function TurnRow({
               <Metrics turn={data} />
               <div className="steps-head">
                 <h3>请求 {summary.requests} 次</h3>
-                <span>按时间顺序</span>
+                <span>共享时间轴</span>
               </div>
-              <div className="steps">
-                {chunks.map((chunk, index) => (
-                  <div className="steps-chunk" key={index}>
-                    {chunk.map((row, i) => (
-                      <Timeline
-                        key={row.kind + ("id" in row ? row.id : i)}
-                        row={row}
-                        final={
-                          row.kind === "request" &&
-                          summary.status !== "running-at-last-event" &&
-                          row === lastRequest &&
-                          data.nextOffset === null
-                        }
-                        openTool={setTool}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
+              <Waterfall
+                timeline={timeline}
+                turn={data}
+                summary={summary}
+                openTool={setTool}
+              />
               {(remaining > 0 || data.nextOffset !== null) && (
                 <button
                   className="text-btn more"
@@ -241,78 +222,5 @@ function Metrics({ turn }: { turn: Turn }) {
         </div>
       ))}
     </dl>
-  );
-}
-function ToolButton({
-  tool,
-  openTool,
-}: {
-  tool: { toolId: string; name: string | null; preview: string | null };
-  openTool: (id: string) => void;
-}) {
-  return (
-    <button className="tool" onClick={() => openTool(tool.toolId)}>
-      <b className="tool-name">{tool.name}</b>
-      <span className="cmd">{tool.preview}</span>
-    </button>
-  );
-}
-function Timeline({
-  row,
-  final,
-  openTool,
-}: {
-  row: TimelineRow;
-  final: boolean;
-  openTool: (id: string) => void;
-}) {
-  if (row.kind === "tool")
-    return (
-      <div className="step">
-        <time>{clock(row.at)}</time>
-        <div>
-          <ToolButton tool={row} openTool={openTool} />
-          <span className="step-facts">返回 {bytes(row.outputBytes)}</span>
-        </div>
-      </div>
-    );
-  if (row.kind !== "request")
-    return (
-      <div className="note">
-        <time>{clock(row.at)}</time>
-        <p>
-          <span className="kind">
-            {row.kind === "reasoning"
-              ? "思考 " + duration(row.durationMs)
-              : "回复"}
-          </span>
-          {row.summary}
-        </p>
-      </div>
-    );
-  const outputBytes = row.tools.reduce<number | null>(
-    (n, t) => (n === null || t.outputBytes === null ? null : n + t.outputBytes),
-    0,
-  );
-  return (
-    <div className={"step" + (final ? " final" : "")}>
-      <time>{clock(row.at)}</time>
-      <div>
-        {row.tools.length ? (
-          <div className="request-tools">
-            {row.tools.map((t) => (
-              <ToolButton key={t.toolId} tool={t} openTool={openTool} />
-            ))}
-          </div>
-        ) : (
-          <span className="what">{final ? "最终回复" : "请求"}</span>
-        )}
-        <span className="step-facts">
-          上下文 {compact(row.input)}，输出 {compact(row.output)}
-          {row.tools.length > 0 ? "，返回 " + bytes(outputBytes) : ""}
-        </span>
-      </div>
-      <span className="cost">{money(row.cost)}</span>
-    </div>
   );
 }

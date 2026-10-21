@@ -46,6 +46,17 @@ const toolBody = z.object({
   bytes: nullable,
   truncated: z.boolean(),
 });
+const timelineTool = z.object({
+  toolId: z.string(),
+  name: str,
+  at: n,
+  preview: str,
+  outputBytes: nullable,
+  startedAt: nullable,
+  completedAt: nullable,
+  durationMs: nullable,
+  status: str,
+});
 const context = z.object({
   used: nullable,
   window: nullable,
@@ -217,30 +228,21 @@ export const dataTools = {
           }),
           timeline: z.array(
             z.union([
-              z.object({
-                kind: z.literal("tool"),
-                toolId: z.string(),
-                name: str,
-                at: n,
-                preview: str,
-                outputBytes: nullable,
-              }),
+              timelineTool.extend({ kind: z.literal("tool") }),
               z.object({
                 kind: z.literal("request"),
                 id: z.string(),
                 sequence: n,
                 at: n,
+                startedAt: nullable,
                 input: nullable,
+                cached: nullable,
                 output: nullable,
+                reasoning: nullable,
+                tokens: nullable,
+                model: str,
                 cost: nullable,
-                tools: z.array(
-                  z.object({
-                    toolId: z.string(),
-                    name: str,
-                    preview: str,
-                    outputBytes: nullable,
-                  }),
-                ),
+                tools: z.array(timelineTool),
               }),
               z.object({
                 kind: z.enum(["reply", "reasoning"]),
@@ -251,6 +253,9 @@ export const dataTools = {
               }),
             ]),
           ),
+          slowestCall: z
+            .object({ kind: z.enum(["request", "tool"]), id: z.string() })
+            .nullable(),
           timelineTotal: n,
           requestTotal: n,
           nextOffset: nullable,

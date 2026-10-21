@@ -5,6 +5,7 @@ import { readTurnContent } from "./content.js";
 import { readPrompt } from "./collector.js";
 import { promptText } from "./projection.js";
 import { toolInput, toolOutput } from "./tool-content.js";
+import { inferRequestStarts } from "./request-timing.js";
 
 const sum = (field: string) =>
   `CASE WHEN count(*)>0 AND min(reliable)=1 AND count(${field})=count(*) AND sum(${field})<=9007199254740991 THEN sum(${field}) END`;
@@ -273,21 +274,46 @@ export class DataViews {
       return { turn: null, index: this.status(), reason: "turn-not-found" };
     const totals = this.metrics("threadId=? AND turnId=?", threadId, turnId);
     const requests = this.all(
-      `SELECT id,sequence,at,CASE WHEN reliable AND family='response' THEN input END AS input,output,cost FROM requests WHERE threadId=? AND turnId=? ORDER BY sequence`,
+      `SELECT id,sequence,at,CASE WHEN reliable AND family='response' THEN input END AS input,CASE WHEN reliable AND family='response' THEN cached END AS cached,output,reasoning,CASE WHEN reliable THEN input+output END AS tokens,model,cost FROM requests WHERE threadId=? AND turnId=? ORDER BY sequence`,
       threadId,
       turnId,
     );
     const requestTools = this.all(
-      `SELECT toolId,name,at,preview,outputBytes,(SELECT CASE WHEN count(*)=1 AND min(reliable)=1 AND min(family)='response' AND NOT EXISTS(SELECT 1 FROM compactions c WHERE c.threadId=tools.threadId AND c.turnId=tools.turnId AND c.at BETWEEN tools.at AND r.at) THEN min(r.sequence) END FROM requests r WHERE r.threadId=tools.threadId AND r.turnId=tools.turnId AND r.at BETWEEN tools.at AND tools.completedAt) AS requestSequence FROM tools WHERE threadId=? AND turnId=? ORDER BY at,toolId`,
+      `SELECT toolId,name,at,preview,outputBytes,startedAt,completedAt,durationMs,status,(SELECT CASE WHEN count(*)=1 AND min(reliable)=1 AND min(family)='response' AND NOT EXISTS(SELECT 1 FROM compactions c WHERE c.threadId=tools.threadId AND c.turnId=tools.turnId AND c.at BETWEEN tools.at AND r.at) THEN min(r.sequence) END FROM requests r WHERE r.threadId=tools.threadId AND r.turnId=tools.turnId AND r.at BETWEEN tools.at AND tools.completedAt) AS requestSequence FROM tools WHERE threadId=? AND turnId=? ORDER BY at,toolId`,
       threadId,
       turnId,
     );
-    const timeline: Json[] = requests.map((r) => ({
+    const starts = inferRequestStarts(
+      t.startedAt,
+      requests.map((r) => ({ at: r.at })),
+      requestTools.map((tool) => ({ completedAt: tool.completedAt })),
+    );
+    let slowestCall: { kind: "request" | "tool"; id: string } | null = null;
+    let longest = -1;
+    const consider = (
+      kind: "request" | "tool",
+      id: string,
+      elapsed: number | null,
+    ) => {
+      if (elapsed !== null && elapsed >= 0 && elapsed > longest) {
+        longest = elapsed;
+        slowestCall = { kind, id };
+      }
+    };
+    requests.forEach((r, i) =>
+      consider("request", r.id, starts[i] === null ? null : r.at - starts[i]!),
+    );
+    requestTools.forEach((tool) => {
+      if (tool.completedAt !== null)
+        consider("tool", tool.toolId, tool.durationMs);
+    });
+    const timeline: Json[] = requests.map((r, i) => ({
       kind: "request",
       ...r,
+      startedAt: starts[i],
       tools: requestTools
         .filter((t) => t.requestSequence === r.sequence)
-        .map(({ requestSequence, at, ...t }) => t),
+        .map(({ requestSequence, ...t }) => t),
     }));
     for (const { requestSequence, ...tool } of requestTools)
       if (requestSequence === null) timeline.push({ kind: "tool", ...tool });
@@ -376,6 +402,7 @@ export class DataViews {
           },
         },
         timeline: page,
+        slowestCall,
         timelineTotal,
         requestTotal: totals.requests,
         nextOffset:
