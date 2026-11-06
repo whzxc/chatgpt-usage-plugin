@@ -8,3 +8,5 @@ plugins/usage/bin/
 .env.*
 *.key
 *.pem
+output/
+design/.sdg/

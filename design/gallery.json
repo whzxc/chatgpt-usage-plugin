@@ -1,0 +1,51 @@
+{
+  "groups": [
+    {
+      "title": "Usage overview",
+      "assets": [
+        "surfaces/entry.tsx",
+        "surfaces/overview.tsx",
+        "surfaces/quota.tsx",
+        "surfaces/task-list.tsx",
+        "surfaces/usage-trend.tsx"
+      ]
+    },
+    {
+      "title": "Task usage",
+      "assets": [
+        "surfaces/task.tsx",
+        "surfaces/context.tsx",
+        "surfaces/turn-loading.tsx",
+        "surfaces/turn.tsx",
+        "surfaces/tool-dialog.tsx"
+      ]
+    },
+    {
+      "title": "Shared components",
+      "assets": [
+        "components/button.tsx",
+        "components/context-allocation.tsx",
+        "components/context-chart.tsx",
+        "components/header.tsx",
+        "components/layout.tsx",
+        "components/legend.tsx",
+        "components/metric-figure.tsx",
+        "components/minimap.tsx",
+        "components/quota-bar.tsx",
+        "components/request-details.tsx",
+        "components/search.tsx",
+        "components/single-choice.tsx",
+        "components/status.tsx",
+        "components/task-list.tsx",
+        "components/task-row.tsx",
+        "components/tool-body.tsx",
+        "components/tool-dialog.tsx",
+        "components/tooltip.tsx",
+        "components/turn-header.tsx",
+        "components/usage-chart.tsx",
+        "components/waterfall-row.tsx",
+        "components/waterfall.tsx"
+      ]
+    }
+  ]
+}

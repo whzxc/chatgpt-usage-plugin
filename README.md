@@ -60,6 +60,8 @@ npm run check:format
 
 The workflow runs only when manually triggered. It builds and checks packages for both supported platforms. With `publish=true` on a matching version tag, it assembles the marketplace, advances `stable` and publishes the release archives. Source pushes, pull requests and tag creation do not trigger builds. See [distribution](docs/distribution.md).
 
+UI proposals and their declared forms live in the [TSX design record](docs/design.md). Design sources use the global `sdg` toolkit.
+
 ## Data and architecture
 
 The host starts a small OS launcher, which locates and validates its bundled Node, then runs `main.mjs mcp` over stdio. The official MCP SDK owns server protocol handling; MCP Apps `App` owns panel transport, initialization, host context, sizing, teardown and resource reload. The browser preview uses `AppBridge`. The process serves the embedded React panel, indexes Codex JSONL logs and reads quota through a short-lived native `account/rateLimits/read` call. Two entry tools, `usage_overview` and `usage_task`, provide validated initial data in `_meta`. Six app-only data tools serve view-specific queries; see [data contracts](docs/data-tools.md). The backend starts no HTTP listener and runs independently of other plugins.

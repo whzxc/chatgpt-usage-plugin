@@ -1,0 +1,91 @@
+import { Frame } from "sdg";
+import { frame, percent, number } from "../scenes/format";
+import { quotaForms, quotaWindows, quotaAccount } from "../scenes/usage";
+import { Panel, Stack, Grid, Section } from "./layout";
+export function QuotaBar({
+  window,
+}: {
+  window: (typeof quotaWindows)[number];
+}) {
+  const remaining = Math.max(0, 100 - window.used),
+    cycle = 100 - (window.elapsed / window.duration) * 100,
+    over = window.used > (window.elapsed / window.duration) * 100 + 10;
+  return (
+    <div class="flex flex-col gap-2">
+      <div class="flex justify-between text-meta gap-4">
+        <span>{window.label}</span>
+        <strong
+          class={remaining === 0 ? "text-danger" : over ? "text-warning" : ""}
+        >
+          剩余 {percent(remaining)}
+        </strong>
+      </div>
+      <div
+        data-free
+        role="meter"
+        aria-label={`${window.label}剩余额度`}
+        aria-valuenow={remaining}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        class="relative h-2 rounded-control bg-border"
+      >
+        <span
+          class={`block h-full rounded-control ${remaining === 0 ? "bg-danger" : over ? "bg-warning" : "bg-accent"}`}
+          style={{ width: `${remaining}%` }}
+        />
+        <i
+          class="absolute top-0 h-2 border-l-2 border-text"
+          style={{ left: `${cycle}%` }}
+        />
+      </div>
+      <div class="flex justify-between text-meta text-muted">
+        <span>周期剩余 {percent(cycle)}</span>
+        <span>{window.reset}</span>
+      </div>
+      {(remaining === 0 || over) && (
+        <span
+          class={`text-meta ${remaining === 0 ? "text-danger" : "text-warning"}`}
+        >
+          {remaining === 0 ? "额度已用完" : "额度消耗快于周期进度"}
+        </span>
+      )}
+    </div>
+  );
+}
+export function QuotaSection({
+  windows = quotaWindows,
+  credits = false,
+}: {
+  windows?: typeof quotaWindows;
+  credits?: boolean;
+}) {
+  return (
+    <Section
+      title="账户额度"
+      actions={<span class="text-meta text-muted">{quotaAccount.plan}</span>}
+    >
+      {credits && (
+        <p class="text-meta text-muted">
+          积分 {number(quotaAccount.credits)} · 可用重置{" "}
+          {number(quotaAccount.availableResets)} 次
+        </p>
+      )}
+      <Grid columns={2}>
+        {windows.map((window) => (
+          <QuotaBar window={window} />
+        ))}
+      </Grid>
+    </Section>
+  );
+}
+export default () => [
+  <Frame {...frame("quota-bar", "windows")}>
+    <Panel>
+      <Stack>
+        {quotaForms.map((window) => (
+          <QuotaBar window={window} />
+        ))}
+      </Stack>
+    </Panel>
+  </Frame>,
+];
