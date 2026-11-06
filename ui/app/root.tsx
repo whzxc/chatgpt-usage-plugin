@@ -4,13 +4,16 @@ import Overview from "../overview/overview";
 import TaskPage from "../task/task";
 import type { OverviewInitial, ThreadData } from "../shared/types";
 import "../shared/layout.css";
+import { Panel } from "../components/ui/controls";
+import { Status } from "../shared/status";
 
 export default function Root() {
   const [initial, setInitial] = useState<OverviewInitial>(),
     [thread, setThread] = useState<string | undefined>(),
     [directThread, setDirectThread] = useState<ThreadData>(),
     [error, setError] = useState("");
-  const scroll = useRef(0);
+  const scroll = useRef(0),
+    returnFocus = useRef<HTMLElement | null>(null);
   useEffect(() => {
     const off = onInitialResult((result) => {
       const meta = (
@@ -33,8 +36,25 @@ export default function Root() {
     return off;
   }, []);
   if (directThread) return <TaskPage initial={directThread} />;
-  if (error) return <main className="app-state">读取失败：{error}</main>;
-  if (!initial) return <main className="app-state">正在读取本机用量。</main>;
+  if (error)
+    return (
+      <Panel>
+        <Status
+          kind="error"
+          message={error}
+          retry={() => {
+            setError("");
+            void initialize().catch((e) => setError(String(e)));
+          }}
+        />
+      </Panel>
+    );
+  if (!initial)
+    return (
+      <Panel>
+        <Status />
+      </Panel>
+    );
   return (
     <>
       <div hidden={!!thread}>
@@ -43,6 +63,7 @@ export default function Root() {
           active={!thread}
           onOpen={(id) => {
             scroll.current = window.scrollY;
+            returnFocus.current = document.activeElement as HTMLElement;
             setThread(id);
             window.scrollTo(0, 0);
           }}
@@ -53,7 +74,10 @@ export default function Root() {
           threadId={thread}
           onBack={() => {
             setThread(undefined);
-            requestAnimationFrame(() => window.scrollTo(0, scroll.current));
+            requestAnimationFrame(() => {
+              returnFocus.current?.focus({ preventScroll: true });
+              window.scrollTo(0, scroll.current);
+            });
           }}
         />
       )}

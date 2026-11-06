@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { clock, compact, money } from "../shared/format";
+import { axisCompact, compact, money } from "../shared/format";
+import { Section, Tooltip } from "../components/ui/controls";
 import type { Thread } from "../shared/types";
 
 export function ContextChart({
@@ -12,31 +13,27 @@ export function ContextChart({
   onOpen: (id: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null),
-    [width, setWidth] = useState(0),
+    [width, setWidth] = useState(672),
     [active, setActive] = useState<number | null>(null);
   useEffect(() => {
-    const observer = new ResizeObserver(([entry]) =>
-      setWidth(entry.contentRect.width),
-    );
+    const observer = new ResizeObserver(([e]) => setWidth(e.contentRect.width));
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
-  const height = 190,
-    top = 18,
-    base = 162,
-    count = thread.requestInputs.length;
+  const count = thread.requestInputs.length,
+    height = active === null ? 180 : 196,
+    bottom = 150;
   const max = Math.max(
     thread.contextWindow ?? 0,
     ...thread.requestInputs.map((n) => n ?? 0),
     1,
   );
-  const x = (i: number) => (i * width) / (count - 1),
-    y = (n: number) => top + (base - top) * (1 - n / max);
+  const x = (i: number) => 8 + (i / Math.max(1, count - 1)) * (width - 16),
+    y = (n: number) => 16 + (bottom - 16) * (1 - n / max);
   const segments = thread.turnStarts
     .flatMap((t) => {
-      if (t.requestSequence === null) return [];
       const turn = thread.turns.find((r) => r.turnId === t.turnId);
-      return turn
+      return turn && t.requestSequence !== null
         ? [
             {
               id: t.turnId,
@@ -49,215 +46,194 @@ export function ContextChart({
     .sort((a, b) => a.start - b.start)
     .map((s, i, all) => ({ ...s, end: (all[i + 1]?.start ?? count) - 1 }));
   let line = "",
-    area = "",
-    start: number | null = null,
-    last = 0;
+    pen = false;
   thread.requestInputs.forEach((n, i) => {
     if (n === null) {
-      if (start !== null)
-        area += ` L${x(last)},${base} L${x(start)},${base} Z `;
-      start = null;
+      pen = false;
       return;
     }
-    const command = `${start === null ? "M" : "L"}${x(i)},${y(n)} `;
-    line += command;
-    area += command;
-    if (start === null) start = i;
-    last = i;
+    line += `${pen ? "L" : "M"}${x(i)},${y(n)} `;
+    pen = true;
   });
-  if (start !== null) area += `L${x(last)},${base} L${x(start)},${base} Z`;
   const marks = thread.compactions.filter(
     (c) => c.requestSequence !== null && c.beforeTokens !== null,
   );
-  const largest = marks.reduce(
-    (best, c) =>
-      !best ||
-      (c.beforeTokens ?? 0) - (c.afterTokens ?? 0) >
-        (best.beforeTokens ?? 0) - (best.afterTokens ?? 0)
-        ? c
-        : best,
-    marks[0],
-  );
-  const labelsFit = marks.every(
-    (c, i) =>
-      i === 0 ||
-      x(c.requestSequence! - 1) - x(marks[i - 1].requestSequence! - 1) > 160,
-  );
   const selected =
-    active === null
-      ? undefined
-      : segments.find((s) => s.start <= active && s.end >= active);
-  const detail = active === null ? undefined : thread.requestDetails[active];
+      active === null
+        ? undefined
+        : segments.find((s) => s.start <= active && s.end >= active),
+    detail = active === null ? undefined : thread.requestDetails[active];
   return (
-    <section className="ctx">
-      <div className="ctx-head">
-        <h2>上下文</h2>
-        <span>每次请求的输入 tokens</span>
-      </div>
+    <Section
+      title="上下文"
+      actions={<span className="meta">每次请求的输入 tokens</span>}
+    >
       <div className="ctx-plot" ref={ref}>
-        {width > 0 && (
-          <>
-            <svg
-              width={width}
-              height={height}
-              role="img"
-              aria-label={`上下文曲线，${count} 次请求，${marks.length} 次压缩，上限 ${compact(thread.contextWindow)}`}
-            >
-              {segments
-                .filter((s) => expanded.has(s.id))
-                .map((s) => (
-                  <rect
-                    className="band"
-                    key={s.id}
-                    x={Math.max(0, x(s.start - 0.5))}
-                    y={top}
-                    width={
-                      Math.min(width, x(s.end + 0.5)) -
-                      Math.max(0, x(s.start - 0.5))
-                    }
-                    height={base - top}
-                  />
-                ))}
-              {thread.contextWindow !== null && (
-                <>
-                  <line
-                    className="limit"
-                    x1={0}
-                    x2={width}
-                    y1={y(thread.contextWindow)}
-                    y2={y(thread.contextWindow)}
-                  />
-                  <text x={width} y={12} textAnchor="end">
-                    上限 {compact(thread.contextWindow)}
-                  </text>
-                </>
-              )}
-              <path className="area" d={area} />
-              <path className="line" d={line} />
-              <line className="base" x1={0} x2={width} y1={base} y2={base} />
-              {segments.map((s, i) => {
-                const left = Math.max(0, x(s.start - 0.5)),
-                  right = Math.min(width, x(s.end + 0.5));
-                return (
-                  <g key={s.id}>
-                    <line
-                      className="tick"
-                      x1={left}
-                      x2={left}
-                      y1={base}
-                      y2={base + 5}
-                    />
-                    {(i === 0 ||
-                      i === segments.length - 1 ||
-                      right - left >= 22) && (
-                      <text
-                        x={(left + right) / 2}
-                        y={height - 6}
-                        textAnchor="middle"
-                      >
-                        {s.number}
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-              {marks.map((c, i) => (
-                <g key={i}>
-                  <circle
-                    className="mark"
-                    cx={x(c.requestSequence! - 1)}
-                    cy={y(c.beforeTokens!)}
-                    r={4}
-                  />
-                  {(labelsFit || c === largest) && (
-                    <text
-                      className="mark-label"
-                      x={Math.max(
-                        4,
-                        Math.min(width - 160, x(c.requestSequence! - 1) - 30),
-                      )}
-                      y={
-                        y(c.beforeTokens!) < top + 12
-                          ? y(c.beforeTokens!) + 18
-                          : y(c.beforeTokens!) - 9
-                      }
-                    >
-                      压缩 {compact(c.beforeTokens)} → {compact(c.afterTokens)}
-                    </text>
-                  )}
-                </g>
-              ))}
-              {active !== null && thread.requestInputs[active] !== null && (
-                <circle
-                  className="mark"
-                  cx={x(active)}
-                  cy={y(thread.requestInputs[active]!)}
-                  r={4}
+        <svg
+          width="100%"
+          height={height}
+          role="img"
+          aria-label={`上下文曲线，${thread.contextWindow === null ? "容量未知" : `上限 ${axisCompact(max)}`}`}
+        >
+          {[max, max / 2, 0].map((v) => (
+            <line
+              key={v}
+              x1={8}
+              x2={width - 8}
+              y1={y(v)}
+              y2={y(v)}
+              className="ctx-grid"
+            />
+          ))}
+          <text x={width - 8} y={12} textAnchor="end">
+            {thread.contextWindow === null
+              ? "容量未知"
+              : `上限 ${axisCompact(max)}`}
+          </text>
+          <text x={8} y={y(max / 2) - 6}>
+            {axisCompact(max / 2)}
+          </text>
+          {segments
+            .filter((s) => expanded.has(s.id))
+            .map((s) => (
+              <rect
+                key={s.id}
+                x={x(s.start)}
+                y={16}
+                width={Math.max(0, x(s.end) - x(s.start))}
+                height={bottom - 16}
+                fill="var(--selected)"
+              />
+            ))}
+          {active !== null && thread.requestInputs[active] !== null && (
+            <line
+              x1={x(active)}
+              x2={x(active)}
+              y1={y(thread.requestInputs[active]!) + 8}
+              y2={height}
+              stroke="var(--accent)"
+              strokeDasharray="4 4"
+            />
+          )}
+          <path d={line} fill="none" stroke="var(--accent)" strokeWidth={2} />
+          {thread.requestInputs.map((n, i) =>
+            n === null ? null : (
+              <circle key={i} cx={x(i)} cy={y(n)} r={3} fill="var(--accent)" />
+            ),
+          )}
+          {marks.map((c, i) => {
+            const px = x(Math.max(0, c.requestSequence! - 2)),
+              py = y(c.beforeTokens!);
+            return (
+              <g key={i}>
+                <polygon
+                  points={`${px},${py - 6} ${px + 6},${py} ${px},${py + 6} ${px - 6},${py}`}
+                  fill="var(--canvas)"
+                  stroke="var(--context-compaction)"
+                  strokeWidth={2}
                 />
-              )}
-            </svg>
-            <div className="ctx-targets">
-              {segments.map((s) => {
-                const left = Math.max(0, x(s.start - 0.5)),
-                  right = Math.min(width, x(s.end + 0.5));
-                return (
-                  <button
-                    key={s.id}
-                    style={{ left, width: right - left }}
-                    aria-label={`展开第 ${s.number} 轮，${s.end - s.start + 1} 次请求`}
-                    aria-expanded={expanded.has(s.id)}
-                    onClick={() => onOpen(s.id)}
-                    onFocus={() => setActive(s.start)}
-                    onBlur={() => setActive(null)}
-                    onMouseMove={(e) => {
-                      const local = e.nativeEvent.offsetX;
-                      setActive(
-                        Math.min(
-                          s.end,
-                          Math.max(
-                            s.start,
-                            Math.round(((left + local) * (count - 1)) / width),
-                          ),
-                        ),
-                      );
-                    }}
-                    onMouseLeave={() => setActive(null)}
-                  />
-                );
-              })}
-            </div>
-            {active !== null && selected && detail && (
-              <div
-                className="ctx-tip"
-                role="tooltip"
+                <text
+                  x={Math.max(8, Math.min(width - 168, px - 140))}
+                  y={py < 32 ? py + 20 : py - 12}
+                >
+                  压缩 {compact(c.beforeTokens)} → {compact(c.afterTokens)}
+                </text>
+              </g>
+            );
+          })}
+          {active !== null && thread.requestInputs[active] !== null && (
+            <circle
+              cx={x(active)}
+              cy={y(thread.requestInputs[active]!)}
+              r={6}
+              fill="var(--canvas)"
+              stroke="var(--accent)"
+              strokeWidth={3}
+            />
+          )}
+          {segments.map((s) => (
+            <text
+              key={s.id}
+              x={x(s.start + Math.floor((s.end - s.start) / 2))}
+              y={174}
+              textAnchor="middle"
+            >
+              第 {s.number} 轮
+            </text>
+          ))}
+        </svg>
+        <div className="ctx-targets" style={{ height: 150 }}>
+          {thread.requestInputs.map((n, i) => {
+            const segment = segments.find((s) => s.start <= i && s.end >= i);
+            return (
+              <button
+                key={i}
+                aria-label={`第 ${segment?.number ?? "—"} 轮第 ${i - (segment?.start ?? 0) + 1} 次请求，输入 ${compact(n)}`}
+                aria-expanded={segment ? expanded.has(segment.id) : false}
                 style={{
-                  left: Math.max(0, Math.min(width - 210, x(active) - 105)),
+                  left: `${(i / Math.max(1, count)) * 100}%`,
+                  width: `${100 / Math.max(1, count)}%`,
                 }}
-              >
-                <strong>
-                  第 {selected.number} 轮第 {active - selected.start + 1} 次请求
-                </strong>
-                <p>
-                  <span>时间</span>
-                  <span>{clock(detail[0])}</span>
-                </p>
-                <p>
-                  <span>输入</span>
-                  <span>{compact(thread.requestInputs[active])}</span>
-                </p>
-                <p>
-                  <span>输出</span>
-                  <span>{compact(detail[1])}</span>
-                </p>
-                <p>
-                  <span>估算费用</span>
-                  <span>{money(detail[2])}</span>
-                </p>
-              </div>
-            )}
-          </>
+                onFocus={() => setActive(i)}
+                onMouseEnter={() => setActive(i)}
+                onClick={() => {
+                  if (segment) onOpen(segment.id);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setActive(null);
+                  if (
+                    ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
+                  ) {
+                    e.preventDefault();
+                    const next =
+                      e.key === "Home"
+                        ? 0
+                        : e.key === "End"
+                          ? count - 1
+                          : Math.max(
+                              0,
+                              Math.min(
+                                count - 1,
+                                i + (e.key === "ArrowRight" ? 1 : -1),
+                              ),
+                            );
+                    (
+                      e.currentTarget.parentElement?.children[
+                        next
+                      ] as HTMLElement
+                    )?.focus();
+                  }
+                }}
+              />
+            );
+          })}
+        </div>
+        {active !== null && selected && detail && (
+          <div className="inspection context-inspection">
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                width: 240,
+                maxWidth: "100%",
+                left: Math.max(0, Math.min(width - 240, x(active) - 120)),
+              }}
+            >
+              <Tooltip
+                title={`第 ${selected.number} 轮第 ${active - selected.start + 1} 次请求`}
+                rows={[
+                  {
+                    label: "输入",
+                    value: compact(thread.requestInputs[active]),
+                  },
+                  { label: "输出", value: compact(detail[1]) },
+                  { label: "估算费用", value: money(detail[2]) },
+                ]}
+              />
+            </div>
+          </div>
         )}
       </div>
-    </section>
+    </Section>
   );
 }

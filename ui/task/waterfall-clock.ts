@@ -3,7 +3,6 @@ import {
   axisTime,
   barLabelLeft,
   interpolateRange,
-  rangeTicks,
   viewportRange,
 } from "./waterfall-range";
 import type { TimeRange, ViewportSpan } from "./waterfall-range";
@@ -83,7 +82,13 @@ export function useWaterfallClock(
         "--wf-map-width",
         `${(100 * (range.end - range.start)) / total()}%`,
       );
-      const ticks = rangeTicks(range),
+      const rangeLabel = element.querySelector(".wf-visible-range");
+      if (rangeLabel)
+        rangeLabel.textContent = `可见 ${axisTime(range.start)}–${axisTime(range.end)}`;
+      const ticks = Array.from(
+          { length: 4 },
+          (_, i) => range.start + ((range.end - range.start) * i) / 3,
+        ),
         key = ticks.join();
       for (const id of visible) {
         const entry = labels.get(id);

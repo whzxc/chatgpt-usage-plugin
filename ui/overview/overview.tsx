@@ -1,21 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { SingleChoice as Segmented } from "../components/ui/SingleChoice";
+import { SingleChoice } from "../components/ui/SingleChoice";
+import {
+  Button,
+  Header,
+  Section,
+  MetricGrid,
+  Search,
+  Tooltip,
+} from "../components/ui/controls";
+import { Chevron } from "../components/ui/Icons";
+import { Status, Indexing, Failure } from "../shared/status";
 import { usePoll } from "../shared/poll";
 import { callData } from "../app/bridge";
-import { Chevron, RefreshIcon, SearchIcon, WarningIcon } from "../shared/icons";
 import {
-  bucketTitle,
-  chartScale,
   compact,
-  fullTime,
+  axisCompact,
+  calendarTime,
+  duration,
   integer,
   money,
   percent,
   productName,
-  quotaPercent,
   time,
-  ttft,
-  when,
 } from "../shared/format";
 import type {
   OverviewInitial,
@@ -30,412 +36,355 @@ const ranges: [Range, string][] = [
   ["7d", "7 天"],
   ["30d", "30 天"],
 ];
-const colors = (slot: number) =>
+export const modelColor = (slot: number) =>
   slot === 1
-    ? "var(--m1)"
+    ? "var(--model-primary)"
     : slot === 2
-      ? "var(--m2)"
-      : slot === 3
-        ? "var(--m3)"
-        : "var(--ink-3)";
-function QuotaBlock({ quota, retry }: { quota: Quota; retry: () => void }) {
-  if (quota.state === "loading")
-    return (
-      <section className="account quota-error">
-        <span>正在读取账户额度</span>
-      </section>
-    );
-  if (quota.state !== "ready")
-    return (
-      <section className="account quota-error">
-        <span>无法读取账户额度：{quota.reason || "账户不可用"}</span>
-        <button className="text-btn" onClick={retry}>
-          重试
-        </button>
-      </section>
-    );
-  const windows = [...quota.windows].sort(
-    (a, b) => (a.durationMinutes ?? Infinity) - (b.durationMinutes ?? Infinity),
-  );
-  const tense = windows.reduce<(typeof windows)[number] | undefined>(
-    (best, w) =>
-      !best ||
-      w.usedPercent - (w.elapsedPercent ?? w.usedPercent) >
-        best.usedPercent - (best.elapsedPercent ?? best.usedPercent)
-        ? w
-        : best,
-    undefined,
-  );
+      ? "var(--model-secondary)"
+      : "var(--model-other)";
+export function QuotaBar({ window: w }: { window: Quota["windows"][number] }) {
+  const remaining = Math.max(0, Math.min(100, 100 - w.usedPercent));
+  const cycle =
+    w.elapsedPercent === null
+      ? null
+      : 100 - Math.max(0, Math.min(100, w.elapsedPercent));
+  const over =
+    w.elapsedPercent !== null && w.usedPercent > w.elapsedPercent + 10;
+  const name =
+    w.durationMinutes === 10080
+      ? "每周"
+      : w.durationMinutes
+        ? `${Math.round(w.durationMinutes / 60)} 小时`
+        : w.id;
+  const reset =
+    w.resetsAt === null
+      ? "—"
+      : new Date(w.resetsAt).toDateString() === new Date().toDateString()
+        ? time(w.resetsAt)
+        : calendarTime(w.resetsAt);
   return (
-    <section className="account" aria-labelledby="account-title">
-      <div className="account-head">
-        <h2 id="account-title">账户额度</h2>
-        {quota.plan && <span className="plan">{productName(quota.plan)}</span>}
-        <div className="account-meta">
-          {quota.credits != null && <span>积分 {integer(quota.credits)}</span>}
-          {quota.availableResets != null && (
-            <span>可用重置 {integer(quota.availableResets)} 次</span>
-          )}
-        </div>
+    <div className="quota">
+      <div className="quota-line">
+        <span>{name}</span>
+        <strong
+          className={remaining === 0 ? "danger" : over ? "warning" : undefined}
+        >
+          {`剩余 ${percent(remaining)}`}
+        </strong>
       </div>
-      {windows.map((w) => {
-        const over =
-          w.usedPercent >= 100 ||
-          (w.exhaustsAt != null &&
-            w.resetsAt != null &&
-            w.exhaustsAt < w.resetsAt) ||
-          (w.elapsedPercent != null && w.usedPercent > w.elapsedPercent + 10);
-        const now = 100 - Math.max(0, Math.min(100, w.elapsedPercent ?? 0));
-        const remaining = Math.max(0, Math.min(100, 100 - w.usedPercent));
-        const name =
-          w.durationMinutes === 10080
-            ? "每周"
-            : w.durationMinutes
-              ? `${Math.round(w.durationMinutes / 60)} 小时`
-              : w.id;
-        return (
-          <div className="quota" key={w.id}>
-            <div
-              className="meter"
-              role="meter"
-              aria-label={`${name}额度剩余 ${quotaPercent(remaining)}，周期剩余 ${quotaPercent(now)}`}
-              aria-valuenow={remaining}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <span
-                className={`meter-fill ${w.usedPercent >= 100 ? "critical" : over ? "over" : ""}`}
-                style={{ width: `${remaining}%` }}
-              />
-              <span className="meter-now" style={{ left: `${now}%` }} />
-              <span
-                className={`meter-label ${now < 5 ? "at-start" : now > 95 ? "at-end" : ""}`}
-                style={{ left: `${now}%` }}
-              >
-                现在
-              </span>
-            </div>
-            <span className="quota-used num">
-              剩余 {quotaPercent(remaining)}
-            </span>
-            {w === tense && (
-              <div className="quota-notes">
-                {over ? (
-                  <span className="pace">
-                    <WarningIcon />
-                    <span>
-                      {w.usedPercent >= 100
-                        ? `额度已用完，${fullTime(w.resetsAt)} 重置`
-                        : w.exhaustsAt
-                          ? `按当前速度约 ${Math.max(1, Math.round((w.exhaustsAt - Date.now()) / 36e5))} 小时后用完`
-                          : "额度消耗快于周期进度"}
-                    </span>
-                  </span>
-                ) : (
-                  <span />
-                )}
-                <span className="quota-facts">
-                  {w.cycleUsd != null && (
-                    <span>整周约合 {money(w.cycleUsd)}</span>
-                  )}
-                  {w.resetsAt && <span>{fullTime(w.resetsAt)} 重置</span>}
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </section>
-  );
-}
-
-function Figures({ summary }: { summary: Summary }) {
-  const t = summary.totals,
-    cache = t.input ? (100 * (t.cached ?? 0)) / t.input : 0;
-  const rows = [
-    [
-      "估算费用",
-      money(t.cost),
-      "",
-      t.costIncomplete ? "部分模型未定价，费用偏低" : "按 API 价格估算",
-    ],
-    [
-      "Tokens",
-      compact(t.tokens ?? (summary.models.length === 0 ? 0 : null)),
-      "",
-      `输入 ${compact(t.input ?? (summary.models.length === 0 ? 0 : null))}，输出 ${compact(t.output ?? (summary.models.length === 0 ? 0 : null))}`,
-    ],
-    ["缓存命中", percent(cache), "", `${compact(t.cached)} 来自缓存`],
-    ["请求", integer(t.requests), "", `${integer(t.tasks)} 个任务`],
-    [
-      "TPS",
-      t.outputTps == null ? "—" : t.outputTps.toFixed(1),
-      t.outputTps == null ? "" : "tok/s",
-      "整轮输出 tokens ÷ 用时",
-    ],
-    [
-      "TTFT",
-      t.ttftMedianMs == null ? "—" : (t.ttftMedianMs / 1000).toFixed(1),
-      t.ttftMedianMs == null ? "" : "s",
-      `P90 ${ttft(t.ttftP90Ms)}, P99 ${ttft(t.ttftP99Ms)}`,
-    ],
-  ];
-  return (
-    <div className="figures">
-      {rows.map(([l, v, u, d]) => (
-        <div className="figure" key={l}>
-          <span className="label">{l}</span>
-          <strong className="value num">
-            {v}
-            {u && <span className="unit">{u}</span>}
-          </strong>
-          <span className="detail">{d}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function UsageChart({ summary, range }: { summary: Summary; range: Range }) {
-  const ref = useRef<HTMLDivElement>(null),
-    [width, setWidth] = useState(0),
-    [metric, setMetric] = useState<"tokens" | "cost">("tokens"),
-    [active, setActive] = useState<number | null>(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    const observer = new ResizeObserver(([entry]) =>
-      setWidth(Math.round(entry.contentRect.width)),
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  const chartWidth = Math.max(280, width),
-    height = 220,
-    left = 48,
-    right = 8,
-    top = 12,
-    bottom = 28,
-    inner = chartWidth - left - right;
-  const totals = summary.buckets.map((b) =>
-      b.models.reduce((n, m) => n + (m[metric] ?? 0), 0),
-    ),
-    scale = chartScale(Math.max(...totals, 0)),
-    max = scale.maximum;
-  const step = inner / Math.max(1, summary.buckets.length),
-    bar = Math.min(24, step * 0.6);
-  const models = [...summary.models].sort(
-    (a, b) => (a.slot || 9) - (b.slot || 9),
-  );
-  const ticks = scale.ticks;
-  return (
-    <div className="trend">
-      <div>
-        <div className="trend-head">
-          <h3>每日用量</h3>
-          <Segmented
-            value={metric}
-            label="图表指标"
-            options={[
-              ["tokens", "Tokens"],
-              ["cost", "费用"],
-            ]}
-            onChange={setMetric}
-          />
-        </div>
-        <div className="chart" ref={ref}>
-          {width > 0 && (
-            <svg
-              width={chartWidth}
-              height={height}
-              role="img"
-              aria-label={`${range === "today" ? "今天每小时" : "每日"}${metric === "tokens" ? " Tokens" : "费用"}用量`}
-            >
-              {ticks.map((v, i) => {
-                const y = top + (height - top - bottom) * (1 - v / max);
-                return (
-                  <g key={i}>
-                    <line
-                      className="grid"
-                      x1={left}
-                      x2={chartWidth - right}
-                      y1={y}
-                      y2={y}
-                    />
-                    <text x={left - 8} y={y + 4} textAnchor="end">
-                      {metric === "tokens" ? compact(v) : money(v)}
-                    </text>
-                  </g>
-                );
-              })}
-              {summary.buckets.map((bucket, i) => {
-                const x = left + i * step + step / 2,
-                  isActive = active === i;
-                let y = height - bottom;
-                const label =
-                  i === summary.buckets.length - 1
-                    ? range === "today"
-                      ? "现在"
-                      : "今天"
-                    : new Date(bucket.at).toLocaleDateString(
-                        "zh-CN",
-                        range === "today"
-                          ? { hour: "2-digit" }
-                          : { month: "numeric", day: "numeric" },
-                      );
-                return (
-                  <g
-                    key={bucket.at}
-                    onMouseEnter={() => setActive(i)}
-                    onMouseLeave={() => setActive(null)}
-                    onFocus={() => setActive(i)}
-                    onBlur={() => setActive(null)}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={`${label}，${metric === "tokens" ? compact(totals[i]) : money(totals[i]!)}`}
-                  >
-                    <rect
-                      className="hover-band"
-                      opacity={isActive ? 1 : 0}
-                      x={left + i * step + 2}
-                      y={top}
-                      width={Math.max(1, step - 4)}
-                      height={height - top - bottom}
-                    />
-                    {models.map((model) => {
-                      const val =
-                        bucket.models.find((m) => m.id === model.id)?.[
-                          metric
-                        ] ?? 0;
-                      if (!val) return null;
-                      const h = Math.max(
-                          1.5,
-                          (val / max) * (height - top - bottom),
-                        ),
-                        current = y - h;
-                      y = current;
-                      return (
-                        <rect
-                          key={model.id}
-                          x={x - bar / 2}
-                          y={current}
-                          width={bar}
-                          height={h}
-                          fill={colors(model.slot)}
-                          rx={2}
-                        />
-                      );
-                    })}
-                    <text
-                      className={
-                        i === summary.buckets.length - 1 ? "today" : ""
-                      }
-                      x={x}
-                      y={height - 8}
-                      textAnchor="middle"
-                    >
-                      {label}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          )}
-          {active != null && (
-            <ChartTip
-              summary={summary}
-              index={active}
-              metric={metric}
-              range={range}
-              left={left + active * step + step / 2}
-              width={chartWidth}
-            />
-          )}
-        </div>
+      <div
+        className="meter"
+        role="meter"
+        aria-label={`${name}剩余额度`}
+        aria-valuenow={remaining}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
+        <span
+          className={`meter-fill ${remaining === 0 ? "critical" : over ? "over" : ""}`}
+          style={{ width: `${remaining}%` }}
+        />
+        {cycle !== null && (
+          <i className="meter-now" style={{ left: `${cycle}%` }} />
+        )}
       </div>
-      {models.length > 1 && (
-        <ul className="legend">
-          {models.map((m) => {
-            const total = summary.models.reduce(
-              (n, x) => n + (x[metric] ?? 0),
-              0,
-            );
-            return (
-              <li key={m.id}>
-                <span
-                  className="swatch"
-                  style={{ background: colors(m.slot) }}
-                />
-                <span className="name">{m.id}</span>
-                <strong className="val">
-                  {metric === "tokens" ? compact(m.tokens) : money(m.cost)}
-                </strong>
-                <span className="sub">
-                  {percent(total ? (100 * (m[metric] ?? 0)) / total : 0)} ·{" "}
-                  {money(m.cost)} · {integer(m.requests)} req · TPS{" "}
-                  {m.outputTps == null ? "—" : m.outputTps.toFixed(1)}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+      <div className="quota-line muted">
+        <span>{`周期剩余 ${percent(cycle)}`}</span>
+        <span>{`${reset} 重置`}</span>
+      </div>
+      {(remaining === 0 || over) && (
+        <span className={remaining === 0 ? "danger" : "warning"}>
+          {remaining === 0 ? "额度已用完" : "额度消耗快于周期进度"}
+        </span>
       )}
     </div>
   );
 }
-function ChartTip({
+export function QuotaBlock({
+  quota,
+  retry,
+}: {
+  quota: Quota;
+  retry: () => void;
+}) {
+  return (
+    <Section
+      title="账户额度"
+      actions={
+        quota.state === "ready" &&
+        quota.plan && <span className="meta">{productName(quota.plan)}</span>
+      }
+    >
+      {quota.state === "loading" ? (
+        <Status message="正在读取账户额度" />
+      ) : quota.state !== "ready" ? (
+        <Failure
+          error={`无法读取账户额度：${quota.reason || "账户不可用"}`}
+          retry={retry}
+        />
+      ) : (
+        <>
+          {(quota.credits !== null || quota.availableResets !== null) && (
+            <p className="meta">
+              {quota.credits !== null && `积分 ${integer(quota.credits)}`}
+              {quota.credits !== null &&
+                quota.availableResets !== null &&
+                " · "}
+              {quota.availableResets !== null &&
+                `可用重置 ${integer(quota.availableResets)} 次`}
+            </p>
+          )}
+          <div className="quota-grid">
+            {[...quota.windows]
+              .sort(
+                (a, b) =>
+                  (a.durationMinutes ?? Infinity) -
+                  (b.durationMinutes ?? Infinity),
+              )
+              .map((w) => (
+                <QuotaBar key={w.id} window={w} />
+              ))}
+          </div>
+        </>
+      )}
+    </Section>
+  );
+}
+export function summaryFigures(t: Summary["totals"]) {
+  return [
+    {
+      label: "估算费用",
+      value: money(t.cost),
+      detail: t.costIncomplete ? "部分模型未定价" : "按 API 价格估算",
+    },
+    {
+      label: "Tokens",
+      value: compact(t.tokens),
+      detail: `输入 ${compact(t.input)} · 输出 ${compact(t.output)}`,
+    },
+    {
+      label: "缓存命中",
+      value: percent(
+        t.input && t.cached !== null ? (100 * t.cached) / t.input : null,
+      ),
+      detail: `${compact(t.cached)} 来自缓存`,
+    },
+    {
+      label: "请求",
+      value: integer(t.requests),
+      detail: `${integer(t.tasks)} 个任务`,
+    },
+    {
+      label: "TPS",
+      value: t.outputTps === null ? "—" : t.outputTps.toFixed(1),
+      detail: "tok/s · 按整轮用时",
+    },
+    {
+      label: "TTFT",
+      value: duration(t.ttftMedianMs),
+      detail: `P90 ${duration(t.ttftP90Ms)} · P99 ${duration(t.ttftP99Ms)}`,
+    },
+  ];
+}
+export function Figures({ summary }: { summary: Summary }) {
+  return <MetricGrid items={summaryFigures(summary.totals)} />;
+}
+export function ModelLegend({
   summary,
-  index,
-  metric,
-  range,
-  left,
-  width,
+  metric = "tokens",
 }: {
   summary: Summary;
-  index: number;
-  metric: "tokens" | "cost";
-  range: Range;
-  left: number;
-  width: number;
+  metric?: "tokens" | "cost";
 }) {
-  const bucket = summary.buckets[index]!;
-  const models = [...summary.models].sort(
-    (a, b) => (a.slot || 9) - (b.slot || 9),
-  );
-  const total = bucket.models.reduce((n, m) => n + (m[metric] ?? 0), 0);
-  const position =
-    left > 220
-      ? { right: Math.max(0, width - left + 18) }
-      : { left: left + 18 };
+  const total = summary.models.reduce((sum, m) => sum + (m[metric] ?? 0), 0);
   return (
-    <div className="tip" style={position}>
-      <strong>{bucketTitle(bucket.at, range)}</strong>
-      {models.map((m) => (
-        <div className="tip-row" key={m.id}>
-          <span className="dot" style={{ background: colors(m.slot) }} />
-          <span>{m.id}</span>
-          <span className="v">
-            {metric === "tokens"
-              ? compact(bucket.models.find((x) => x.id === m.id)?.tokens ?? 0)
-              : money(bucket.models.find((x) => x.id === m.id)?.cost ?? 0)}
+    <div className="legend">
+      {summary.models.map((m) => (
+        <div className="legend-item" key={m.id}>
+          <div className="legend-head">
+            <i className="swatch" style={{ background: modelColor(m.slot) }} />
+            <span className="name">{m.id}</span>
+            <strong>
+              {metric === "tokens" ? compact(m.tokens) : money(m.cost)}
+            </strong>
+          </div>
+          <span className="meta">
+            {`${percent(total && m[metric] !== null ? (100 * m[metric]!) / total : null)} · ${money(m.cost)} · ${integer(m.requests)} req · ${m.outputTps === null ? "—" : m.outputTps.toFixed(1)} tok/s`}
           </span>
         </div>
       ))}
-      <div className="tip-sum">
-        <span>合计</span>
-        <span>{metric === "tokens" ? compact(total) : money(total)}</span>
-      </div>
-      <div className="tip-sum">
-        <span>估算费用</span>
-        <span>
-          {money(bucket.models.reduce((n, m) => n + (m.cost ?? 0), 0))}
-        </span>
-      </div>
     </div>
   );
 }
-
-function TaskTable({
+export function UsageChart({
+  summary,
+  range,
+}: {
+  summary: Summary;
+  range: Range;
+}) {
+  const [metric, setMetric] = useState<"tokens" | "cost">("tokens"),
+    [active, setActive] = useState<number | null>(null);
+  const models = [...summary.models].sort((a, b) => a.slot - b.slot),
+    hourly = range === "today";
+  const totals = summary.buckets.map((b) =>
+    b.models.reduce((sum, m) => sum + (m[metric] ?? 0), 0),
+  );
+  const step = metric === "tokens" ? 100000 : 0.5,
+    maximum = Math.max(step, Math.ceil(Math.max(...totals, 0) / step) * step);
+  const label = (at: number) => {
+    const d = new Date(at);
+    return hourly
+      ? String(d.getHours()).padStart(2, "0")
+      : `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const format = metric === "tokens" ? compact : money;
+  return (
+    <Section
+      title={hourly ? "今天每小时用量" : "每日用量"}
+      actions={
+        <SingleChoice
+          label="图表指标"
+          value={metric}
+          options={[
+            ["tokens", "Tokens"],
+            ["cost", "费用"],
+          ]}
+          onChange={setMetric}
+        />
+      }
+    >
+      <div className="usage-plot">
+        <div className="usage-scale">
+          {[maximum, maximum / 2, 0].map((v) => (
+            <span key={v}>
+              {metric === "tokens" ? axisCompact(v) : money(v)}
+            </span>
+          ))}
+        </div>
+        <div
+          className={`usage-buckets${hourly ? " hourly" : ""}`}
+          style={{
+            gridTemplateColumns: `repeat(${Math.max(1, summary.buckets.length)},minmax(0,1fr))`,
+          }}
+        >
+          {summary.buckets.map((b, i) => (
+            <button
+              className="usage-bucket"
+              key={b.at}
+              aria-label={`${label(b.at)}，${format(totals[i])}`}
+              aria-pressed={active === i}
+              onMouseEnter={() => setActive(i)}
+              onFocus={() => setActive(i)}
+              onClick={() => setActive(i)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setActive(null);
+                if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                  e.preventDefault();
+                  const next = Math.max(
+                    0,
+                    Math.min(
+                      summary.buckets.length - 1,
+                      i + (e.key === "ArrowRight" ? 1 : -1),
+                    ),
+                  );
+                  (
+                    e.currentTarget.parentElement?.children[next] as HTMLElement
+                  )?.focus();
+                }
+              }}
+            >
+              <span className="usage-bar">
+                {models.map((m) => (
+                  <i
+                    key={m.id}
+                    style={{
+                      height: `${((b.models.find((x) => x.id === m.id)?.[metric] ?? 0) / maximum) * 100}%`,
+                      background: modelColor(m.slot),
+                    }}
+                  />
+                ))}
+              </span>
+              <span>{!hourly || i % 4 === 0 ? label(b.at) : " "}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      {active !== null && summary.buckets[active] && (
+        <div className="inspection">
+          <div
+            style={{
+              position: "absolute",
+              width: 240,
+              maxWidth: "100%",
+              left: `clamp(0px, calc(60px + (100% - 60px) * ${(active + 0.5) / summary.buckets.length} - 120px), max(0px, 100% - 240px))`,
+            }}
+          >
+            <Tooltip
+              title={label(summary.buckets[active].at)}
+              rows={models.map((m) => ({
+                label: m.id,
+                value: format(
+                  summary.buckets[active].models.find((x) => x.id === m.id)?.[
+                    metric
+                  ] ?? null,
+                ),
+              }))}
+            />
+          </div>
+        </div>
+      )}
+      {models.length > 1 && <ModelLegend summary={summary} metric={metric} />}
+    </Section>
+  );
+}
+export function TaskColumns() {
+  return (
+    <div className="task-columns">
+      {["任务", "Tokens", "估算费用", "缓存命中", "TPS", "TTFT"].map((t) => (
+        <span key={t}>{t}</span>
+      ))}
+    </div>
+  );
+}
+export function TaskRow({
+  task: t,
+  open,
+}: {
+  task: Tasks["tasks"][number];
+  open: (id: string) => void;
+}) {
+  return (
+    <div className="task-row" onClick={() => open(t.threadId)}>
+      <div className="task-title">
+        <button
+          className="task-name"
+          onClick={(e) => {
+            e.stopPropagation();
+            open(t.threadId);
+          }}
+        >
+          {t.title || t.threadId}
+        </button>
+        <span className="task-sub">
+          {`${integer(t.turns)} 轮 · ${integer(t.requests)} 次请求 · ${calendarTime(t.lastActivity)}${t.running ? " · 进行中" : ""}`}
+        </span>
+      </div>
+      {[
+        compact(t.tokens),
+        money(t.cost),
+        percent(
+          t.input && t.cached !== null ? (100 * t.cached) / t.input : null,
+        ),
+        t.outputTps === null ? "—" : t.outputTps.toFixed(1),
+        duration(t.ttftMedianMs),
+      ].map((v, i) => (
+        <span key={i}>{v}</span>
+      ))}
+    </div>
+  );
+}
+export function TaskTable({
   data,
   sort,
   query,
@@ -455,119 +404,52 @@ function TaskTable({
   const start = data.total ? (data.page - 1) * data.pageSize + 1 : 0,
     end = Math.min(data.total, data.page * data.pageSize);
   return (
-    <section className="tasks" aria-labelledby="tasks-title">
-      <div className="section-head">
-        <h2 id="tasks-title">任务</h2>
-        <span className="count">{integer(data.total)}</span>
-        <div className="tools">
-          <Segmented
-            value={sort}
-            label="任务排序"
-            options={[
-              ["recent", "最近活动"],
-              ["cost", "费用"],
-              ["tokens", "Tokens"],
-            ]}
-            onChange={setSort}
-          />
-          <label className="search">
-            <SearchIcon />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="搜索任务"
-              aria-label="搜索任务"
-            />
-          </label>
+    <Section title={`任务 ${integer(data.total)}`}>
+      <div className="task-filters">
+        <SingleChoice
+          label="任务排序"
+          value={sort}
+          options={[
+            ["recent", "最近活动"],
+            ["cost", "费用"],
+            ["tokens", "Tokens"],
+          ]}
+          onChange={setSort}
+        />
+        <Search value={query} onChange={setQuery} />
+      </div>
+      {data.tasks.length ? (
+        <div className="task-grid">
+          <TaskColumns />
+          {data.tasks.map((t) => (
+            <TaskRow task={t} key={t.threadId} open={open} />
+          ))}
         </div>
-      </div>
-      <div className="task-table-scroll">
-        <table className="table">
-          <colgroup>
-            <col />
-            <col style={{ width: 96 }} />
-            <col className="col-hit" style={{ width: 96 }} />
-            <col style={{ width: 104 }} />
-            <col style={{ width: 80 }} />
-            <col style={{ width: 80 }} />
-            <col className="col-last" style={{ width: 112 }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>任务</th>
-              <th>Tokens</th>
-              <th className="col-hit">缓存命中</th>
-              <th>估算费用</th>
-              <th>TPS</th>
-              <th>TTFT</th>
-              <th className="col-last">最近活动</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.tasks.map((t) => {
-              const hit = t.input ? (100 * (t.cached ?? 0)) / t.input : 0;
-              return (
-                <tr key={t.threadId} onClick={() => open(t.threadId)}>
-                  <td>
-                    <button
-                      className="task-name"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        open(t.threadId);
-                      }}
-                    >
-                      {t.title || t.threadId}
-                    </button>
-                    <span className="task-sub">
-                      {integer(t.turns)} 轮，{integer(t.requests)} 次请求
-                      {t.running ? "，进行中" : ""}
-                      <span className="task-when">
-                        ，{when(t.lastActivity)}
-                      </span>
-                    </span>
-                  </td>
-                  <td>{compact(t.tokens)}</td>
-                  <td className="cell-muted col-hit">{percent(hit)}</td>
-                  <td>{money(t.cost)}</td>
-                  <td>{t.outputTps == null ? "—" : t.outputTps.toFixed(1)}</td>
-                  <td>{ttft(t.ttftMedianMs)}</td>
-                  <td className="cell-muted col-last">
-                    {when(t.lastActivity)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      ) : (
+        <Status kind="empty" message="没有匹配的任务" />
+      )}
       <div className="pager">
-        <span>
-          第 {start}–{end} 个，共 {integer(data.total)} 个
-        </span>
+        <span>{`第 ${start}–${end} 个，共 ${integer(data.total)} 个`}</span>
         <div className="btns">
-          <button
-            className="icon-btn"
-            aria-label="上一页"
+          <Button
+            label="上一页"
             disabled={data.page <= 1}
             onClick={() => setPage(data.page - 1)}
           >
             <Chevron />
-          </button>
-          <button
-            className="icon-btn"
-            aria-label="下一页"
+          </Button>
+          <Button
+            label="下一页"
             disabled={end >= data.total}
             onClick={() => setPage(data.page + 1)}
           >
             <Chevron next />
-          </button>
+          </Button>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
-
 export default function Overview({
   initial,
   onOpen,
@@ -615,14 +497,19 @@ export default function Overview({
     ]);
     if (controller.signal.aborted) return;
     const [s, t, q] = results;
-    if (s.status === "fulfilled") setSummary(s.value);
-    if (t.status === "fulfilled") setTasks(t.value);
-    if (q.status === "fulfilled") setQuota(q.value);
-    setError(
-      results
-        .flatMap((r) => (r.status === "rejected" ? [String(r.reason)] : []))
-        .join("；"),
-    );
+    const failed =
+      results.some((r) => r.status === "rejected") ||
+      (s.status === "fulfilled" && s.value.index.state === "unavailable") ||
+      (t.status === "fulfilled" && t.value.index.state === "unavailable") ||
+      (q.status === "fulfilled" &&
+        quota.state === "ready" &&
+        q.value.state !== "ready");
+    if (!failed) {
+      if (s.status === "fulfilled") setSummary(s.value);
+      if (t.status === "fulfilled") setTasks(t.value);
+      if (q.status === "fulfilled") setQuota(q.value);
+    }
+    setError(failed ? "更新失败" : "");
     setBusy(false);
   };
   useEffect(() => {
@@ -695,92 +582,63 @@ export default function Overview({
   const index = summary.index;
   return (
     <main className="overview">
-      <header className="topbar">
-        <h1>用量</h1>
-        <div className="updated">
-          {(busy || quota.observedAt) && (
-            <span>{busy ? "正在更新" : `${time(quota.observedAt)} 更新`}</span>
-          )}
-          <button
-            className={`icon-btn ${busy ? "is-busy" : ""}`}
-            aria-label="刷新"
-            disabled={busy}
-            onClick={() => void load(true)}
-          >
-            <RefreshIcon />
-          </button>
-        </div>
-      </header>
+      <Header
+        title="用量"
+        busy={busy}
+        updated={quota.observedAt}
+        refresh={() => void load(true)}
+      />
       <QuotaBlock quota={quota} retry={() => void load(true)} />
-      <section className="local" aria-labelledby="local-title">
-        <div className="section-head">
-          <h2 id="local-title">本机用量</h2>
-          {index.state === "ready" && (
-            <div className="tools">
-              <Segmented
-                value={range}
-                label="用量范围"
-                options={ranges}
-                onChange={chooseRange}
-              />
-            </div>
-          )}
-        </div>
+      {error && <Status kind="stale" retry={() => void load()} />}
+      <Section
+        title="本机用量"
+        actions={
+          index.state === "ready" && (
+            <SingleChoice
+              value={range}
+              label="用量范围"
+              options={ranges}
+              onChange={chooseRange}
+              disabled={busy}
+            />
+          )
+        }
+      >
         {index.state === "indexing" ? (
-          <div className="indexing" role="status">
-            <p className="indexing-title">正在建立本机用量索引</p>
-            <p>
-              已读取 {integer(index.total)} 个会话文件中的{" "}
-              {integer(index.processed)} 个。
-            </p>
-            <div className="progress">
-              <span
-                style={{
-                  width: `${index.total ? (100 * index.processed) / index.total : 0}%`,
-                }}
-              />
-            </div>
-          </div>
+          <Indexing index={index} />
         ) : index.state === "unavailable" ? (
-          <div className="inline-error">
-            读取失败：{index.reason}
-            <button className="text-btn" onClick={() => void load()}>
-              重试
-            </button>
-          </div>
+          <Failure
+            error={index.reason || "无法读取本机用量"}
+            retry={() => void load()}
+          />
+        ) : (
+          <Figures summary={summary} />
+        )}
+      </Section>
+      {index.state === "ready" &&
+        (summary.totals.requests === 0 ? (
+          <Status kind="empty" />
         ) : (
           <>
-            <Figures summary={summary} />
-            {summary.totals.requests === 0 ? (
-              <div className="empty-chart">这个时间范围内没有用量记录</div>
+            {summary.totals.tokens === null ? (
+              <Status kind="warning" message="部分模型未定价，用量字段缺失。" />
             ) : (
               <UsageChart summary={summary} range={range} />
             )}
+            <TaskTable
+              data={tasks}
+              sort={sort}
+              query={query}
+              setSort={(v) => {
+                setSort(v);
+                setPage(1);
+              }}
+              setQuery={setQuery}
+              setPage={setPage}
+              open={onOpen}
+            />
           </>
-        )}
-      </section>
-      {index.state === "ready" && (
-        <TaskTable
-          data={tasks}
-          sort={sort}
-          query={query}
-          setSort={(v) => {
-            setSort(v);
-            setPage(1);
-          }}
-          setQuery={setQuery}
-          setPage={setPage}
-          open={onOpen}
-        />
-      )}{" "}
-      {error && (
-        <div className="inline-error">
-          读取失败：{error}
-          <button className="text-btn" onClick={() => void load()}>
-            重试
-          </button>
-        </div>
-      )}
+        ))}
     </main>
   );
 }

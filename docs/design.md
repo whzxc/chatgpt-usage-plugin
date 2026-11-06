@@ -1,6 +1,6 @@
 # TSX design record
 
-Status: **proposal pending user approval**.
+Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers every source and frame listed below.
 
 [Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md)
 
@@ -8,13 +8,13 @@ Status: **proposal pending user approval**.
 
 Quiet Native uses a neutral host canvas, restrained teal emphasis, flat sections and thin dividers. The body is 14px, metadata 12px, headings 20px and major figures 28px. Panels use 24px padding and 24px section spacing; controls use 8px corners, panels 12px and dialogs 16px. Only modal dialogs have elevation. The interface stays inside the ChatGPT MCP panel without adding an application sidebar or window chrome.
 
-The user selected this direction. Approval of the complete library is pending. These sources propose presentation; the existing React UI remains the current implementation.
+The runtime implements this direction with shared React controls and host-bound semantic tokens. The approved TSX sources remain the visual reference.
 
 ## Source and capture contract
 
-Use the global `sdg` version 0.4.3 or later. `sdg.config.mjs` deliberately has no compare adapter. The implementation segment supplies the reserved fixtures, route preparation, ready conditions and selectors. No toolkit dependency is added to this project.
+Use the global `sdg` version 0.4.3 or later. `sdg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
 
-- `design/tokens.css` owns the proposal's semantic palette and geometry.
+- `design/tokens.css` owns the approved semantic palette and geometry.
 - `design/components/` exports parameterized presentation functions and component specimens.
 - `design/surfaces/` composes components without duplicating their markup.
 - `design/scenes/usage.ts`, `context.ts`, `chart.ts` and `tool.ts` own fictional records and calculated projections. `forms.ts` declares surface presentations; `format.ts` owns formatting and frame metadata.
@@ -33,15 +33,15 @@ Renders are written to `output/design/<source>/<frame>-light.png` and `-dark.png
 
 ## Token-to-host mapping
 
-`ui/theme.ts` selects `data-theme` from the MCP host and copies supplied CSS variables onto the root. `ui/tokens.css` currently binds those variables to runtime aliases. The table describes the intended implementation binding; it does not modify the runtime sheet. The static design uses concrete light/dark fallback values so checks and review renders are deterministic. Preserve host-provided canvas, text and border values when integrating the approved design.
+`ui/theme.ts` selects `data-theme` from the MCP host and copies supplied CSS variables onto the root. `ui/tokens.css` implements the bindings below, retaining the runtime aliases used by the charts. Removed host overrides are cleared when the host supplies a replacement variable set. The static design uses concrete light/dark fallback values so checks and review renders are deterministic. Host-provided canvas, text, border, fonts and radii take precedence over local fallbacks.
 
-| Design tokens                                                                  | Host binding / current runtime role                                                                | Proposal rule                                                                                                                                                      |
+| Design tokens                                                                  | Host binding / current runtime role                                                                | Implementation binding                                                                                                                                             |
 | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--font-ui`                                                                    | Host `--font-sans`; current `--font`                                                               | Use host family when supplied, otherwise the design system stack.                                                                                                  |
 | `--font-mono`                                                                  | Host `--font-mono`; current `--mono`                                                               | Use host family when supplied, otherwise SF Mono / Menlo / Consolas.                                                                                               |
 | `--canvas`                                                                     | `--color-background-primary`; `--ground`                                                           | Host primary background, with white / `#212121` fallback.                                                                                                          |
 | `--surface`                                                                    | `--color-background-secondary`; `--well`                                                           | Host secondary background, with `#f5f5f5` / `#2b2b2b` fallback.                                                                                                    |
-| `--raised`                                                                     | `--raised`, currently primary background in light and a local dark override                        | Keep the existing binding strategy; proposal dark fallback is `#343434`. No unverified elevated-background host variable is assumed.                               |
+| `--raised`                                                                     | `--raised`, currently primary background in light and a local dark override                        | Keep the existing binding strategy; dark fallback is `#343434`. No unverified elevated-background host variable is assumed.                                        |
 | `--text`                                                                       | `--color-text-primary`; `--ink`                                                                    | Primary text; fallback `#202020` / `#eeeeee`.                                                                                                                      |
 | `--muted`                                                                      | `--color-text-secondary`; `--ink-2`                                                                | Secondary text; fallback `#666666` / `#b6b6b6`.                                                                                                                    |
 | `--subtle`                                                                     | `--color-text-tertiary`; `--ink-3`                                                                 | Tertiary/disabled information; fallback `#757575` / `#a0a0a0`.                                                                                                     |
@@ -61,7 +61,7 @@ Renders are written to `output/design/<source>/<frame>-light.png` and `-dark.png
 | `--context-messages`, `--context-fixed`                                        | Local context uses of `--ink-3`, `--ink-2`                                                         | Neutral categories, independent of model ranking.                                                                                                                  |
 | `--context-compaction`                                                         | Local context use of `--m4`                                                                        | Amber for compaction. Context tool results use `--model-primary`, reasoning uses `--model-secondary`, tool calls use `--tool`; remaining capacity uses `--border`. |
 | `--text-meta`, `--text-small`, `--text-body`, `--text-title`, `--text-display` | No currently consumed host size variable                                                           | Local 12 / 13 / 14 / 20 / 28px scale.                                                                                                                              |
-| `--radius-control`, `--radius-panel`, `--radius-dialog`                        | Host `--border-radius-sm`, `--border-radius-md`, `--border-radius-lg`; current `--radius-sm/md/lg` | Host radius when supplied; proposal fallbacks 8 / 12 / 16px.                                                                                                       |
+| `--radius-control`, `--radius-panel`, `--radius-dialog`                        | Host `--border-radius-sm`, `--border-radius-md`, `--border-radius-lg`; current `--radius-sm/md/lg` | Host radius when supplied; fallbacks 8 / 12 / 16px.                                                                                                                |
 | `--control-height`, `--icon-size`, `--panel-padding`, `--section-gap`          | Local geometry; no host binding                                                                    | 32 / 16 / 24 / 24px.                                                                                                                                               |
 
 ## Data semantics
@@ -89,13 +89,13 @@ Overview navigation preserves filters and scroll position on return. Task rows a
 
 Model rows and their tool children form contiguous groups. Request details follow the last visible child, with a shared accent rail and a request-number/title heading tying them to the selected model row. The waterfall remains a keyboard tree: Up/Down/Home/End move, Left/Right collapse and expand, Enter opens details, and Escape closes details with focus restored. Default branches remain collapsed except running/failed/slowest or materially time-consuming branches. Static forms show representative branches, not event handlers. The minimap remains keyboard operable and disables navigation while its target loads. The waterfall viewport follows visible rows while the minimap retains the whole-turn domain; sticky chrome must not obscure a label's only copy. Reduced motion avoids animated range transitions.
 
-Task titles, task-row titles and long prompts wrap within their text column; metadata stays together as one compact line where space permits. Numeric columns retain their alignment. A selected chart's inspection card anchors below its selected bucket/point in reserved space, preserving data visibility. Context selection uses a teal ring and a leader ending at the card; compaction uses a separate amber diamond and its before/after label. The context scale labels its midpoint gridline. These are deliberate proposal differences from single-line truncation and floating tooltips.
+Task titles, task-row titles and long prompts wrap within their text column; metadata stays together as one compact line where space permits. Numeric columns retain their alignment. A selected chart's inspection card anchors below its selected bucket/point in reserved space, preserving data visibility. Context selection uses a teal ring and a leader ending at the card; compaction uses a separate amber diamond and its before/after label. The context scale labels its midpoint gridline. Inspection cards reserve space below the data and keep the selected point visible.
 
 Copy controls are disabled when their content is unavailable. Tool dialogs have one close control, initial focus on close, modal focus containment, Escape/backdrop dismissal and focus restoration. Long code has its own bounded scroll region. Copy failure stays next to the content and does not masquerade as a tool-fetch failure. Loading/error forms do not display fabricated successful measurements.
 
 ## Declared forms
 
-Every name below reserves an implementation fixture. All captures are page captures with viewport `720x2400`; all frames are 720px wide. Partial surfaces and component fixtures render at page origin. Themes use the same form. The compare adapter is added only in the implementation segment.
+Every name below resolves to an implementation fixture. All captures are page captures with viewport `720x2400`; all frames are 720px wide. Partial surfaces and component fixtures render at page origin. Themes use the same form. The fixture manifest is `tooling/design-review/fixtures.json`.
 
 | Source                              | Frame                    | Fixture                                   |
 | ----------------------------------- | ------------------------ | ----------------------------------------- |
@@ -175,4 +175,33 @@ The library contains 22 component sources and 10 surface sources, with 69 declar
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 
-User approval is required for the complete library before UI implementation. The implementation segment must resolve the reserved fixtures against the real data contracts, bind host tokens, replace current visual rules within their owning components, and add the compare adapter. Static sources do not implement pointer, keyboard, focus or host resize behavior.
+The user approved all 22 component sources, 10 surface sources and 69 frames on 2026-11-06 at commit `2f983b9`. Runtime pointer, keyboard, focus and host resize behavior belongs to the React implementation.
+
+## Runtime and compare adapter
+
+Shared buttons, headers, sections, figures, search, tooltips, single choices and Lucide icons live in `ui/components/ui/`. Surface controllers keep their polling, navigation and data-tool contracts. Request details sit after the selected request's visible children; Escape and the close action restore the request's focus. The native tool dialog contains focus, restores its opener and disables copying unavailable text. Stale refreshes preserve the last complete view with a single retry notice.
+
+```sh
+npm run dev:design
+# http://127.0.0.1:5191/__design/review?fixture=cup-overview-ready
+sdg compare surfaces/overview.tsx --frame=ready
+# Acceptance owns the complete sweep:
+sdg compare --all
+CUP_REVIEW_THEME=dark sdg compare --all
+```
+
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains exactly the 69 names in the declared-forms table. `npm run check` includes the fixture projections and compositions.
+
+The adapter fixes the clock to `2026-11-06T06:32:00Z`, the locale to `zh-CN` and the timezone to `Asia/Shanghai`. It waits for the fixture-ready marker, fails on a fixture error, and prepares chart inspection, refresh failure, narrative loading, dialog copy failure and keyboard focus through runtime controls. Live API and external HTTPS requests are blocked. Both themes use the same fixtures; `CUP_REVIEW_THEME=dark` selects the dark capture.
+
+The production build starts at `ui/app/main.tsx`; it has no import of the review entry, fixture bridge or design scenes. Packaging copies the generated UI/backend and plugin assets, leaving `tooling/design-review/` and `design/` outside the installed plugin.
+
+## Reachability and drift
+
+All declared forms have runtime fixture compositions; no frame is intentionally unbound. Component and isolated-section fixtures mount the exported runtime component at the page origin. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
+
+`cup-turn-partial` uses the runtime's padded visible-row time range (0–24.96s for its loaded prefix), while the static frame labels 0–24s. Its summary and minimap still cover the complete 45s turn. This timing-range drift preserves the existing scroll-following behavior and is visible in the compare review.
+
+Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, as the approved static form does; runtime default folding still follows measured duration, failure and running state.
+
+Full-library visual comparison and interaction acceptance run in the separate acceptance thread before push or release.

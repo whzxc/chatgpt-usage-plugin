@@ -1,17 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { callData } from "../app/bridge";
-import {
-  compact,
-  duration,
-  integer,
-  money,
-  ttft,
-  when,
-} from "../shared/format";
+import { compact, duration, integer, money } from "../shared/format";
 import { usePoll } from "../shared/poll";
-import { Failure } from "../shared/status";
+import { Failure, Status } from "../shared/status";
 import type { Turn, TurnData, TurnSummary } from "../shared/types";
-import { ZapIcon } from "../shared/icons";
+import { Chevron } from "../components/ui/Icons";
 import { Waterfall } from "./waterfall";
 import { ToolDialog } from "./tool-dialog";
 
@@ -72,7 +65,7 @@ export function TurnRow({
       }
       return true;
     } catch (e) {
-      if (alive.current) setError(String(e));
+      if (alive.current) setError(e instanceof Error ? e.message : String(e));
       return false;
     } finally {
       pending.current = false;
@@ -87,14 +80,6 @@ export function TurnRow({
     3000,
     open && summary.status === "running-at-last-event",
   );
-  const status =
-    summary.status === "running-at-last-event"
-      ? "进行中"
-      : summary.status === "interrupted"
-        ? "已中断"
-        : summary.status === "failed"
-          ? "失败"
-          : null;
   const timeline = useMemo(() => {
     let requestCount = 0;
     return (data?.timeline ?? []).filter((row) => {
@@ -109,52 +94,16 @@ export function TurnRow({
       className={"turn" + (open ? " is-open" : "")}
       id={"turn-" + summary.turnId}
     >
-      <button
-        className="turn-head"
-        aria-expanded={open}
-        aria-controls={"body-" + summary.turnId}
-        onClick={toggle}
-      >
-        <span className="turn-no">{summary.sequence}</span>
-        <span className="turn-main">
-          <span className="turn-prompt">
-            {(open && data ? data.prompt : summary.prompt) ||
-              (summary.scheduled ? (
-                <span className="turn-tag">定时任务</span>
-              ) : (
-                "未提供文字请求"
-              ))}
-          </span>
-          <span className="turn-meta">
-            <span>{when(summary.startedAt)}</span>
-            <span>{duration(summary.durationMs)}</span>
-            <span>{integer(summary.requests)} 次请求</span>
-            <span>TTFT {ttft(summary.ttftMs)}</span>
-            <span>
-              {summary.outputTps === null
-                ? "—"
-                : summary.outputTps.toFixed(1) + " tok/s"}
-            </span>
-            {summary.compacted && <span className="flag">压缩上下文</span>}
-            {status && <span>{status}</span>}
-            {(summary.serviceTier === "fast" ||
-              summary.serviceTier === "priority") && (
-              <span className="turn-fast">
-                <ZapIcon />
-                Fast
-              </span>
-            )}
-          </span>
-        </span>
-        <span className="turn-cost">
-          <b>{money(summary.cost)}</b>
-          <small>{compact(summary.tokens)}</small>
-        </span>
-      </button>
+      <TurnHeader
+        summary={summary}
+        open={open}
+        toggle={toggle}
+        prompt={open && data ? data.prompt : undefined}
+      />
       {open && (
         <div className="turn-body" id={"body-" + summary.turnId}>
           {error && <Failure error={error} retry={() => void load(true)} />}
-          {!data && !error && <p className="turn-meta">正在读取轮次。</p>}
+          {!data && !error && <Status message="正在读取轮次" />}
           {data && (
             <>
               <Waterfall
@@ -200,5 +149,73 @@ export function TurnRow({
         />
       )}
     </article>
+  );
+}
+
+export function TurnHeader({
+  summary,
+  open = false,
+  toggle,
+  prompt,
+}: {
+  summary: TurnSummary;
+  open?: boolean;
+  toggle: () => void;
+  prompt?: string | null;
+}) {
+  const status =
+    summary.status === "running-at-last-event"
+      ? "进行中"
+      : summary.status === "interrupted"
+        ? "已中断"
+        : summary.status === "failed"
+          ? "失败"
+          : "已完成";
+  return (
+    <button
+      className="turn-head"
+      aria-expanded={open}
+      aria-controls={"body-" + summary.turnId}
+      onClick={toggle}
+    >
+      <span className="turn-no">
+        {String(summary.sequence).padStart(2, "0")}
+      </span>
+      <span className="turn-main">
+        <span className="turn-prompt">
+          <span>
+            {prompt ||
+              summary.prompt ||
+              (summary.scheduled ? "定时任务" : "未提供文字请求")}
+          </span>
+          <span className={open ? "is-open" : undefined}>
+            <Chevron next />
+          </span>
+        </span>
+        {!open && (
+          <span className="turn-meta">
+            {duration(summary.durationMs)} · {integer(summary.requests)} 次请求
+            · TTFT {duration(summary.ttftMs)}
+            {summary.compacted ? " · 压缩上下文" : ""}
+            {summary.serviceTier === "fast" ||
+            summary.serviceTier === "priority"
+              ? " · Fast"
+              : ""}
+          </span>
+        )}
+      </span>
+      <span className="turn-cost">
+        <span
+          className={`turn-state ${summary.status === "failed" ? "failed" : ""}`}
+        >
+          {status}
+        </span>
+        {!open && (
+          <small>
+            {money(summary.cost)} · {compact(summary.tokens)}
+          </small>
+        )}
+      </span>
+    </button>
   );
 }

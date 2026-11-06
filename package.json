@@ -8,14 +8,15 @@
     "node": ">=24.19.0 <25"
   },
   "scripts": {
-    "check": "tsc --noEmit -p ui/tsconfig.json && tsc --noEmit -p server/tsconfig.json",
+    "check": "tsc --noEmit -p ui/tsconfig.json && tsc --noEmit -p server/tsconfig.json && tsc --noEmit -p tooling/design-review/tsconfig.json",
     "build:ui": "node tooling/build-plugin.mjs",
     "build": "node tooling/build.mjs",
     "dev": "node tooling/dev.mjs",
     "plugin:dev": "node tooling/plugin-dev.mjs",
     "plugin:build": "node tooling/package.mjs",
     "plugin:check": "node tooling/check-plugin.mjs",
-    "check:format": "prettier --check \"server/**/*.ts\" runtime/check-runtime.cjs \"ui/**/*.{ts,tsx,css}\" \"tooling/*.mjs\""
+    "check:format": "prettier --check \"server/**/*.ts\" runtime/check-runtime.cjs \"ui/**/*.{ts,tsx,css}\" \"tooling/*.mjs\" \"tooling/design-review/*.{ts,tsx}\" sdg.config.mjs",
+    "dev:design": "node tooling/design-dev.mjs"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.3.1",
