@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.3.0
+
+- Redesign Usage overview and Task usage with Quiet Native styling, clearer metric hierarchy, compact controls and consistent host-themed surfaces.
+- Explore calls within each turn on a waterfall timeline, with a scrollable viewport and a full-turn minimap for navigating long turns.
+- Keep call branches collapsed by default and expand them to inspect timing and call details.
+
 ## 0.2.6
 
 - Center the task empty state with an inbox icon and hide its update controls.
