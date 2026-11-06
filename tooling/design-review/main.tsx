@@ -48,6 +48,7 @@ import { longOutput } from "../../design/scenes/tool";
 import { compact, money } from "../../ui/shared/format";
 import {
   reviewClock,
+  scrollTurn,
   summaryData,
   tasksData,
   quotaData,
@@ -167,7 +168,7 @@ function WaterfallFixture({
   form: string;
   header?: boolean;
 }) {
-  const scene = variant(form),
+  const scene = form === "scroll" ? scrollTurn : variant(form),
     turn = turnData(scene),
     summary = turnSummary(scene),
     [partial, setPartial] = useState(form === "partial"),
@@ -191,7 +192,12 @@ function WaterfallFixture({
           back={noop}
         />
       )}
-      <div className="stack">
+      <div
+        className="stack"
+        style={
+          form === "scroll" ? { height: 480, overflowY: "auto" } : undefined
+        }
+      >
         <TurnHeader summary={summary} open toggle={noop} />
         <Waterfall
           timeline={timeline}
@@ -472,6 +478,8 @@ function Content() {
     content = <RowFixture unknown={fixture.endsWith("unknown")} />;
   else if (fixture === "cup-waterfall-completed")
     content = <WaterfallFixture form="completed" />;
+  else if (fixture === "cup-waterfall-scroll")
+    content = <WaterfallFixture form="scroll" />;
   else if (fixture.startsWith("cup-turn-loading-"))
     content = (
       <TurnRow

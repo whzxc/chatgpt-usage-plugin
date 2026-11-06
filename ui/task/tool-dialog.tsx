@@ -22,7 +22,7 @@ export function ToolBody({
         <div>
           <h3>{title}</h3>
           {body.truncated && (
-            <p className="meta">{bytes(body.bytes)} · 只显示前 16,000 字符</p>
+            <p className="meta">{`${bytes(body.bytes)} · 只显示前 16,000 字符`}</p>
           )}
         </div>
         <Button
@@ -119,8 +119,7 @@ export function ToolDialog({
               <p
                 className={`meta${tool.exitCode !== null && tool.exitCode !== 0 ? " danger" : ""}`}
               >
-                用时 {duration(tool.durationMs)} · 退出码 {tool.exitCode ?? "—"}{" "}
-                · 返回 {bytes(tool.output.bytes)}
+                {`用时 ${duration(tool.durationMs)} · 退出码 ${tool.exitCode ?? "—"} · 返回 ${bytes(tool.output.bytes)}`}
               </p>
             )}
           </div>

@@ -7,7 +7,12 @@ import { Header } from "../components/header";
 import { Waterfall } from "../components/waterfall";
 export default () =>
   turnForms.map((name) => (
-    <Frame {...frame("turn", name)}>
+    <Frame
+      {...frame("turn", name)}
+      {...(name === "running"
+        ? { capture: { selector: ".panel", viewport: "720x2400" } }
+        : {})}
+    >
       <Panel>
         <Header title={copy.task} back />
         <Waterfall

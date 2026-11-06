@@ -136,7 +136,7 @@ export function ContextChart({
                   x={Math.max(8, Math.min(width - 168, px - 140))}
                   y={py < 32 ? py + 20 : py - 12}
                 >
-                  压缩 {compact(c.beforeTokens)} → {compact(c.afterTokens)}
+                  {`压缩 ${compact(c.beforeTokens)} → ${compact(c.afterTokens)}`}
                 </text>
               </g>
             );
@@ -158,7 +158,7 @@ export function ContextChart({
               y={174}
               textAnchor="middle"
             >
-              第 {s.number} 轮
+              {`第 ${s.number} 轮`}
             </text>
           ))}
         </svg>

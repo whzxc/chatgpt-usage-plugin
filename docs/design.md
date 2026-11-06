@@ -95,7 +95,7 @@ Copy controls are disabled when their content is unavailable. Tool dialogs have 
 
 ## Declared forms
 
-Every name below resolves to an implementation fixture. All captures are page captures with viewport `720x2400`; all frames are 720px wide. Partial surfaces and component fixtures render at page origin. Themes use the same form. The fixture manifest is `tooling/design-review/fixtures.json`.
+Every name below resolves to an implementation fixture. Captures use viewport `720x2400`; all frames are 720px wide. The running turn captures the `.panel` element at its full natural height, including the final status note. Other frames use page captures. Partial surfaces and component fixtures render at page origin. Themes use the same form. The fixture manifest is `tooling/design-review/fixtures.json`.
 
 | Source                              | Frame                    | Fixture                                   |
 | ----------------------------------- | ------------------------ | ----------------------------------------- |
@@ -190,7 +190,9 @@ sdg compare --all
 CUP_REVIEW_THEME=dark sdg compare --all
 ```
 
-`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains exactly the 69 names in the declared-forms table. `npm run check` includes the fixture projections and compositions.
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 69 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
+
+For viewport-following interaction review, open `/__design/review?fixture=cup-waterfall-scroll`. It repeats the fictional turn records with distinct IDs and timestamps across six minutes in a 480px scroll container. Scroll through the calls or navigate with the minimap; the visible range and selection window follow the visible rows. With the system's reduced-motion preference enabled, range changes apply immediately without interpolation. This fixture has no additional design frame and is excluded from the packaged plugin with the other review data.
 
 The adapter fixes the clock to `2026-11-06T06:32:00Z`, the locale to `zh-CN` and the timezone to `Asia/Shanghai`. It waits for the fixture-ready marker, fails on a fixture error, and prepares chart inspection, refresh failure, narrative loading, dialog copy failure and keyboard focus through runtime controls. Live API and external HTTPS requests are blocked. Both themes use the same fixtures; `CUP_REVIEW_THEME=dark` selects the dark capture.
 
@@ -202,6 +204,6 @@ All declared forms have runtime fixture compositions; no frame is intentionally 
 
 `cup-turn-partial` uses the runtime's padded visible-row time range (0–24.96s for its loaded prefix), while the static frame labels 0–24s. Its summary and minimap still cover the complete 45s turn. This timing-range drift preserves the existing scroll-following behavior and is visible in the compare review.
 
-Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, as the approved static form does; runtime default folding still follows measured duration, failure and running state.
+Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, and the running turn fixture folds its first branch to match the approved static forms. Runtime default folding still follows measured duration, failure and running state.
 
 Full-library visual comparison and interaction acceptance run in the separate acceptance thread before push or release.

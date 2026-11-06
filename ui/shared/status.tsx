@@ -53,7 +53,7 @@ export function Status({
       {kind === "indexing" && (
         <>
           <div className="status-progress-label">
-            已读取 {integer(processed)} / {integer(total)}
+            {`已读取 ${integer(processed)} / ${integer(total)}`}
           </div>
           <div
             className="progress"

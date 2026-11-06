@@ -214,7 +214,7 @@ export function CurrentContext({ context }: { context: Thread["context"] }) {
       title="当前占用"
       actions={
         <span className="meta">
-          {compact(context.used)} / {compact(limit)} tokens
+          {`${compact(context.used)} / ${compact(limit)} tokens`}
         </span>
       }
     >

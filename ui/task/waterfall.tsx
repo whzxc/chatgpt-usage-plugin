@@ -556,11 +556,7 @@ export const TraceRow = memo(function TraceRow({
                 : `${duration(span.start - origin)}–${duration((span.end ?? Date.now()) - origin)}`}
             </span>
             <span className={span.id === slowest ? "wf-slow-value" : undefined}>
-              <span className="wf-duration">{timing}</span>
-              {span.request && (
-                <span className="wf-cost"> · {money(span.request.cost)}</span>
-              )}
-              {span.id === slowest && " · 最慢"}
+              {`${timing}${span.request ? ` · ${money(span.request.cost)}` : ""}${span.id === slowest ? " · 最慢" : ""}`}
             </span>
           </span>
         </div>
@@ -744,16 +740,13 @@ export function RequestDetailsPanel({
       }}
     >
       <header>
-        <h3>
-          请求 #{request.sequence} · {span.label}
-        </h3>
+        <h3>{`请求 #${request.sequence} · ${span.label}`}</h3>
         <Button label="关闭请求详情" onClick={close}>
           <CloseIcon />
         </Button>
       </header>
       <p className="meta">
-        {span.elapsed !== null && span.elapsed < 100 ? "起点推算不可靠。" : ""}
-        模型起点由轮次或前次调用完成时间推算，可能包含等待；无每请求 TTFT。
+        {`${span.elapsed !== null && span.elapsed < 100 ? "起点推算不可靠。" : ""}模型起点由轮次或前次调用完成时间推算，可能包含等待；无每请求 TTFT。`}
       </p>
       <dl>
         {facts.map(([label, value]) => (

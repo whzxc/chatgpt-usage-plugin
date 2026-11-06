@@ -194,13 +194,7 @@ export function TurnHeader({
         </span>
         {!open && (
           <span className="turn-meta">
-            {duration(summary.durationMs)} · {integer(summary.requests)} 次请求
-            · TTFT {duration(summary.ttftMs)}
-            {summary.compacted ? " · 压缩上下文" : ""}
-            {summary.serviceTier === "fast" ||
-            summary.serviceTier === "priority"
-              ? " · Fast"
-              : ""}
+            {`${duration(summary.durationMs)} · ${integer(summary.requests)} 次请求 · TTFT ${duration(summary.ttftMs)}${summary.compacted ? " · 压缩上下文" : ""}${summary.serviceTier === "fast" || summary.serviceTier === "priority" ? " · Fast" : ""}`}
           </span>
         )}
       </span>
@@ -211,9 +205,7 @@ export function TurnHeader({
           {status}
         </span>
         {!open && (
-          <small>
-            {money(summary.cost)} · {compact(summary.tokens)}
-          </small>
+          <small>{`${money(summary.cost)} · ${compact(summary.tokens)}`}</small>
         )}
       </span>
     </button>

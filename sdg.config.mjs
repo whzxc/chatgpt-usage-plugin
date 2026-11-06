@@ -129,6 +129,14 @@ export default {
         await row.press("ArrowRight");
         await row.evaluate((element) => element.blur());
       }
+      if (name === "cup-turn-running") {
+        // The approved review state folds request #1; runtime defaults still
+        // expand the slowest branch when the turn first opens.
+        const row = page.locator('[data-wf-id="request:r1"]');
+        if ((await row.getAttribute("aria-expanded")) === "true")
+          await row.press("ArrowLeft");
+        await row.evaluate((element) => element.blur());
+      }
       if (name === "cup-turn-loading-failure")
         await page.locator(".status-error").waitFor();
       const focus = {

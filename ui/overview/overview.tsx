@@ -126,12 +126,16 @@ export function QuotaBlock({
         <>
           {(quota.credits !== null || quota.availableResets !== null) && (
             <p className="meta">
-              {quota.credits !== null && `积分 ${integer(quota.credits)}`}
-              {quota.credits !== null &&
-                quota.availableResets !== null &&
-                " · "}
-              {quota.availableResets !== null &&
-                `可用重置 ${integer(quota.availableResets)} 次`}
+              {[
+                quota.credits !== null
+                  ? `积分 ${integer(quota.credits)}`
+                  : null,
+                quota.availableResets !== null
+                  ? `可用重置 ${integer(quota.availableResets)} 次`
+                  : null,
+              ]
+                .filter((value) => value !== null)
+                .join(" · ")}
             </p>
           )}
           <div className="quota-grid">

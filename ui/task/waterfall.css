@@ -34,7 +34,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 .wf-heading,
 .wf-row {
@@ -49,16 +49,11 @@
   font-size: 12px;
 }
 .wf-axis {
-  position: relative;
+  display: flex;
+  justify-content: space-between;
   height: 18px;
 }
 .wf-axis span {
-  position: absolute;
-  left: clamp(
-    0px,
-    calc((var(--tick) - var(--wf-start)) * var(--wf-unit) * 1%),
-    calc(100% - 28px)
-  );
   white-space: nowrap;
 }
 .wf-body {

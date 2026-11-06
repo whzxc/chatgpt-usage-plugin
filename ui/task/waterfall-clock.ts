@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { duration } from "../shared/format";
 import {
   axisTime,
   barLabelLeft,
@@ -111,8 +112,7 @@ export function useWaterfallClock(
         ruler.replaceChildren(
           ...ticks.map((at) => {
             const tick = document.createElement("span");
-            tick.textContent = axisTime(at);
-            tick.style.setProperty("--tick", String(at));
+            tick.textContent = duration(at);
             return tick;
           }),
         );

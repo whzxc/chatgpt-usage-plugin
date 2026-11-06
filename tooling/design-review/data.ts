@@ -35,6 +35,23 @@ import type {
   ContextPart,
 } from "../../ui/shared/types";
 export const reviewClock = Date.parse("2026-11-06T06:32:00Z");
+// A longer fictional turn makes viewport-following and reduced motion reviewable.
+export const scrollTurn: SceneTurn = {
+  ...baseTurn,
+  id: "fictional-scroll-turn",
+  now: 360000,
+  end: 360000,
+  calls: Array.from({ length: 8 }, (_, index) =>
+    baseTurn.calls.map((call) => ({
+      ...call,
+      id: `${call.id}-${index}`,
+      parent: call.parent ? `${call.parent}-${index}` : undefined,
+      start: call.start === null ? null : call.start + index * 45000,
+      end: call.end === null ? null : call.end + index * 45000,
+      at: call.at + index * 45000,
+    })),
+  ).flat(),
+};
 export const readyIndex = {
   state: "ready" as const,
   processed: history.length,

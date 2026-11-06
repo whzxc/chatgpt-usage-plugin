@@ -85,7 +85,7 @@
 .topbar h1 {
   min-width: 0;
   font-size: var(--text-title);
-  line-height: 28px;
+  line-height: 1.5;
   font-weight: 600;
   overflow-wrap: anywhere;
 }

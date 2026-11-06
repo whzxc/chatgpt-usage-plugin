@@ -126,7 +126,7 @@
   bottom: 0;
   border-radius: var(--radius-control);
 }
-.context-inspection {
+.inspection.context-inspection {
   height: 144px;
 }
 @media (max-width: 420px) {
