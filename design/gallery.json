@@ -25,7 +25,8 @@
         "modules/context.tsx",
         "modules/waterfall.tsx",
         "modules/turn-summary.tsx",
-        "modules/request-details.tsx"
+        "modules/request-details.tsx",
+        "modules/tool-dialog.tsx"
       ]
     },
     {
@@ -38,8 +39,6 @@
         "components/search.tsx",
         "components/single-choice.tsx",
         "components/status.tsx",
-        "components/tool-body.tsx",
-        "components/tool-dialog.tsx",
         "components/tooltip.tsx"
       ]
     }

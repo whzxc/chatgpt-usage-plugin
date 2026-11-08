@@ -18,8 +18,8 @@
   "cup-status-feedback",
   "cup-task-list-list-search-empty",
   "cup-task-list-row-selection-long",
-  "cup-tool-body-truncated",
-  "cup-tool-dialog-ready",
+  "cup-tool-dialog-body-truncated",
+  "cup-tool-dialog-dialog-ready",
   "cup-tooltip-bucket",
   "cup-turn-summary-header-states",
   "cup-usage-trend-chart-tokens",
@@ -48,7 +48,6 @@
   "cup-task-unavailable",
   "cup-task-stale",
   "cup-task-long-title",
-  "cup-tool-dialog-surface-ready",
   "cup-tool-dialog-surface-loading",
   "cup-tool-dialog-surface-error",
   "cup-tool-dialog-surface-long",
@@ -75,5 +74,11 @@
   "cup-turn-summary-summary-error",
   "cup-request-details-collapsed",
   "cup-request-details-loading",
-  "cup-request-details-error"
+  "cup-request-details-error",
+  "cup-tool-dialog-dialog-loading",
+  "cup-tool-dialog-dialog-error",
+  "cup-tool-dialog-dialog-long",
+  "cup-tool-dialog-dialog-failed",
+  "cup-tool-dialog-dialog-copy-error",
+  "cup-tool-dialog-dialog-unknown"
 ]

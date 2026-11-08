@@ -88,7 +88,12 @@ export default {
             )
             .waitFor();
       }
-      if (name === "cup-tool-dialog-surface-copy-error") {
+      if (
+        [
+          "cup-tool-dialog-surface-copy-error",
+          "cup-tool-dialog-dialog-copy-error",
+        ].includes(name)
+      ) {
         await page.evaluate(() =>
           Object.defineProperty(navigator, "clipboard", {
             configurable: true,
@@ -105,7 +110,11 @@ export default {
           .getByText("无法复制。请重新复制。", { exact: true })
           .waitFor();
       }
-      if (name.startsWith("cup-tool-dialog-") && !name.endsWith("loading"))
+      if (
+        (name.startsWith("cup-tool-dialog-dialog-") ||
+          name.startsWith("cup-tool-dialog-surface-")) &&
+        !name.endsWith("loading")
+      )
         await page
           .locator(
             name.endsWith("error") && !name.endsWith("copy-error")
@@ -137,7 +146,11 @@ export default {
           await row.press("ArrowLeft");
         await row.evaluate((element) => element.blur());
       }
-      if (name === "cup-turn-loading-failure")
+      if (
+        ["cup-turn-loading-failure", "cup-turn-summary-summary-error"].includes(
+          name,
+        )
+      )
         await page.locator(".status-error").waitFor();
       const focus = {
         "cup-button-actions": '[aria-label="刷新"]',
@@ -155,9 +168,35 @@ export default {
         await page.keyboard.press("Tab");
         await page.locator(focus).first().focus();
       }
-      if (name.startsWith("cup-tool-dialog-")) {
+      if (
+        name.startsWith("cup-tool-dialog-dialog-") ||
+        name.startsWith("cup-tool-dialog-surface-")
+      ) {
         await page.keyboard.press("Tab");
         await page.getByRole("button", { name: "关闭", exact: true }).focus();
+      }
+      if (name.startsWith("cup-tool-dialog-dialog-")) {
+        // Match the module specimen's 4px clearance around the existing 720px modal region.
+        await page.evaluate(() => {
+          const dialog = document.querySelector("dialog");
+          dialog.style.top = "44px";
+          const region = document.createElement("div");
+          region.dataset.designModule = "";
+          const height = dialog.getBoundingClientRect().height + 88;
+          region.style.cssText = `position:absolute;left:0;top:0;width:728px;height:${height}px;padding:4px;background:var(--canvas)`;
+          const overlay = document.createElement("div");
+          overlay.style.cssText =
+            "width:100%;height:100%;background:var(--overlay)";
+          region.append(overlay);
+          document.body.append(region);
+          dialog.close();
+          region.append(dialog);
+          dialog.showModal();
+          dialog.querySelector('button[aria-label="关闭"]').focus();
+          const style = document.createElement("style");
+          style.textContent = ".tool-dialog::backdrop{background:transparent}";
+          document.head.append(style);
+        });
       }
       await page.mouse.move(719, 2399);
     },

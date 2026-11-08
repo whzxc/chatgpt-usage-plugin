@@ -24,7 +24,7 @@ import {
   contextParts,
   fixedDetails,
 } from "../../design/fixtures/context";
-import { longOutput } from "../../design/scenes/tool";
+import { longOutput } from "../../design/fixtures/tool-dialog";
 import type {
   Summary,
   Tasks,

@@ -11,7 +11,7 @@ import {
 export const fixture =
   new URLSearchParams(location.search).get("fixture") || "";
 const form = fixture.replace(
-  /^cup-(overview|task|turn|tool-dialog-surface|tool-dialog)-/,
+  /^cup-(overview|task|turn|tool-dialog-surface|tool-dialog-dialog|tool-dialog)-/,
   "",
 );
 function pending(signal?: AbortSignal): Promise<never> {

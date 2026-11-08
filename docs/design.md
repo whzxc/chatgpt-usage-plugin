@@ -15,12 +15,12 @@ The runtime implements this direction with shared React controls and host-bound 
 Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
 
 - `design/tokens.css` owns the approved semantic palette and geometry.
-- `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. Feature assets remain here until their owning migration batch is reviewed.
+- `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. All feature parts now live in modules; these eight generic families remain in components.
 - `design/modules/` contains migrated feature owners; the ownership table records the current locations.
 - `design/surfaces/` currently contains 6 composition sources. Their local states will move with their owning modules.
 - `design/fixtures/quota.ts` owns quota records; `usage-trend.ts`, `task-list.ts` and `context.ts` own their feature projections and specimen inputs.
 - `design/fixtures/` is the project owner for representative data and fixture projections. `button.ts` supplies the shared Button actions to the design specimen and runtime review fixture.
-- Temporary legacy paths: `design/scenes/usage.ts`, `tool.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
+- Temporary legacy paths: `design/scenes/usage.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
 - Frames use the 720 CSS pixel review basis and implemented fixtures, with page captures at `720x2400`, origin `0 0`, except content-cropped generic specimens, whose current dimensions and selectors are declared in their Frame props and the asset register. Height follows content. Component and isolated section fixtures capture their specimen region; unchanged legacy specimens retain page-origin captures. Complete panel fixtures render the corresponding composition. The viewport accommodates the longest full-content specimen; it does not prescribe the host panel height.
 - The 720px width is the approved review basis, not a claimed ChatGPT default. Runtime width continues to follow `ui/host-size.ts` and the host's `containerDimensions`.
 - Fixtures use Chinese product text, a fixed review clock of `2026-11-06T06:32:00Z`, and `Asia/Shanghai` calendar labels. No frame uses the current system clock or a live source.
@@ -49,13 +49,13 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 | `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `modules/task-list.tsx` |
 | `modules/context.tsx` | ContextChart, ContextAllocation, ContextSection | `modules/context.tsx` |
 | `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `modules/turn-summary.tsx`, `surfaces/turn-loading.tsx` |
-| `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `modules/waterfall.tsx`, `modules/waterfall.tsx`, `modules/waterfall.tsx` |
+| `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `modules/waterfall.tsx` |
 | `modules/request-details.tsx` | RequestDetails | `modules/request-details.tsx` |
-| `modules/tool-dialog.tsx` | ToolBody, ToolDialog | `components/tool-body.tsx`, `components/tool-dialog.tsx` |
+| `modules/tool-dialog.tsx` | ToolBody, ToolDialog | `modules/tool-dialog.tsx` |
 
 Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
 
-Batches 0–2 are approved. The currently authorized batch migrates quota, usage-trend, task-list and context, with one local commit per module before Leo's gallery review. Later feature modules, composed surfaces and unused-asset cleanup retain their separate review scope. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
+Batches 0–3, including context rework, are approved. Batches 4–5 migrate waterfall, turn-summary, request-details and tool-dialog with one local commit per module before Leo's gallery review. Surface simplification remains in batch 6. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
 
 For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `sdg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `sdg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
 
@@ -134,8 +134,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/search.tsx`             | `field`                  | `cup-search-field`                        |
 | `components/single-choice.tsx`      | `selection`              | `cup-single-choice-selection`             |
 | `components/status.tsx`             | `feedback`               | `cup-status-feedback`                     |
-| `components/tool-body.tsx`          | `truncated`              | `cup-tool-body-truncated`                 |
-| `components/tool-dialog.tsx`        | `ready`                  | `cup-tool-dialog-ready`                   |
 | `components/tooltip.tsx`            | `bucket`                 | `cup-tooltip-bucket`                      |
 | `surfaces/entry.tsx`                | `loading`                | `cup-entry-loading`                       |
 | `surfaces/entry.tsx`                | `failure`                | `cup-entry-failure`                       |
@@ -153,7 +151,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `surfaces/task.tsx`                 | `unavailable`            | `cup-task-unavailable`                    |
 | `surfaces/task.tsx`                 | `stale`                  | `cup-task-stale`                          |
 | `surfaces/task.tsx`                 | `long-title`             | `cup-task-long-title`                     |
-| `surfaces/tool-dialog.tsx`          | `ready`                  | `cup-tool-dialog-surface-ready`           |
 | `surfaces/tool-dialog.tsx`          | `loading`                | `cup-tool-dialog-surface-loading`         |
 | `surfaces/tool-dialog.tsx`          | `error`                  | `cup-tool-dialog-surface-error`           |
 | `surfaces/tool-dialog.tsx`          | `long`                   | `cup-tool-dialog-surface-long`            |
@@ -201,12 +198,20 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `modules/request-details.tsx` | `collapsed` | `cup-request-details-collapsed` |
 | `modules/request-details.tsx` | `loading` | `cup-request-details-loading` |
 | `modules/request-details.tsx` | `error` | `cup-request-details-error` |
+| `modules/tool-dialog.tsx` | `dialog-ready` | `cup-tool-dialog-dialog-ready` |
+| `modules/tool-dialog.tsx` | `body-truncated` | `cup-tool-dialog-body-truncated` |
+| `modules/tool-dialog.tsx` | `dialog-loading` | `cup-tool-dialog-dialog-loading` |
+| `modules/tool-dialog.tsx` | `dialog-error` | `cup-tool-dialog-dialog-error` |
+| `modules/tool-dialog.tsx` | `dialog-long` | `cup-tool-dialog-dialog-long` |
+| `modules/tool-dialog.tsx` | `dialog-failed` | `cup-tool-dialog-dialog-failed` |
+| `modules/tool-dialog.tsx` | `dialog-copy-error` | `cup-tool-dialog-dialog-copy-error` |
+| `modules/tool-dialog.tsx` | `dialog-unknown` | `cup-tool-dialog-dialog-unknown` |
 
 Context states belong to their parts: chart selection, missing measurements and unknown capacity; allocation estimates and unknown capacity. `ContextSection` forwards explicit `selected`, `gaps` and `unknownLimit` props with false defaults. It emits the two parts without a layout node, so the task surface owns their spacing and there is no standalone section frame.
 
 ## Approval scope
 
-The library contains 10 component sources, 7 module sources and 6 surface sources, with 76 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 8 component sources, 8 module sources and 6 surface sources, with 81 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 
@@ -225,7 +230,7 @@ sdg compare --all
 CUP_REVIEW_THEME=dark sdg compare --all
 ```
 
-`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 76 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 81 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
 
 For viewport-following interaction review, open `/__design/review?fixture=cup-waterfall-scroll`. It repeats the fictional turn records with distinct IDs and timestamps across six minutes in a 480px scroll container. Scroll through the calls or navigate with the minimap; the visible range and selection window follow the visible rows. With the system's reduced-motion preference enabled, range changes apply immediately without interpolation. This fixture has no additional design frame and is excluded from the packaged plugin with the other review data.
 

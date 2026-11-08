@@ -14,7 +14,7 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
 | Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Approved 2026-11-08 by Leo |
 | Batch 3: quota, usage-trend, task-list, context | Implemented, including context interface and frame rework | Approved 2026-11-08 by Leo |
-| Remaining four feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
+| Batches 4–5: waterfall, turn-summary, request-details, tool-dialog | Implemented: part states and explicit props; surface simplification deferred to batch 6 | Leo gallery review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
 ## Part mappings and consumers
@@ -51,12 +51,12 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/waterfall.tsx` | WaterfallRow | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): TraceRow |
 | `modules/request-details.tsx` | RequestDetails | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): RequestDetailsPanel, NoteDetails |
 | `modules/waterfall.tsx` | Waterfall | turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Waterfall; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
-| `components/tool-body.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
-| `components/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
+| `modules/tool-dialog.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
+| `modules/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
 
 `ContextSection` in `modules/context.tsx` composes ContextChart and ContextAllocation with explicit `selected`, `gaps` and `unknownLimit` props, all false by default. `surfaces/task.tsx` consumes it. Its runtime mapping is ContextChart + CurrentContext in the task page. It emits no layout node; the task surface owns the gap between parts, so no standalone section frame is declared. Chart capture fixtures mount ContextChart alone through ContextChartFixture; allocation fixtures mount CurrentContext.
 
-`trendTip`, `stateLabel` and the `longOutput` re-export are support values rather than independent visual assets. `trendTip` lives in `fixtures/tooltip.ts`; the longOutput re-export remains pending fixture cleanup. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
+`trendTip`, `stateLabel` and `longOutput` are support values rather than independent visual assets. `trendTip` lives in `fixtures/tooltip.ts`; `longOutput` lives in `fixtures/tool-dialog.ts` and is imported directly. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
 
 ## Surface mappings and declared states
 
@@ -73,9 +73,9 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 ## Fixtures, captures and evidence
 
-`design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
+`design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`fixtures/tool-dialog.ts`](../design/fixtures/tool-dialog.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 76 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 81 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -95,7 +95,6 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 | --- | --- |
 | `surfaces/turn.tsx` / partial | Static axis: 0–24s. `cup-turn-partial` runtime visible prefix: 0–24.96s from padded row bounds. Summary and minimap cover the complete 45s. Preserve the runtime scroll-following behavior; retain this explicit fidelity item for the waterfall/surface review. |
 | `cup-waterfall-scroll` | Retained interaction-only fixture: six fictional minutes in a 480px scroll container, shared by viewport-following, minimap navigation and reduced-motion review. No additional design frame; excluded from packaged assets with the other review fixtures. |
-| Existing feature placement | Feature assets temporarily remain in components until their agreed module batch. No import-lint opt-out; each move includes all importers. |
 | Legacy fixture locations | Remaining data in `scenes/usage.ts`, `tool.ts` and `forms.ts` moves to its `fixtures/` owner with the corresponding feature batch. This temporary location ends when those moves close; `scenes/` is not a fixture destination. |
 | Existing frame names and full-width specimens | Retained until their owner is reviewed. Multi-part prefixes, duplicate local surface states and specimen crops remain explicit migration work. |
 | Runtime structure | Empty task direct entry omits a back action; overview navigation retains it. Tool dialogs keep the approved 40px review inset and native viewport bounds. Unknown-start and running review fixtures prepare the approved branch folding through keyboard controls. |
@@ -103,8 +102,8 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 
 ## Remaining work
 
-- Migrate the eight agreed feature owners and their local states; keep generic assets in components.
-- Extract remaining embedded representative content, remove the fixture re-export and give generic assets neutral data interfaces.
+- Obtain gallery approval for the remaining migrated feature owners and their local states; keep generic assets in components.
+- Extract remaining embedded representative content and give generic assets neutral data interfaces.
 - Resolve multi-part frame prefixes and remaining source lines over 140 characters with their owners.
 - Review component crops and preserve real layout constraints for charts and lists.
 - Move fixture projections out of surfaces, then review each retained surface against its mapped implementation.
@@ -234,3 +233,26 @@ Current owner: `modules/request-details.tsx`. Implemented; Leo gallery review pe
 | Local state previously represented in a surface | `collapsed` | Part-level coverage; surface retained for batch 6. |
 | Local state previously represented in a surface | `loading` | Part-level coverage; surface retained for batch 6. |
 | Local state previously represented in a surface | `error` | Part-level coverage; surface retained for batch 6. |
+
+## tool-dialog module
+
+Current owner: `modules/tool-dialog.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+
+| Old frame | Current frame | Disposition |
+| --- | --- | --- |
+| `components/tool-dialog.tsx` / `ready` | `dialog-ready` | Moved and cropped with 4px display clearance. |
+| `components/tool-body.tsx` / `truncated` | `body-truncated` | Moved and cropped with 4px display clearance. |
+| Local state previously represented in a surface | `dialog-loading` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `dialog-error` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `dialog-long` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `dialog-failed` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `dialog-copy-error` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `dialog-unknown` | Part-level coverage; surface retained for batch 6. |
+
+`surfaces/tool-dialog.tsx` / ready is removed: identical to module dialog-ready. The other six surface frames remain until batch 6. ToolBody imports longOutput directly from fixtures and does not re-export it.
+
+TurnSummary composes the expanded TurnHeader and explicit loading/error feedback without a layout node. Its surface consumer remains turn-loading. RequestDetails.narrative is the body disclosure/load status, not a whole-module review form. ToolDialog accepts input, output, durationMs, exitCode, loading, error and copyError; fixture helpers map review names to those props. Dialog specimens keep the original 720px modal region inside 4px clearance; their review adapter mirrors that region without changing production CSS.
+
+No ownership correction is pending: TimeAxis, Minimap and WaterfallRow retain call/turn semantics; ToolBody retains tool payload, truncation and copy semantics. They remain in their approved feature modules. No new visual proposal is introduced; the recorded turn/partial 0–24s versus 0–24.96s fidelity item remains unchanged.
+
+Runtime comparison follow-ups: standalone RequestDetails captures differ by about 6px in height; waterfall/unknown differs by about 3px, and partial keeps its recorded padded-range drift. Native ToolDialog typography differs by about 2px in height. These differences are separate visual-acceptance proposals; the retained design surfaces remain pixel-identical.

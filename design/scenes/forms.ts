@@ -27,7 +27,6 @@ export const turnForms = [
   "narrative-error",
 ] as const;
 export const toolForms = [
-  "ready",
   "loading",
   "error",
   "long",

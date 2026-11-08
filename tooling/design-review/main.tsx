@@ -38,7 +38,7 @@ import {
 import { ToolDialog, ToolBody } from "../../ui/task/tool-dialog";
 import { traceSpans } from "../../ui/task/waterfall-model";
 import { baseTurn, copy, variant } from "../../design/scenes/usage";
-import { longOutput } from "../../design/scenes/tool";
+import { longOutput } from "../../design/fixtures/tool-dialog";
 import { tooltipExample } from "../../design/fixtures/tooltip";
 import { statusExamples, statusProgress } from "../../design/fixtures/status";
 import { headerExamples } from "../../design/fixtures/header";
@@ -271,7 +271,10 @@ function Content() {
     throw Error(`Unknown design fixture: ${fixture}`);
   if (fixture.startsWith("cup-overview-") || fixture.startsWith("cup-entry-"))
     return <Root />;
-  if (fixture.startsWith("cup-tool-dialog-")) {
+  if (
+    fixture.startsWith("cup-tool-dialog-dialog-") ||
+    fixture.startsWith("cup-tool-dialog-surface-")
+  ) {
     return <ToolDialog threadId="fictional-task-0" toolId="t2" close={noop} />;
   }
   let content: ReactNode;
@@ -451,7 +454,7 @@ function Content() {
         ))}
       </Stack>
     );
-  else if (fixture === "cup-tool-body-truncated")
+  else if (fixture === "cup-tool-dialog-body-truncated")
     content = (
       <ToolBody title="输出" body={body(longOutput)} onCopyError={noop} />
     );
@@ -666,6 +669,25 @@ function Content() {
     fixture === "cup-request-details-collapsed" ||
     fixture === "cup-request-details-loading" ||
     fixture === "cup-request-details-error"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-tool-dialog-dialog-ready" ||
+    fixture === "cup-tool-dialog-body-truncated" ||
+    fixture === "cup-tool-dialog-dialog-loading" ||
+    fixture === "cup-tool-dialog-dialog-error" ||
+    fixture === "cup-tool-dialog-dialog-long" ||
+    fixture === "cup-tool-dialog-dialog-failed" ||
+    fixture === "cup-tool-dialog-dialog-copy-error" ||
+    fixture === "cup-tool-dialog-dialog-unknown"
   )
     return (
       <div
