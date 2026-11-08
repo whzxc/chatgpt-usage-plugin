@@ -60,7 +60,7 @@ npm run check:format
 
 The workflow runs only when manually triggered. It builds and checks packages for both supported platforms. With `publish=true` on a matching version tag, it assembles the marketplace, advances `stable` and publishes the release archives. Source pushes, pull requests and tag creation do not trigger builds. See [distribution](docs/distribution.md).
 
-The approved UI library, host bindings and all 73 compare fixtures are documented in the [TSX design record](docs/design.md). Design sources use the global `sdg` toolkit. `npm run dev:design` serves fictional design-review data on port 5191 without starting the backend.
+The approved UI library, host bindings and all 76 compare fixtures are documented in the [TSX design record](docs/design.md). Design sources use the global `sdg` toolkit. `npm run dev:design` serves fictional design-review data on port 5191 without starting the backend.
 
 ## Data and architecture
 

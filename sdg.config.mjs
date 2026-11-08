@@ -64,7 +64,9 @@ export default {
         await page.locator('[data-wf-id="request:r2"]').press("Enter");
       if (
         [
-          "cup-request-details-narrative",
+          "cup-request-details-full",
+          "cup-request-details-loading",
+          "cup-request-details-error",
           "cup-turn-request-detail",
           "cup-turn-narrative-loading",
           "cup-turn-narrative-error",
@@ -73,9 +75,7 @@ export default {
         const notes = page.locator(".wf-note > button");
         await notes.nth(0).click();
         if (
-          ["cup-request-details-narrative", "cup-turn-request-detail"].includes(
-            name,
-          )
+          ["cup-request-details-full", "cup-turn-request-detail"].includes(name)
         ) {
           await notes.nth(1).click();
           await page.locator(".wf-full-text p").nth(1).waitFor();

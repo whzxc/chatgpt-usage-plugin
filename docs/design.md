@@ -50,7 +50,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 | `modules/context.tsx` | ContextChart, ContextAllocation, ContextSection | `modules/context.tsx` |
 | `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `modules/turn-summary.tsx`, `surfaces/turn-loading.tsx` |
 | `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `modules/waterfall.tsx`, `modules/waterfall.tsx`, `modules/waterfall.tsx` |
-| `modules/request-details.tsx` | RequestDetails | `components/request-details.tsx` |
+| `modules/request-details.tsx` | RequestDetails | `modules/request-details.tsx` |
 | `modules/tool-dialog.tsx` | ToolBody, ToolDialog | `components/tool-body.tsx`, `components/tool-dialog.tsx` |
 
 Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
@@ -131,7 +131,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/layout.tsx`             | `panel-shell`                  | `cup-layout-panel-shell`                        |
 | `components/metric-figure.tsx`      | `grid-overview`               | `cup-metric-figure-grid-overview`              |
 | `components/metric-figure.tsx`      | `grid-unknown`                | `cup-metric-figure-grid-unknown`               |
-| `components/request-details.tsx`    | `narrative`              | `cup-request-details-narrative`           |
 | `components/search.tsx`             | `field`                  | `cup-search-field`                        |
 | `components/single-choice.tsx`      | `selection`              | `cup-single-choice-selection`             |
 | `components/status.tsx`             | `feedback`               | `cup-status-feedback`                     |
@@ -198,12 +197,16 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `modules/turn-summary.tsx` | `header-states` | `cup-turn-summary-header-states` |
 | `modules/turn-summary.tsx` | `summary-loading` | `cup-turn-summary-summary-loading` |
 | `modules/turn-summary.tsx` | `summary-error` | `cup-turn-summary-summary-error` |
+| `modules/request-details.tsx` | `full` | `cup-request-details-full` |
+| `modules/request-details.tsx` | `collapsed` | `cup-request-details-collapsed` |
+| `modules/request-details.tsx` | `loading` | `cup-request-details-loading` |
+| `modules/request-details.tsx` | `error` | `cup-request-details-error` |
 
 Context states belong to their parts: chart selection, missing measurements and unknown capacity; allocation estimates and unknown capacity. `ContextSection` forwards explicit `selected`, `gaps` and `unknownLimit` props with false defaults. It emits the two parts without a layout node, so the task surface owns their spacing and there is no standalone section frame.
 
 ## Approval scope
 
-The library contains 11 component sources, 6 module sources and 6 surface sources, with 73 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 10 component sources, 7 module sources and 6 surface sources, with 76 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 
@@ -222,7 +225,7 @@ sdg compare --all
 CUP_REVIEW_THEME=dark sdg compare --all
 ```
 
-`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 73 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 76 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
 
 For viewport-following interaction review, open `/__design/review?fixture=cup-waterfall-scroll`. It repeats the fictional turn records with distinct IDs and timestamps across six minutes in a 480px scroll container. Scroll through the calls or navigate with the minimap; the visible range and selection window follow the visible rows. With the system's reduced-motion preference enabled, range changes apply immediately without interpolation. This fixture has no additional design frame and is excluded from the packaged plugin with the other review data.
 

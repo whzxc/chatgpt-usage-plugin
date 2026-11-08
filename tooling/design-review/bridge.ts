@@ -66,8 +66,16 @@ export async function callData<T>(
     )
       throw Error("无法读取轮次");
     if (args.text) {
-      if (fixture.endsWith("narrative-loading")) return pending(signal);
-      if (fixture.endsWith("narrative-error")) throw Error("无法读取全文");
+      if (
+        fixture.endsWith("narrative-loading") ||
+        fixture === "cup-request-details-loading"
+      )
+        return pending(signal);
+      if (
+        fixture.endsWith("narrative-error") ||
+        fixture === "cup-request-details-error"
+      )
+        throw Error("无法读取全文");
       return {
         index: readyIndex,
         reason: null,

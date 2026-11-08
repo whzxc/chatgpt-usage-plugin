@@ -12,7 +12,7 @@
   "cup-waterfall-minimap-selected-range",
   "cup-waterfall-minimap-loading-target",
   "cup-quota-bar-windows",
-  "cup-request-details-narrative",
+  "cup-request-details-full",
   "cup-search-field",
   "cup-single-choice-selection",
   "cup-status-feedback",
@@ -72,5 +72,8 @@
   "cup-waterfall-waterfall-unknown",
   "cup-waterfall-waterfall-partial",
   "cup-turn-summary-summary-loading",
-  "cup-turn-summary-summary-error"
+  "cup-turn-summary-summary-error",
+  "cup-request-details-collapsed",
+  "cup-request-details-loading",
+  "cup-request-details-error"
 ]

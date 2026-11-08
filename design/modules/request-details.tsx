@@ -8,9 +8,9 @@ import {
   type Call,
   type Turn,
 } from "../scenes/usage";
-import { Panel, Grid, Stack } from "./layout";
-import { Status } from "./status";
-import { Button } from "./button";
+import { Grid, Stack } from "../components/layout";
+import { Status } from "../components/status";
+import { Button } from "../components/button";
 export function RequestDetails({
   call = baseTurn.calls[2],
   turn = baseTurn,
@@ -79,10 +79,54 @@ export function RequestDetails({
     </div>
   );
 }
+
 export default () => [
-  <Frame {...frame("request-details", "narrative")}>
-    <Panel>
+  <Frame
+    {...frame("request-details", "full")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
       <RequestDetails narrative="full" />
-    </Panel>
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("request-details", "collapsed")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <RequestDetails narrative="collapsed" />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("request-details", "loading")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <RequestDetails narrative="loading" />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("request-details", "error")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <RequestDetails narrative="error" />
+    </div>
   </Frame>,
 ];

@@ -18,7 +18,7 @@ import {
 import { Stack, Section } from "../components/layout";
 import { TurnHeader } from "./turn-summary";
 import { MetricGrid } from "../components/metric-figure";
-import { RequestDetails } from "../components/request-details";
+import { RequestDetails } from "./request-details";
 import { Status } from "../components/status";
 import { Button } from "../components/button";
 import { waterfallProps } from "../fixtures/waterfall";

@@ -425,7 +425,7 @@ function Content() {
     content = (
       <QuotaBlock quota={quotaData("credits-and-exhaustion")} retry={noop} />
     );
-  else if (fixture === "cup-request-details-narrative")
+  else if (fixture.startsWith("cup-request-details-"))
     content = (
       <RequestDetailsPanel
         span={traceSpans(turnData().timeline, false)[1]}
@@ -651,6 +651,21 @@ function Content() {
     fixture === "cup-turn-summary-header-states" ||
     fixture === "cup-turn-summary-summary-loading" ||
     fixture === "cup-turn-summary-summary-error"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-request-details-full" ||
+    fixture === "cup-request-details-collapsed" ||
+    fixture === "cup-request-details-loading" ||
+    fixture === "cup-request-details-error"
   )
     return (
       <div
