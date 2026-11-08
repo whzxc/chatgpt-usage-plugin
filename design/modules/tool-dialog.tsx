@@ -115,7 +115,7 @@ export function ToolBody({
 export default () => [
   <Frame
     {...frame("tool-dialog", "dialog-ready")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -140,7 +140,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-loading")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -153,7 +153,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-error")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -166,7 +166,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-long")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -179,7 +179,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-failed")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -192,7 +192,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-copy-error")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -205,7 +205,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-unknown")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >

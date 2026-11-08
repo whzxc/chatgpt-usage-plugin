@@ -443,7 +443,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("waterfall", "waterfall-partial")}
-    note="Proposal pending Leo review"
+    note="Approved 2026-11-08 by Leo"
     width={680}
     capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
   >

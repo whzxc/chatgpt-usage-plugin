@@ -1,6 +1,6 @@
 # TSX design record
 
-Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Leo approved governance batches 0 and 1 (ownership, mappings, exceptions, tokens and Button crop) on 2026-11-08. Leo approved batch 2 (all six generic families and three frame renames) on 2026-11-08. Leo approved batch 3 (quota, usage-trend, task-list, context and its rework) on 2026-11-08. Leo approved batches 4 and 5 (waterfall, turn-summary, request-details and tool-dialog) on 2026-11-08. Batch 6 structural work and the final ToolDialog/partial fidelity proposals await Leo review. Later governance changes have a separate review status in [the asset register](design-assets.md).
+Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Leo approved governance batches 0 and 1 (ownership, mappings, exceptions, tokens and Button crop) on 2026-11-08. Leo approved batch 2 (all six generic families and three frame renames) on 2026-11-08. Leo approved batch 3 (quota, usage-trend, task-list, context and its rework) on 2026-11-08. Leo approved batches 4 and 5 (waterfall, turn-summary, request-details and tool-dialog) on 2026-11-08. Leo approved batch 6 structural work and both ToolDialog/partial fidelity proposals on 2026-11-08. Later governance changes have a separate review status in [the asset register](design-assets.md).
 
 [Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md) · [Asset rules](https://github.com/whzxc/svg-design-gallery/blob/main/docs/asset-rules.md) · [Asset register](design-assets.md)
 
@@ -56,7 +56,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 
 Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
 
-Batches 0–5, including context rework, are approved. Batch 6 extracts surface projections and retires duplicate local states; its gallery review is pending. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
+Batches 0–5, including context rework, are approved. Batch 6 extracts surface projections and retires duplicate local states; Leo approved it on 2026-11-08. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
 
 For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `sdg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `sdg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
 

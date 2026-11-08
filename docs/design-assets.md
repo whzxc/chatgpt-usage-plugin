@@ -15,7 +15,7 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Approved 2026-11-08 by Leo |
 | Batch 3: quota, usage-trend, task-list, context | Implemented, including context interface and frame rework | Approved 2026-11-08 by Leo |
 | Batches 4–5: waterfall, turn-summary, request-details, tool-dialog | Implemented: part states and explicit props | Approved 2026-11-08 by Leo |
-| Batch 6: overview, task, turn, tool-dialog, entry | Implemented: projections and three retained composition sources | Leo gallery review pending |
+| Batch 6: overview, task, turn, tool-dialog, entry | Implemented: projections and three retained composition sources | Approved 2026-11-08 by Leo |
 
 ## Part mappings and consumers
 
@@ -90,7 +90,7 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 
 | Item | Current behavior and disposition |
 | --- | --- |
-| Original `surfaces/turn.tsx` / partial → `modules/waterfall.tsx` / waterfall-partial | Approved static axis: 0–24s. Original cup-turn-partial runtime visible prefix: 0–24.96s from padded row bounds. Summary and minimap cover the complete 45s. Preserve runtime scroll-following; this fidelity item stays open until Leo reviews the separate proposal below. |
+| Original `surfaces/turn.tsx` / partial → `modules/waterfall.tsx` / waterfall-partial | Approved static axis: 0–24s. The approved waterfall-partial fixture now uses the runtime padded range 0–24.96s and 24px reveal spacing. Summary and minimap cover the complete 45s. Resolved by Leo on 2026-11-08. |
 | `cup-waterfall-scroll` | Retained interaction-only fixture: six fictional minutes in a 480px scroll container, shared by viewport-following, minimap navigation and reduced-motion review. No additional design frame; excluded from packaged assets with the other review fixtures. |
 | Shared legacy corpus | `scenes/usage.ts` still supplies shared turn/call records to feature fixtures and modules. Surface-specific transforms now live in fixtures; forms.ts and tool.ts are removed. Move the shared corpus as one coordinated follow-up; scenes/ is not a fixture destination. |
 | Existing frame names and full-width specimens | Retained until their owner is reviewed. Multi-part prefixes, duplicate local surface states and specimen crops remain explicit migration work. |
@@ -254,7 +254,7 @@ The height and partial-range follow-ups are analyzed in the fidelity proposal se
 
 ## Batch 6: overview
 
-Governance status: implemented; Leo gallery review pending.
+Governance status: approved 2026-11-08 by Leo.
 
 New owner: `modules/usage-summary.tsx` → runtime Overview local usage Section, SingleChoice range filter and Figures (`ui/overview/overview.tsx`). Consumers: overview surface and module specimens. `fixtures/overview.ts` owns records, unknown-model transforms, summary metrics, task records and indexing progress. QuotaSection now owns its loading/error branches; runtime owner remains QuotaBlock.
 
@@ -273,7 +273,7 @@ Quota part frames: section-loading and section-error. UsageSummary part frames: 
 
 ## Batch 6: task
 
-Governance status: implemented; Leo gallery review pending.
+Governance status: approved 2026-11-08 by Leo.
 
 `fixtures/task.ts` owns task-specific history filtering, metric selection, newest-first turn ordering, progress and title selection. The surface now composes explicit projection fields; runtime consumers remain TaskPage, TaskSummary, ContextChart, CurrentContext and TurnHeader. No new module is needed: the metric grid and page branch arrangement are layout glue.
 
@@ -290,7 +290,7 @@ All six retained frames preserve their original light/dark pixels. No frame is a
 
 ## Batch 6: turn
 
-Governance status: implemented; Leo gallery review pending.
+Governance status: approved 2026-11-08 by Leo.
 
 `fixtures/turn.ts` owns the two retained composition inputs. `surfaces/turn-loading.tsx` is removed: its only content was TurnSummary inside Panel. All eight removed fixture IDs and capture preparations are retired; module captures retain their independent routes. The interaction-only cup-waterfall-scroll fixture is unchanged.
 
@@ -311,7 +311,7 @@ Retained completed and request-detail surfaces remain pixel-identical in both th
 
 ## Batch 6: tool-dialog
 
-Governance status: implemented; Leo gallery review pending.
+Governance status: approved 2026-11-08 by Leo.
 
 The entire `surfaces/tool-dialog.tsx` source is removed. Each frame wrapped exactly one ToolDialog; no page or regional layout existed outside the module. Current consumers are module specimens and runtime Waterfall tool activation. All retired fixture routes and capture branches are removed; the module capture selector and runtime adapter remain.
 
@@ -328,7 +328,7 @@ The earlier ready wrapper remains retired in favor of dialog-ready. No module or
 
 ## Batch 6: entry
 
-Governance status: implemented; Leo gallery review pending.
+Governance status: approved 2026-11-08 by Leo.
 
 `surfaces/entry.tsx` is removed: both frames wrapped one generic Status in Panel. Root startup feedback retains its production behavior; the retired review-only initialization branches are removed. No runtime UI files change.
 
@@ -341,7 +341,7 @@ The gallery now retains overview, task and turn composition sources. Every remai
 
 ## Batch 6 fidelity proposals
 
-Status: **Proposal pending Leo review**. These changes have a separate proposal commit after all five structural commits. No `ui/` files change. The original turn/partial fidelity record above remains open until Leo approves the proposal.
+Status: **approved 2026-11-08 by Leo**. These changes have a separate proposal commit after all five structural commits. No `ui/` files change. Leo approved both ToolDialog and partial proposals; the original timing and spacing fidelity item is resolved.
 
 | Item and measured baseline | Owning source and exact cause | Recommendation / proposed delta |
 | --- | --- | --- |
@@ -350,4 +350,4 @@ Status: **Proposal pending Leo review**. These changes have a separate proposal 
 | ToolDialog ready/long/failed/copy-error/unknown: 451/647/431/528/431px design; runtime is 2px shorter | Design h2 `text-title` inherits line-height 1.5, so 20px produces 30px. `ui/task/tool-dialog.css` `.tool-heading h2` is explicitly 20px / 28px. Both use 24px dialog padding and 24px content gap. Loading/error heights are constrained by the 32px Close button and do not drift. | Design aligns to implementation: propose `leading-[28px]` on the dialog title. Five content frames shrink 2px; loading/error keep their height while their title glyphs move up 1px. Dialog Frame notes mark pending review; ToolBody stays unchanged. |
 | Original turn/partial static 0–24s versus runtime range 0–24.96s; module 777px versus 785px | `ui/task/waterfall-range.ts` viewportRange pads the visible 24,000ms call extent by 4% (960ms). `ui/task/waterfall-clock.ts` interpolates four tick labels: 0s, 8.3s, 16.6s, 25s; its footer floors seconds to 0s–24s. The runtime review adapter places the reveal Button after the timeline in a 24px Stack; the old design placed it inside Section's 16px gap. | Design aligns to implementation: fixture projects range [0, 24960], Waterfall accepts explicit viewRange, ticks and bars use that range, Minimap footer floors seconds, and the reveal Button moves to the outer Stack. Result: +8px, matching the measured runtime height. Only waterfall-partial changes; its Frame note marks pending review. Preserve runtime scroll-following and the whole-turn 45s summary/minimap. |
 
-New UsageSummary and quota status specimens remain part of the structural batch 6 review. The two design fidelity proposals are separate decisions; approving surface cleanup does not approve them. Previously recorded narrower specimen proposals remain separate.
+Leo approved the structural batch, new UsageSummary/quota specimens and both fidelity proposals on 2026-11-08. Narrower specimen proposals remain separate.
