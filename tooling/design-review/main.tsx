@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { selectionExamples } from "../../design/fixtures/single-choice";
 import { buttonActions } from "../../design/fixtures/button";
 import { compact, money } from "../../ui/shared/format";
 import {
@@ -116,29 +117,23 @@ function SearchFixture() {
   );
 }
 function SelectionFixture() {
-  const [range, setRange] = useState("7 天"),
-    [metric, setMetric] = useState("Tokens");
+  const [values, setValues] = useState(
+    selectionExamples.map((item) => item.value),
+  );
   return (
     <Stack>
-      <SingleChoice
-        value={range}
-        label="用量范围"
-        options={copy.ranges.map((x) => [x, x])}
-        onChange={setRange}
-      />
-      <SingleChoice
-        value={metric}
-        label="图表指标"
-        options={copy.metrics.map((x) => [x, x])}
-        onChange={setMetric}
-      />
-      <SingleChoice
-        value="最近活动"
-        label="任务排序"
-        options={copy.sorts.map((x) => [x, x])}
-        onChange={noop}
-        disabled
-      />
+      {selectionExamples.map((item, index) => (
+        <SingleChoice
+          key={item.label}
+          label={item.label}
+          value={values[index]}
+          options={item.items.map((value) => [value, value])}
+          disabled={item.disabled}
+          onChange={(value) =>
+            setValues((old) => old.map((v, i) => (i === index ? value : v)))
+          }
+        />
+      ))}
     </Stack>
   );
 }
@@ -502,6 +497,16 @@ function Content() {
   else if (fixture.startsWith("cup-turn-"))
     content = <WaterfallFixture form={fixture.slice(9)} header />;
   else throw Error(`No renderer for fixture: ${fixture}`);
+  if (fixture === "cup-single-choice-selection")
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: "max-content" }}
+      >
+        {content}
+      </div>
+    );
   return <Panel>{content}</Panel>;
 }
 function Review() {

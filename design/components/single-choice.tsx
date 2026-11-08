@@ -1,7 +1,7 @@
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
-import { copy } from "../scenes/usage";
-import { Panel, Stack } from "./layout";
+import { selectionExamples } from "../fixtures/single-choice";
+import { Stack } from "./layout";
 export function SingleChoice({
   items,
   value,
@@ -27,7 +27,18 @@ export function SingleChoice({
           aria-checked={item === value}
           disabled={disabled}
           tabIndex={item === value ? 0 : -1}
-          class={`text-meta px-3 py-1 rounded-control ${disabled ? "bg-disabled text-subtle" : item === value ? "bg-raised font-semibold text-text" : "text-muted"} ${disabled ? "text-subtle" : ""} ${focus && item === value ? "outline-2 outline-focus outline-offset-2" : ""}`}
+          class={[
+            "text-meta px-3 py-1 rounded-control",
+            disabled
+              ? "bg-disabled text-subtle"
+              : item === value
+                ? "bg-raised font-semibold text-text"
+                : "text-muted",
+            disabled ? "text-subtle" : "",
+            focus && item === value
+              ? "outline-2 outline-focus outline-offset-2"
+              : "",
+          ].join(" ")}
         >
           {item}
         </button>
@@ -36,18 +47,20 @@ export function SingleChoice({
   );
 }
 export default () => [
-  <Frame {...frame("single-choice", "selection")}>
-    <Panel>
+  <Frame
+    {...frame("single-choice", "selection")}
+    width={undefined}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-max p-1 font-ui text-body leading-normal"
+    >
       <Stack>
-        <SingleChoice label="用量范围" items={copy.ranges} value="7 天" focus />
-        <SingleChoice label="图表指标" items={copy.metrics} value="Tokens" />
-        <SingleChoice
-          label="任务排序"
-          items={copy.sorts}
-          value="最近活动"
-          disabled
-        />
+        {selectionExamples.map((example) => (
+          <SingleChoice {...example} />
+        ))}
       </Stack>
-    </Panel>
+    </div>
   </Frame>,
 ];

@@ -110,3 +110,7 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 - Move fixture projections out of surfaces, then review each retained surface against its mapped implementation.
 - Remove duplicate wrappers and assets without consumers when their batch closes; synchronize the declared forms and fixture routes.
 - Obtain Leo's gallery approval for each batch. Full runtime comparison, interactions and platform acceptance follow `design.md` before publication.
+
+## single-choice family
+
+The single-choice specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. SingleChoice uses intrinsic content width. Governance state: implemented, awaiting Leo gallery review.
