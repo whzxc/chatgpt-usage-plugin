@@ -1,5 +1,5 @@
-import { trend, costTrend, modelNames } from "../scenes/usage";
-import { compact, money } from "../scenes/format";
+import { trend, costTrend, modelNames } from "./usage";
+import { compact, money } from "../support/format";
 export const trendTip = (i: number) =>
   modelNames.map((label, j) => ({
     label,

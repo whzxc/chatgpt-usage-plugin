@@ -1,4 +1,4 @@
-import { variant } from "../scenes/usage";
+import { variant } from "./usage";
 export const turnHeaderExamples = [
   "long",
   "scheduled",

@@ -1,5 +1,6 @@
 import { Frame } from "sdg";
-import { frame, compact, money, duration } from "../scenes/format";
+import { frame } from "../support/frame";
+import { compact, money, duration } from "../support/format";
 import {
   baseTurn,
   copy,
@@ -7,7 +8,7 @@ import {
   models,
   type Call,
   type Turn,
-} from "../scenes/usage";
+} from "../fixtures/usage";
 import { Grid, Stack } from "../components/layout";
 import { Status } from "../components/status";
 import { Button } from "../components/button";

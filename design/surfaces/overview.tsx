@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { overviewFrames, overviewScene } from "../fixtures/overview";
 import { Panel } from "../components/layout";
 import { Header } from "../components/header";

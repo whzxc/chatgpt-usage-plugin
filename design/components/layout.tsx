@@ -1,6 +1,6 @@
 import { layoutExample } from "../fixtures/layout";
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 export function Panel({ children }: { children?: unknown }) {
   return (
     <main class="w-full bg-canvas text-text font-ui text-body leading-normal p-(--panel-padding) flex flex-col gap-(--section-gap)">

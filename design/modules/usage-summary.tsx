@@ -1,6 +1,6 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
-import { copy } from "../scenes/usage";
+import { frame } from "../support/frame";
+import { copy } from "../fixtures/usage";
 import { usageSummaryExamples } from "../fixtures/overview";
 import { Section } from "../components/layout";
 import { SingleChoice } from "../components/single-choice";

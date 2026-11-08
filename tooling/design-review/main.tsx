@@ -37,7 +37,7 @@ import {
 } from "../../ui/task/waterfall";
 import { ToolDialog, ToolBody } from "../../ui/task/tool-dialog";
 import { traceSpans } from "../../ui/task/waterfall-model";
-import { baseTurn, copy, variant } from "../../design/scenes/usage";
+import { baseTurn, copy, variant } from "../../design/fixtures/usage";
 import { longOutput } from "../../design/fixtures/tool-dialog";
 import { tooltipExample } from "../../design/fixtures/tooltip";
 import { statusExamples, statusProgress } from "../../design/fixtures/status";

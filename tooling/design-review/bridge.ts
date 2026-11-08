@@ -1,4 +1,4 @@
-import { copy, variant } from "../../design/scenes/usage";
+import { copy, variant } from "../../design/fixtures/usage";
 import {
   summaryData,
   tasksData,

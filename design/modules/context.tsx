@@ -1,6 +1,7 @@
 import { Frame } from "sdg";
-import { frame, compact, axisCompact, money, percent } from "../scenes/format";
-import { baseTurn, cost } from "../scenes/usage";
+import { frame } from "../support/frame";
+import { compact, axisCompact, money, percent } from "../support/format";
+import { baseTurn, cost } from "../fixtures/usage";
 import {
   contextCalls,
   compaction,

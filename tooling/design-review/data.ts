@@ -16,8 +16,8 @@ import {
   variant,
   density,
   slowest,
-} from "../../design/scenes/usage";
-import type { Turn as SceneTurn, Call } from "../../design/scenes/usage";
+} from "../../design/fixtures/usage";
+import type { Turn as SceneTurn, Call } from "../../design/fixtures/usage";
 import {
   contextCalls,
   compaction,

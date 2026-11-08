@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { selectionExamples } from "../fixtures/single-choice";
 import { Stack } from "./layout";
 export function SingleChoice({

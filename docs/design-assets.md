@@ -70,7 +70,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 ## Fixtures, captures and evidence
 
-`design/fixtures/` owns feature records, specimen inputs and projections, including overview/task history transforms and turn composition inputs. `scenes/forms.ts` is removed; each retained source imports its own fixture frame list. The remaining shared legacy corpus in [`scenes/usage.ts`](../design/scenes/usage.ts) is consumed by feature fixtures and modules; relocating that shared corpus is separate from the surface-only projection extraction. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
+`design/fixtures/` owns all representative records and projections, including the shared `usage.ts` corpus. `design/support/format.ts` owns neutral value formatting and `support/frame.ts` owns frame defaults. The former scenes directory is removed. Generic component props use strings, booleans, numbers and neutral label/value rows; none imports Call, Turn, Model or TaskRowData, including through type-only helper imports.
 
 [`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 69 frame fixtures and `cup-waterfall-scroll`.
 
@@ -92,7 +92,6 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 | --- | --- |
 | Original `surfaces/turn.tsx` / partial → `modules/waterfall.tsx` / waterfall-partial | Approved static axis: 0–24s. The approved waterfall-partial fixture now uses the runtime padded range 0–24.96s and 24px reveal spacing. Summary and minimap cover the complete 45s. Resolved by Leo on 2026-11-08. |
 | `cup-waterfall-scroll` | Retained interaction-only fixture: six fictional minutes in a 480px scroll container, shared by viewport-following, minimap navigation and reduced-motion review. No additional design frame; excluded from packaged assets with the other review fixtures. |
-| Shared legacy corpus | `scenes/usage.ts` still supplies shared turn/call records to feature fixtures and modules. Surface-specific transforms now live in fixtures; forms.ts and tool.ts are removed. Move the shared corpus as one coordinated follow-up; scenes/ is not a fixture destination. |
 | Existing frame names and full-width specimens | Retained until their owner is reviewed. Multi-part prefixes, duplicate local surface states and specimen crops remain explicit migration work. |
 | Runtime structure | Empty task direct entry omits a back action; overview navigation retains it. Tool dialogs keep the approved 40px review inset and native viewport bounds. Unknown-start and running review fixtures prepare the approved branch folding through keyboard controls. |
 | Artwork and studies | No image assets or studies exist. Display dimensions and image budgets are not applicable to the current inventory. |
@@ -101,7 +100,6 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 
 - Obtain Leo's batch 6 gallery review and a separate decision on the fidelity proposals below.
 - Keep runtime typography recommendations separate from structural migration; no production UI styles change in batch 6.
-- Move the shared legacy usage corpus to fixtures in one coordinated follow-up; retain its current consumers until that move.
 - Previously recorded narrower specimen proposals remain pending; preserve the 672px approved content constraint.
 - Full runtime comparison, interactions and platform acceptance follow design.md before product publication.
 
@@ -351,3 +349,7 @@ Status: **approved 2026-11-08 by Leo**. These changes have a separate proposal c
 | Original turn/partial static 0–24s versus runtime range 0–24.96s; module 777px versus 785px | `ui/task/waterfall-range.ts` viewportRange pads the visible 24,000ms call extent by 4% (960ms). `ui/task/waterfall-clock.ts` interpolates four tick labels: 0s, 8.3s, 16.6s, 25s; its footer floors seconds to 0s–24s. The runtime review adapter places the reveal Button after the timeline in a 24px Stack; the old design placed it inside Section's 16px gap. | Design aligns to implementation: fixture projects range [0, 24960], Waterfall accepts explicit viewRange, ticks and bars use that range, Minimap footer floors seconds, and the reveal Button moves to the outer Stack. Result: +8px, matching the measured runtime height. Only waterfall-partial changes; its Frame note marks pending review. Preserve runtime scroll-following and the whole-turn 45s summary/minimap. |
 
 Leo approved the structural batch, new UsageSummary/quota specimens and both fidelity proposals on 2026-11-08. Narrower specimen proposals remain separate.
+
+## Final batch: supporting data
+
+Status: implemented; Leo final gallery review pending. All shared records now live in fixtures/usage.ts. The support directory contains format and frame helpers only, with no visual-layer or fixture imports. Generic components have neutral prop interfaces; feature-specific Call, Turn and TaskRowData types stay with fixtures and modules. Frame names, routes, captures and component defaults are unchanged. All long TS/TSX lines are split without changing displayed values.

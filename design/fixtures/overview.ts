@@ -1,4 +1,4 @@
-import { history, variant, summaryMetrics, taskData } from "../scenes/usage";
+import { history, variant, summaryMetrics, taskData } from "./usage";
 export const overviewFrames = [
   "ready",
   "indexing",

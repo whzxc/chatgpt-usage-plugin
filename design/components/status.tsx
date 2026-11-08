@@ -1,5 +1,6 @@
 import { Frame, Icon } from "sdg";
-import { frame, number } from "../scenes/format";
+import { frame } from "../support/frame";
+import { number } from "../support/format";
 import {
   statusMessages,
   statusProgress,

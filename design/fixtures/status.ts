@@ -1,4 +1,4 @@
-import { copy, history } from "../scenes/usage";
+import { copy, history } from "./usage";
 export const statusProgress = {
   processed: history.length / 3,
   total: history.length,

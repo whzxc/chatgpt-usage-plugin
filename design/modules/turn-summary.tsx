@@ -1,7 +1,8 @@
 import { turnHeaderExamples } from "../fixtures/turn-summary";
 import { Frame, Icon } from "sdg";
-import { frame, compact, money, duration } from "../scenes/format";
-import { baseTurn, variant, totals, type Turn } from "../scenes/usage";
+import { frame } from "../support/frame";
+import { compact, money, duration } from "../support/format";
+import { baseTurn, variant, totals, type Turn } from "../fixtures/usage";
 import { Stack } from "../components/layout";
 import { Status } from "../components/status";
 export const stateLabel = {

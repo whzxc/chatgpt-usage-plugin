@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { tooltipExample } from "../fixtures/tooltip";
 export function Tooltip({
   title,

@@ -1,4 +1,4 @@
-import { variant } from "../scenes/usage";
+import { variant } from "./usage";
 export function waterfallProps(name: string) {
   const turn = variant(name),
     partial = name === "partial";

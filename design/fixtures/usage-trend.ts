@@ -5,8 +5,8 @@ import {
   modelNames,
   modelTones,
   totals,
-} from "../scenes/usage";
-import { compact, money, percent } from "../scenes/format";
+} from "./usage";
+import { compact, money, percent } from "../support/format";
 export function chartScene(
   mode: "daily" | "hourly" | "single" = "daily",
   metric = "Tokens",
@@ -49,7 +49,12 @@ export function chartScene(
     return {
       label,
       value: metric === "Tokens" ? compact(measure) : money(measure),
-      detail: `${percent(denominator ? ((measure ?? 0) / denominator) * 100 : null)} · ${money(t.cost)} · ${t.requests} req · ${((t.output ?? 0) / seconds).toFixed(1)} tok/s`,
+      detail: [
+        percent(denominator ? ((measure ?? 0) / denominator) * 100 : null),
+        money(t.cost),
+        `${t.requests} req`,
+        `${((t.output ?? 0) / seconds).toFixed(1)} tok/s`,
+      ].join(" · "),
       tone: modelTones[i],
     };
   });

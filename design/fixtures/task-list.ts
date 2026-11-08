@@ -1,4 +1,4 @@
-import { tasks, copy } from "../scenes/usage";
+import { tasks, copy } from "./usage";
 export const taskListExample = { query: "未找到的观测站" };
 export const headings = [
   "任务",

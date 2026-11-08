@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { metricExamples } from "../fixtures/metric-figure";
 import { Grid } from "./layout";
 export function MetricFigure({

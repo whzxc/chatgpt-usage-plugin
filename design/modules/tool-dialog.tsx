@@ -1,5 +1,6 @@
 import { Frame } from "sdg";
-import { frame, bytes, utf8, duration } from "../scenes/format";
+import { frame } from "../support/frame";
+import { bytes, utf8, duration } from "../support/format";
 import { Button } from "../components/button";
 import { Status } from "../components/status";
 import {

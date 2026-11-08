@@ -1,5 +1,5 @@
 import { Frame, Icon } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { Stack } from "./layout";
 import { searchExamples } from "../fixtures/search";
 export function Search({

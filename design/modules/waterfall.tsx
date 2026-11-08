@@ -1,5 +1,6 @@
 import { Frame, Icon } from "sdg";
-import { frame, duration, money, compact } from "../scenes/format";
+import { frame } from "../support/frame";
+import { duration, money, compact } from "../support/format";
 import {
   baseTurn,
   variant,
@@ -14,7 +15,7 @@ import {
   tools,
   cost,
   type Call,
-} from "../scenes/usage";
+} from "../fixtures/usage";
 import { Stack, Section } from "../components/layout";
 import { TurnHeader } from "./turn-summary";
 import { MetricGrid } from "../components/metric-figure";

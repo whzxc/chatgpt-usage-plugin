@@ -1,4 +1,4 @@
-import { compact, money, percent, duration, number } from "./format";
+import { compact, money, percent, duration, number } from "../support/format";
 export type Model = "gpt-6" | "gpt-6-mini" | "unpriced-model";
 export type Call = {
   id: string;
@@ -262,11 +262,17 @@ export function turnMetrics(turn: Turn) {
 export function turnMeta(turn: Turn) {
   const t = totals(turn.calls),
     rs = models(turn.calls),
-    ms = turn.end === null ? null : turn.end - turn.start;
+    ms = turn.end === null ? null : turn.end - turn.start,
+    rate =
+      (turn.state === "done" || turn.state === "interrupted") &&
+      ms &&
+      t.output !== null
+        ? (t.output / (ms / 1000)).toFixed(1)
+        : "—";
   return [
     rs[0]?.model ?? "—",
     `TTFT ${duration(turn.ttft)}`,
-    `${(turn.state === "done" || turn.state === "interrupted") && ms && t.output !== null ? (t.output / (ms / 1000)).toFixed(1) : "—"} tok/s`,
+    `${rate} tok/s`,
     `缓存 ${percent(t.hit)}`,
     `输出 ${compact(t.output)}`,
     `上下文 ${compact(rs[0]?.input ?? null)} → ${compact(rs.at(-1)?.input ?? null)} / ${compact(turn.limit)}`,
@@ -389,7 +395,12 @@ export const modelLegend = modelNames.map((name, i) => {
   return {
     label: name,
     value: compact(t.tokens),
-    detail: `${percent(((t.tokens ?? 0) / (all.tokens ?? 1)) * 100)} · ${money(t.cost)} · ${t.requests} req · ${((t.output ?? 0) / seconds).toFixed(1)} tok/s`,
+    detail: [
+      percent(((t.tokens ?? 0) / (all.tokens ?? 1)) * 100),
+      money(t.cost),
+      `${t.requests} req`,
+      `${((t.output ?? 0) / seconds).toFixed(1)} tok/s`,
+    ].join(" · "),
     tone: modelTones[i],
   };
 });

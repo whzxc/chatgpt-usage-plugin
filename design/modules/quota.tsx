@@ -5,7 +5,8 @@ import {
   quotaStatusExamples,
 } from "../fixtures/quota";
 import { Frame } from "sdg";
-import { frame, percent, number } from "../scenes/format";
+import { frame } from "../support/frame";
+import { percent, number } from "../support/format";
 
 import { Status } from "../components/status";
 import { Stack, Grid, Section } from "../components/layout";

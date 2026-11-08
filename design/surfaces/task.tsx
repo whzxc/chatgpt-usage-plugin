@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { taskFrames, taskScene } from "../fixtures/task";
 import { Panel, Section, Stack } from "../components/layout";
 import { Header } from "../components/header";

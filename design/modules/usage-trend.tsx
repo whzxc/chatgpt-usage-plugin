@@ -1,6 +1,7 @@
 import { Frame } from "sdg";
-import { frame, compact, axisCompact, money } from "../scenes/format";
-import { modelTones, copy, modelLegend } from "../scenes/usage";
+import { frame } from "../support/frame";
+import { compact, axisCompact, money } from "../support/format";
+import { modelTones, copy, modelLegend } from "../fixtures/usage";
 import { chartScene } from "../fixtures/usage-trend";
 import { Section, Grid } from "../components/layout";
 import { SingleChoice } from "../components/single-choice";

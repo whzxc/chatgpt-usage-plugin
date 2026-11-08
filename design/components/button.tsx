@@ -1,5 +1,5 @@
 import { Frame, Icon } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { buttonActions } from "../fixtures/button";
 export function Button({
   label,

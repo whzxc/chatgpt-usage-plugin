@@ -1,5 +1,5 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
+import { frame } from "../support/frame";
 import { headerExamples, headerUpdated } from "../fixtures/header";
 import { Button } from "./button";
 export function Header({

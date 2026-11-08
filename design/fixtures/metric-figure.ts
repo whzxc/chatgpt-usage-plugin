@@ -1,4 +1,4 @@
-import { summaryMetrics, variant, turnMetrics } from "../scenes/usage";
+import { summaryMetrics, variant, turnMetrics } from "./usage";
 export const metricExamples = {
   overview: summaryMetrics(),
   unknown: turnMetrics(variant("unknown")),

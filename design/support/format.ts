@@ -25,12 +25,3 @@ export const duration = (ms: number | null): string =>
 export const bytes = (n: number) =>
   n < 1024 ? `${n} B` : `${(n / 1024).toFixed(1)} KB`;
 export const utf8 = (s: string) => new TextEncoder().encode(s).length;
-export function frame(source: string, name: string) {
-  return {
-    name,
-    width: 720,
-    fixture: `cup-${source}-${name}`,
-    capture: { page: true as const, viewport: "720x2400" },
-    note: "Visual baseline approved at 2f983b9. Governance review status: docs/design-assets.md.",
-  };
-}

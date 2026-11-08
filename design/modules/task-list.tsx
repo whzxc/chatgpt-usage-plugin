@@ -1,6 +1,6 @@
 import { Frame } from "sdg";
-import { frame } from "../scenes/format";
-import { tasks, copy, type TaskRowData } from "../scenes/usage";
+import { frame } from "../support/frame";
+import { tasks, copy, type TaskRowData } from "../fixtures/usage";
 import { Section } from "../components/layout";
 import { SingleChoice } from "../components/single-choice";
 import { Search } from "../components/search";

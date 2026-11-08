@@ -1,4 +1,4 @@
-import { copy } from "../scenes/usage";
+import { copy } from "./usage";
 export const selectionExamples = [
   { label: "用量范围", items: copy.ranges, value: "7 天", focus: true },
   { label: "图表指标", items: copy.metrics, value: "Tokens" },

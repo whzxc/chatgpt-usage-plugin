@@ -4,7 +4,7 @@ export const longOutput = Array.from(
     `sample_${String(i + 1).padStart(4, "0")}: temperature = 18.65; status = valid`,
 ).join("\n");
 
-import { baseTurn, variant, elapsed } from "../scenes/usage";
+import { baseTurn, variant, elapsed } from "./usage";
 export function toolDialogProps(name = "ready") {
   const call = (name === "failed" ? variant("failed") : baseTurn).calls.find(
     (c) => c.id === "t2",
