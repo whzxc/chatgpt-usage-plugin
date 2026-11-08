@@ -13,7 +13,7 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Approved 2026-11-08 by Leo |
 | Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
 | Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Approved 2026-11-08 by Leo |
-| Batch 3: quota, usage-trend, task-list, context | Implemented: modules, feature states and selector captures | Leo gallery review pending |
+| Batch 3: quota, usage-trend, task-list, context | Implemented, including context interface and frame rework | Approved 2026-11-08 by Leo |
 | Remaining four feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
@@ -145,7 +145,7 @@ Visual proposal, pending a separate review: narrower Search, Header, metric, Sta
 
 ## quota module
 
-Current owner: `modules/quota.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+Current owner: `modules/quota.tsx`. Migration state: approved 2026-11-08 by Leo. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
 
 | Old frame | Current module frame | Disposition |
 | --- | --- | --- |
@@ -156,7 +156,7 @@ The removed `surfaces/quota.tsx` contained local feature states only. Its comple
 
 ## usage-trend module
 
-Current owner: `modules/usage-trend.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+Current owner: `modules/usage-trend.tsx`. Migration state: approved 2026-11-08 by Leo. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
 
 | Old frame | Current module frame | Disposition |
 | --- | --- | --- |
@@ -170,7 +170,7 @@ The removed `surfaces/usage-trend.tsx` contained local feature states only. Its 
 
 ## task-list module
 
-Current owner: `modules/task-list.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+Current owner: `modules/task-list.tsx`. Migration state: approved 2026-11-08 by Leo. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
 
 | Old frame | Current module frame | Disposition |
 | --- | --- | --- |
@@ -183,7 +183,7 @@ The removed `surfaces/task-list.tsx` contained local feature states only. Its co
 
 ## context module
 
-Current owner: `modules/context.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+Current owner: `modules/context.tsx`. Migration state: approved 2026-11-08 by Leo. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
 
 | Old frame | Current module frame | Disposition |
 | --- | --- | --- |
