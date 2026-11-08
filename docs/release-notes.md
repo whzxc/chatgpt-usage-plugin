@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.3.1
+
+- Match waterfall missing-timing feedback and request-detail note typography to the approved design in both host themes.
+- Complete the design asset library adoption, including feature ownership, shared fixtures, content-sized specimens and implementation mappings.
+- Remove unused theme tokens while preserving all consumed semantic roles.
+
 ## 0.3.0
 
 - Redesign Usage overview and Task usage with Quiet Native styling, clearer metric hierarchy, compact controls and consistent host-themed surfaces.
