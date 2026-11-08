@@ -44,7 +44,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/task-list.tsx` | TaskRow | TaskList → overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
 | `modules/context.tsx` | ContextChart | ContextSection → task; module specimens | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
 | `modules/context.tsx` | ContextAllocation | ContextSection → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
-| `components/turn-header.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
+| `modules/turn-summary.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
 | `surfaces/turn-loading.tsx` | Expanded loading/failure composition | Gallery region entry; TurnHeader + Status | [`turn.tsx`](../ui/task/turn.tsx): TurnRow |
 | `modules/waterfall.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
 | `modules/waterfall.tsx` | TimeAxis | Waterfall and row specimen → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): `.wf-heading` tick markup |
@@ -75,7 +75,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 71 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 73 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -213,3 +213,13 @@ Current owner: `modules/waterfall.tsx`. Implemented; Leo gallery review pending.
 | Local state previously represented in a surface | `waterfall-failed` | Part-level coverage; surface retained for batch 6. |
 | Local state previously represented in a surface | `waterfall-unknown` | Part-level coverage; surface retained for batch 6. |
 | Local state previously represented in a surface | `waterfall-partial` | Part-level coverage; surface retained for batch 6. |
+
+## turn-summary module
+
+Current owner: `modules/turn-summary.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+
+| Old frame | Current frame | Disposition |
+| --- | --- | --- |
+| `components/turn-header.tsx` / `states` | `header-states` | Moved and cropped with 4px display clearance. |
+| Local state previously represented in a surface | `summary-loading` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `summary-error` | Part-level coverage; surface retained for batch 6. |

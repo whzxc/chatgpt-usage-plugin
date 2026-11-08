@@ -53,8 +53,18 @@ export async function callData<T>(
     return toolData(form) as T;
   }
   if (name === "usage_turn") {
-    if (fixture === "cup-turn-loading-pending") return pending(signal);
-    if (fixture === "cup-turn-loading-failure") throw Error("无法读取轮次");
+    if (
+      ["cup-turn-loading-pending", "cup-turn-summary-summary-loading"].includes(
+        fixture,
+      )
+    )
+      return pending(signal);
+    if (
+      ["cup-turn-loading-failure", "cup-turn-summary-summary-error"].includes(
+        fixture,
+      )
+    )
+      throw Error("无法读取轮次");
     if (args.text) {
       if (fixture.endsWith("narrative-loading")) return pending(signal);
       if (fixture.endsWith("narrative-error")) throw Error("无法读取全文");

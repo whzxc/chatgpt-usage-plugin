@@ -16,7 +16,7 @@ import {
   type Call,
 } from "../scenes/usage";
 import { Stack, Section } from "../components/layout";
-import { TurnHeader } from "../components/turn-header";
+import { TurnHeader } from "./turn-summary";
 import { MetricGrid } from "../components/metric-figure";
 import { RequestDetails } from "../components/request-details";
 import { Status } from "../components/status";

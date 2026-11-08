@@ -12,7 +12,7 @@ import { taskForms } from "../scenes/forms";
 import { Panel, Section, Stack } from "../components/layout";
 import { Header } from "../components/header";
 import { MetricGrid } from "../components/metric-figure";
-import { TurnHeader } from "../components/turn-header";
+import { TurnHeader } from "../modules/turn-summary";
 import { Status } from "../components/status";
 export default () =>
   taskForms.map((name) => (

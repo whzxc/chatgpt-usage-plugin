@@ -145,7 +145,7 @@ export default {
         "cup-single-choice-selection": '[role="radio"][aria-checked="true"]',
         "cup-task-list-row-selection-long": ".task-name",
         "cup-task-list-list-selected": ".task-name",
-        "cup-turn-header-states": ".turn-head",
+        "cup-turn-summary-header-states": ".turn-head",
         "cup-waterfall-row-branches": '[data-wf-id="tool:t2"]',
         "cup-turn-request-detail": '[data-wf-id="request:r2"]',
         "cup-turn-narrative-loading": '[data-wf-id="request:r2"]',

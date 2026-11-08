@@ -457,7 +457,7 @@ function Content() {
     );
   else if (fixture === "cup-tooltip-bucket")
     content = <Tooltip {...tooltipExample} />;
-  else if (fixture === "cup-turn-header-states")
+  else if (fixture === "cup-turn-summary-header-states")
     content = (
       <Stack>
         {["long", "scheduled", "failed", "running", "interrupted"].map(
@@ -481,7 +481,10 @@ function Content() {
     );
   else if (fixture === "cup-waterfall-scroll")
     content = <WaterfallFixture form="scroll" />;
-  else if (fixture.startsWith("cup-turn-loading-"))
+  else if (
+    fixture.startsWith("cup-turn-loading-") ||
+    fixture.startsWith("cup-turn-summary-summary-")
+  )
     content = (
       <TurnRow
         threadId="fictional-task-0"
@@ -634,6 +637,20 @@ function Content() {
     fixture === "cup-waterfall-waterfall-failed" ||
     fixture === "cup-waterfall-waterfall-unknown" ||
     fixture === "cup-waterfall-waterfall-partial"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-turn-summary-header-states" ||
+    fixture === "cup-turn-summary-summary-loading" ||
+    fixture === "cup-turn-summary-summary-error"
   )
     return (
       <div

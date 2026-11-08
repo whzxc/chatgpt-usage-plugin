@@ -1,7 +1,9 @@
+import { turnHeaderExamples } from "../fixtures/turn-summary";
 import { Frame, Icon } from "sdg";
 import { frame, compact, money, duration } from "../scenes/format";
 import { baseTurn, variant, totals, type Turn } from "../scenes/usage";
-import { Panel, Stack } from "./layout";
+import { Stack } from "../components/layout";
+import { Status } from "../components/status";
 export const stateLabel = {
   done: "已完成",
   running: "进行中",
@@ -61,19 +63,64 @@ export function TurnHeader({
     </button>
   );
 }
+
+export function TurnSummary({
+  turn = baseTurn,
+  loading = false,
+  error,
+}: {
+  turn?: Turn;
+  loading?: boolean;
+  error?: string;
+}) {
+  return (
+    <>
+      <TurnHeader turn={turn} open />
+      {loading && <Status message="正在读取轮次" />}
+      {error && <Status kind="error" message={error} />}
+    </>
+  );
+}
+
 export default () => [
-  <Frame {...frame("turn-header", "states")}>
-    <Panel>
+  <Frame
+    {...frame("turn-summary", "header-states")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
       <Stack>
-        {["long", "scheduled", "failed", "running", "interrupted"].map(
-          (kind, i) => (
-            <TurnHeader
-              turn={{ ...variant(kind), sequence: i + 1 }}
-              focus={i === 0}
-            />
-          ),
-        )}
+        {turnHeaderExamples.map((turn, i) => (
+          <TurnHeader turn={turn} focus={i === 0} />
+        ))}
       </Stack>
-    </Panel>
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("turn-summary", "summary-loading")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <TurnSummary loading />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("turn-summary", "summary-error")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <TurnSummary error="无法读取轮次" />
+    </div>
   </Frame>,
 ];

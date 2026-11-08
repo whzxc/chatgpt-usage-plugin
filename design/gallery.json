@@ -23,7 +23,8 @@
         "modules/usage-trend.tsx",
         "modules/task-list.tsx",
         "modules/context.tsx",
-        "modules/waterfall.tsx"
+        "modules/waterfall.tsx",
+        "modules/turn-summary.tsx"
       ]
     },
     {
@@ -39,8 +40,7 @@
         "components/status.tsx",
         "components/tool-body.tsx",
         "components/tool-dialog.tsx",
-        "components/tooltip.tsx",
-        "components/turn-header.tsx"
+        "components/tooltip.tsx"
       ]
     }
   ]

@@ -21,7 +21,7 @@
   "cup-tool-body-truncated",
   "cup-tool-dialog-ready",
   "cup-tooltip-bucket",
-  "cup-turn-header-states",
+  "cup-turn-summary-header-states",
   "cup-usage-trend-chart-tokens",
   "cup-usage-trend-chart-selected",
   "cup-waterfall-row-branches",
@@ -70,5 +70,7 @@
   "cup-waterfall-waterfall-running",
   "cup-waterfall-waterfall-failed",
   "cup-waterfall-waterfall-unknown",
-  "cup-waterfall-waterfall-partial"
+  "cup-waterfall-waterfall-partial",
+  "cup-turn-summary-summary-loading",
+  "cup-turn-summary-summary-error"
 ]
