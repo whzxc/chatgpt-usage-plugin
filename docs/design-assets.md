@@ -10,8 +10,8 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 
 | Batch scope | Implementation state | Leo review state |
 | --- | --- | --- |
-| Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Gallery review pending |
-| Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Gallery review pending |
+| Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Approved 2026-11-08 by Leo |
+| Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
 | Other generic families and eight feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
@@ -81,7 +81,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 The baseline captures are page captures at `720x2400`, origin `0 0`; frame width is 720 CSS pixels and height follows content. Both themes use the same `zh-CN` content, fixed clock `2026-11-06T06:32:00Z` and `Asia/Shanghai` labels. The Button actions capture is content-sized; other component crop changes remain with their owning batch. Current renders are reachable in `output/design/components/<source>/<frame>-{light,dark}.png` and `output/design/surfaces/<source>/<frame>-{light,dark}.png`. Local before/after comparisons are retained under ignored `output/design-governance/`; these files are not part of the installed plugin.
 
-The original approval is recorded in `design.md`. Render availability, a passing check and implementation adoption remain separate from Leo's pending governance review.
+Leo approved batches 0 and 1, including the Button content crop, on 2026-11-08. The original approval is recorded in `design.md`. Render availability, a passing check and implementation adoption remain separate from Leo's pending governance review.
 
 ## Token disposition
 
