@@ -76,12 +76,7 @@ export default {
             )
             .waitFor();
       }
-      if (
-        [
-          "cup-tool-dialog-surface-copy-error",
-          "cup-tool-dialog-dialog-copy-error",
-        ].includes(name)
-      ) {
+      if (["cup-tool-dialog-dialog-copy-error"].includes(name)) {
         await page.evaluate(() =>
           Object.defineProperty(navigator, "clipboard", {
             configurable: true,
@@ -99,8 +94,7 @@ export default {
           .waitFor();
       }
       if (
-        (name.startsWith("cup-tool-dialog-dialog-") ||
-          name.startsWith("cup-tool-dialog-surface-")) &&
+        name.startsWith("cup-tool-dialog-dialog-") &&
         !name.endsWith("loading")
       )
         await page
@@ -146,10 +140,7 @@ export default {
         await page.keyboard.press("Tab");
         await page.locator(focus).first().focus();
       }
-      if (
-        name.startsWith("cup-tool-dialog-dialog-") ||
-        name.startsWith("cup-tool-dialog-surface-")
-      ) {
+      if (name.startsWith("cup-tool-dialog-dialog-")) {
         await page.keyboard.press("Tab");
         await page.getByRole("button", { name: "关闭", exact: true }).focus();
       }

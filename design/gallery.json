@@ -11,8 +11,7 @@
       "title": "Task usage",
       "assets": [
         "surfaces/task.tsx",
-        "surfaces/turn.tsx",
-        "surfaces/tool-dialog.tsx"
+        "surfaces/turn.tsx"
       ]
     },
     {

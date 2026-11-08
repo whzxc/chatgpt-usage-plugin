@@ -51,8 +51,8 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/waterfall.tsx` | WaterfallRow | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): TraceRow |
 | `modules/request-details.tsx` | RequestDetails | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): RequestDetailsPanel, NoteDetails |
 | `modules/waterfall.tsx` | Waterfall | turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Waterfall; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
-| `modules/tool-dialog.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
-| `modules/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
+| `modules/tool-dialog.tsx` | ToolBody | ToolDialog; module specimens | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
+| `modules/tool-dialog.tsx` | ToolDialog | Module specimens; production Waterfall tool activation | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
 
 `ContextSection` in `modules/context.tsx` composes ContextChart and ContextAllocation with explicit `selected`, `gaps` and `unknownLimit` props, all false by default. `surfaces/task.tsx` consumes it. Its runtime mapping is ContextChart + CurrentContext in the task page. It emits no layout node; the task surface owns the gap between parts, so no standalone section frame is declared. Chart capture fixtures mount ContextChart alone through ContextChartFixture; allocation fixtures mount CurrentContext.
 
@@ -68,13 +68,12 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | `overview.tsx` | ready, indexing, unavailable, empty, stale, unpriced | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Implemented; batch 6 Leo review pending |
 | `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Implemented; batch 6 Leo review pending |
 | `turn.tsx` | completed, request-detail | Header + Waterfall / production Waterfall through review WaterfallFixture | Implemented; batch 6 Leo review pending |
-| `tool-dialog.tsx` | ready, loading, error, long, failed, copy-error, unknown | ToolDialog / production ToolDialog | Local states and duplicate ready specimen pending migration |
 
 ## Fixtures, captures and evidence
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`fixtures/tool-dialog.ts`](../design/fixtures/tool-dialog.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 77 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 71 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -248,7 +247,7 @@ Current owner: `modules/tool-dialog.tsx`. Approved 2026-11-08 by Leo. Explicit p
 | Local state previously represented in a surface | `dialog-copy-error` | Part-level coverage; surface retained for batch 6. |
 | Local state previously represented in a surface | `dialog-unknown` | Part-level coverage; surface retained for batch 6. |
 
-`surfaces/tool-dialog.tsx` / ready is removed: identical to module dialog-ready. The other six surface frames remain until batch 6. ToolBody imports longOutput directly from fixtures and does not re-export it.
+`surfaces/tool-dialog.tsx` / ready is removed: identical to module dialog-ready. The remaining six duplicate surface frames are retired in batch 6. ToolBody imports longOutput directly from fixtures and does not re-export it.
 
 TurnSummary composes the expanded TurnHeader and explicit loading/error feedback without a layout node. Its local loading and failure coverage now resides in module frames. RequestDetails.narrative is the body disclosure/load status, not a whole-module review form. ToolDialog accepts input, output, durationMs, exitCode, loading, error and copyError; fixture helpers map review names to those props. Dialog specimens keep the original 720px modal region inside 4px clearance; their review adapter mirrors that region without changing production CSS.
 
@@ -312,3 +311,20 @@ Governance status: implemented; Leo gallery review pending.
 | turn-loading/failure | turn-summary/summary-error; single-part wrapper removed. |
 
 Retained completed and request-detail surfaces remain pixel-identical in both themes. No combination-state matrix or new part frame is introduced.
+
+## Batch 6: tool-dialog
+
+Governance status: implemented; Leo gallery review pending.
+
+The entire `surfaces/tool-dialog.tsx` source is removed. Each frame wrapped exactly one ToolDialog; no page or regional layout existed outside the module. Current consumers are module specimens and runtime Waterfall tool activation. All retired fixture routes and capture branches are removed; the module capture selector and runtime adapter remain.
+
+| Old surface frame | Owning module coverage / deletion reason |
+| --- | --- |
+| tool-dialog/loading | tool-dialog/dialog-loading; identical single-part wrapper. |
+| tool-dialog/error | tool-dialog/dialog-error; identical single-part wrapper. |
+| tool-dialog/long | tool-dialog/dialog-long; identical single-part wrapper. |
+| tool-dialog/failed | tool-dialog/dialog-failed; identical single-part wrapper. |
+| tool-dialog/copy-error | tool-dialog/dialog-copy-error; identical single-part wrapper. |
+| tool-dialog/unknown | tool-dialog/dialog-unknown; identical single-part wrapper. |
+
+The earlier ready wrapper remains retired in favor of dialog-ready. No module or runtime visual changes are included. The complete ToolDialog specimen set and all retained surfaces remain pixel-identical in light/dark.

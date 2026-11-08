@@ -271,10 +271,7 @@ function Content() {
     throw Error(`Unknown design fixture: ${fixture}`);
   if (fixture.startsWith("cup-overview-") || fixture.startsWith("cup-entry-"))
     return <Root />;
-  if (
-    fixture.startsWith("cup-tool-dialog-dialog-") ||
-    fixture.startsWith("cup-tool-dialog-surface-")
-  ) {
+  if (fixture.startsWith("cup-tool-dialog-dialog-")) {
     return <ToolDialog threadId="fictional-task-0" toolId="t2" close={noop} />;
   }
   let content: ReactNode;
