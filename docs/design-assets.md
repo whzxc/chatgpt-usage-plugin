@@ -128,3 +128,7 @@ The layout, metric-figure specimens use `fixtures/` data and a `[data-design-spe
 - Frame route: `cup-metric-figure-overview` → `cup-metric-figure-grid-overview`.
 
 - Frame route: `cup-metric-figure-unknown` → `cup-metric-figure-grid-unknown`.
+
+## header family
+
+The header specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.

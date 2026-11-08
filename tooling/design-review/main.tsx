@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { headerExamples } from "../../design/fixtures/header";
 import { layoutExample } from "../../design/fixtures/layout";
 import { searchExamples } from "../../design/fixtures/search";
 import { selectionExamples } from "../../design/fixtures/single-choice";
@@ -368,7 +369,11 @@ function Content() {
   else if (fixture.startsWith("cup-header-"))
     content = (
       <Header
-        title={fixture.endsWith("long-title") ? copy.longTitle : "用量"}
+        title={
+          fixture.endsWith("long-title")
+            ? headerExamples.longTitle.title
+            : headerExamples.refreshing.title
+        }
         updated={reviewClock}
         busy={fixture.endsWith("refreshing")}
         back={fixture.endsWith("long-title") ? noop : undefined}
@@ -538,6 +543,19 @@ function Content() {
     return (
       <div data-design-specimen style={{ padding: 4, width: 728 }}>
         <Panel>{content}</Panel>
+      </div>
+    );
+  if (
+    fixture === "cup-header-long-title" ||
+    fixture === "cup-header-refreshing"
+  )
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
       </div>
     );
   return <Panel>{content}</Panel>;

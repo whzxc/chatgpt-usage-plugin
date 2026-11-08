@@ -1,13 +1,12 @@
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
-import { copy } from "../scenes/usage";
+import { headerExamples, headerUpdated } from "../fixtures/header";
 import { Button } from "./button";
-import { Panel } from "./layout";
 export function Header({
   title,
   back = false,
   busy = false,
-  updated = copy.updated,
+  updated = headerUpdated,
 }: {
   title: string;
   back?: boolean;
@@ -34,14 +33,28 @@ export function Header({
   );
 }
 export default () => [
-  <Frame {...frame("header", "long-title")}>
-    <Panel>
-      <Header title={copy.longTitle} back />
-    </Panel>
+  <Frame
+    {...frame("header", "long-title")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <Header {...headerExamples.longTitle} />
+    </div>
   </Frame>,
-  <Frame {...frame("header", "refreshing")}>
-    <Panel>
-      <Header title="用量" busy />
-    </Panel>
+  <Frame
+    {...frame("header", "refreshing")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <Header {...headerExamples.refreshing} />
+    </div>
   </Frame>,
 ];
