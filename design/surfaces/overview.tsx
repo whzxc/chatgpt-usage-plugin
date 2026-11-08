@@ -14,7 +14,7 @@ import { QuotaSection } from "../modules/quota";
 import { Status } from "../components/status";
 import { SingleChoice } from "../components/single-choice";
 import { MetricGrid } from "../components/metric-figure";
-import { UsageChart } from "../components/usage-chart";
+import { UsageChart } from "../modules/usage-trend";
 import { TaskList } from "../components/task-list";
 export default () =>
   overviewForms.map((name) => {

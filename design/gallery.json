@@ -5,8 +5,7 @@
       "assets": [
         "surfaces/entry.tsx",
         "surfaces/overview.tsx",
-        "surfaces/task-list.tsx",
-        "surfaces/usage-trend.tsx"
+        "surfaces/task-list.tsx"
       ]
     },
     {
@@ -22,7 +21,8 @@
     {
       "title": "Feature modules",
       "assets": [
-        "modules/quota.tsx"
+        "modules/quota.tsx",
+        "modules/usage-trend.tsx"
       ]
     },
     {
@@ -33,7 +33,6 @@
         "components/context-chart.tsx",
         "components/header.tsx",
         "components/layout.tsx",
-        "components/legend.tsx",
         "components/metric-figure.tsx",
         "components/minimap.tsx",
         "components/request-details.tsx",
@@ -46,7 +45,6 @@
         "components/tool-dialog.tsx",
         "components/tooltip.tsx",
         "components/turn-header.tsx",
-        "components/usage-chart.tsx",
         "components/waterfall-row.tsx",
         "components/waterfall.tsx"
       ]

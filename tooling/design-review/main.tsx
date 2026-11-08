@@ -309,10 +309,7 @@ function Content() {
     content = <ContextFixture form="selected-compaction" allocation={false} />;
   else if (fixture.startsWith("cup-context-"))
     content = <ContextFixture form={fixture.slice(12)} />;
-  else if (
-    fixture.startsWith("cup-usage-chart-") ||
-    fixture.startsWith("cup-usage-trend-")
-  ) {
+  else if (fixture.startsWith("cup-usage-trend-chart-")) {
     const hourly = fixture.endsWith("hourly-cost"),
       single = fixture.endsWith("single-model");
     content = (
@@ -375,7 +372,7 @@ function Content() {
         refresh={noop}
       />
     );
-  else if (fixture === "cup-legend-models")
+  else if (fixture === "cup-usage-trend-legend-models")
     content = <ModelLegend summary={summaryData()} />;
   else if (fixture === "cup-metric-figure-grid-overview")
     content = <Figures summary={summaryData()} />;
@@ -566,6 +563,22 @@ function Content() {
   if (
     fixture === "cup-quota-bar-windows" ||
     fixture === "cup-quota-section-credits-and-exhaustion"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-usage-trend-chart-tokens" ||
+    fixture === "cup-usage-trend-chart-selected" ||
+    fixture === "cup-usage-trend-legend-models" ||
+    fixture === "cup-usage-trend-chart-hourly-cost" ||
+    fixture === "cup-usage-trend-chart-single-model"
   )
     return (
       <div

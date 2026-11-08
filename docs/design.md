@@ -17,9 +17,10 @@ Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolate
 - `design/tokens.css` owns the approved semantic palette and geometry.
 - `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. Feature assets remain here until their owning migration batch is reviewed.
 - `design/modules/` contains migrated feature owners; the ownership table records the current locations.
-- `design/surfaces/` currently contains 9 composition sources. Their local states will move with their owning modules.
+- `design/surfaces/` currently contains 8 composition sources. Their local states will move with their owning modules.
+- `design/fixtures/quota.ts` owns quota records; `design/fixtures/usage-trend.ts` owns trend projections.
 - `design/fixtures/` is the project owner for representative data and fixture projections. `button.ts` supplies the shared Button actions to the design specimen and runtime review fixture.
-- Temporary legacy paths: `design/scenes/usage.ts`, `context.ts`, `chart.ts`, `tool.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
+- Temporary legacy paths: `design/scenes/usage.ts`, `context.ts`, `tool.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
 - Frames use the 720 CSS pixel review basis and implemented fixtures, with page captures at `720x2400`, origin `0 0`, except content-cropped generic specimens, whose current dimensions and selectors are declared in their Frame props and the asset register. Height follows content. Component and isolated section fixtures capture their specimen region; unchanged legacy specimens retain page-origin captures. Complete panel fixtures render the corresponding composition. The viewport accommodates the longest full-content specimen; it does not prescribe the host panel height.
 - The 720px width is the approved review basis, not a claimed ChatGPT default. Runtime width continues to follow `ui/host-size.ts` and the host's `containerDimensions`.
 - Fixtures use Chinese product text, a fixed review clock of `2026-11-06T06:32:00Z`, and `Asia/Shanghai` calendar labels. No frame uses the current system clock or a live source.
@@ -44,7 +45,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 | Agreed feature owner | Owned parts | Current source locations under `design/` |
 | --- | --- | --- |
 | `modules/quota.tsx` | QuotaBar, QuotaSection | `modules/quota.tsx` |
-| `modules/usage-trend.tsx` | UsageChart, Legend | `components/usage-chart.tsx`, `components/legend.tsx` |
+| `modules/usage-trend.tsx` | UsageChart, Legend | `modules/usage-trend.tsx` |
 | `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `components/task-list.tsx`, `components/task-row.tsx` |
 | `modules/context.tsx` | ContextChart, ContextAllocation | `components/context-chart.tsx`, `components/context-allocation.tsx` |
 | `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `components/turn-header.tsx`, `surfaces/turn-loading.tsx` |
@@ -131,7 +132,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/header.tsx`             | `long-title`             | `cup-header-long-title`                   |
 | `components/header.tsx`             | `refreshing`             | `cup-header-refreshing`                   |
 | `components/layout.tsx`             | `panel-shell`                  | `cup-layout-panel-shell`                        |
-| `components/legend.tsx`             | `models`                 | `cup-legend-models`                       |
 | `components/metric-figure.tsx`      | `grid-overview`               | `cup-metric-figure-grid-overview`              |
 | `components/metric-figure.tsx`      | `grid-unknown`                | `cup-metric-figure-grid-unknown`               |
 | `components/minimap.tsx`            | `selected-range`         | `cup-minimap-selected-range`              |
@@ -146,8 +146,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/tool-dialog.tsx`        | `ready`                  | `cup-tool-dialog-ready`                   |
 | `components/tooltip.tsx`            | `bucket`                 | `cup-tooltip-bucket`                      |
 | `components/turn-header.tsx`        | `states`                 | `cup-turn-header-states`                  |
-| `components/usage-chart.tsx`        | `tokens`                 | `cup-usage-chart-tokens`                  |
-| `components/usage-chart.tsx`        | `selected`               | `cup-usage-chart-selected`                |
 | `components/waterfall-row.tsx`      | `branches`               | `cup-waterfall-row-branches`              |
 | `components/waterfall-row.tsx`      | `unknown`                | `cup-waterfall-row-unknown`               |
 | `components/waterfall.tsx`          | `completed`              | `cup-waterfall-completed`                 |
@@ -189,14 +187,17 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `surfaces/turn.tsx`                 | `request-detail`         | `cup-turn-request-detail`                 |
 | `surfaces/turn.tsx`                 | `narrative-loading`      | `cup-turn-narrative-loading`              |
 | `surfaces/turn.tsx`                 | `narrative-error`        | `cup-turn-narrative-error`                |
-| `surfaces/usage-trend.tsx`          | `hourly-cost`            | `cup-usage-trend-hourly-cost`             |
-| `surfaces/usage-trend.tsx`          | `single-model`           | `cup-usage-trend-single-model`            |
 | `modules/quota.tsx` | `bar-windows` | `cup-quota-bar-windows` |
 | `modules/quota.tsx` | `section-credits-and-exhaustion` | `cup-quota-section-credits-and-exhaustion` |
+| `modules/usage-trend.tsx` | `chart-tokens` | `cup-usage-trend-chart-tokens` |
+| `modules/usage-trend.tsx` | `chart-selected` | `cup-usage-trend-chart-selected` |
+| `modules/usage-trend.tsx` | `legend-models` | `cup-usage-trend-legend-models` |
+| `modules/usage-trend.tsx` | `chart-hourly-cost` | `cup-usage-trend-chart-hourly-cost` |
+| `modules/usage-trend.tsx` | `chart-single-model` | `cup-usage-trend-chart-single-model` |
 
 ## Approval scope
 
-The library contains 21 component sources, 1 module sources and 9 surface sources, with 69 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 19 component sources, 2 module sources and 8 surface sources, with 69 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 

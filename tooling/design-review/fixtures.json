@@ -6,7 +6,7 @@
   "cup-header-long-title",
   "cup-header-refreshing",
   "cup-layout-panel-shell",
-  "cup-legend-models",
+  "cup-usage-trend-legend-models",
   "cup-metric-figure-grid-overview",
   "cup-metric-figure-grid-unknown",
   "cup-minimap-selected-range",
@@ -22,8 +22,8 @@
   "cup-tool-dialog-ready",
   "cup-tooltip-bucket",
   "cup-turn-header-states",
-  "cup-usage-chart-tokens",
-  "cup-usage-chart-selected",
+  "cup-usage-trend-chart-tokens",
+  "cup-usage-trend-chart-selected",
   "cup-waterfall-row-branches",
   "cup-waterfall-row-unknown",
   "cup-waterfall-completed",
@@ -67,6 +67,6 @@
   "cup-turn-request-detail",
   "cup-turn-narrative-loading",
   "cup-turn-narrative-error",
-  "cup-usage-trend-hourly-cost",
-  "cup-usage-trend-single-model"
+  "cup-usage-trend-chart-hourly-cost",
+  "cup-usage-trend-chart-single-model"
 ]

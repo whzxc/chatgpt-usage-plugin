@@ -34,10 +34,10 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/single-choice.tsx` | SingleChoice | TaskList, UsageChart, overview → task-list, usage-trend | [`SingleChoice.tsx`](../ui/components/ui/SingleChoice.tsx): SingleChoice |
 | `components/status.tsx` | Status | RequestDetails, TaskList, ToolDialog, Waterfall, entry, overview, task, turn-loading → task-list, tool-dialog, turn | [`status.tsx`](../ui/shared/status.tsx): Status, Indexing, Failure |
 | `components/tooltip.tsx` | Tooltip | ContextChart, UsageChart → context, overview, task, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Tooltip |
-| `components/legend.tsx` | Legend | UsageChart → overview, usage-trend | [`overview.tsx`](../ui/overview/overview.tsx): ModelLegend |
-| `components/usage-chart.tsx` | UsageChart | overview, usage-trend | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
-| `modules/quota.tsx` | QuotaBar | QuotaSection → overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
-| `modules/quota.tsx` | QuotaSection | overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
+| `modules/usage-trend.tsx` | Legend | UsageChart → overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): ModelLegend |
+| `modules/usage-trend.tsx` | UsageChart | overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
+| `modules/quota.tsx` | QuotaBar | QuotaSection → overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
+| `modules/quota.tsx` | QuotaSection | overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
 | `components/task-list.tsx` | TaskList | overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
 | `components/task-row.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
 | `components/task-row.tsx` | TaskRow | TaskList → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
@@ -64,7 +64,6 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | `entry.tsx` | loading, failure | Panel + Status / [`root.tsx`](../ui/app/root.tsx) | Pending composition review |
 | `overview.tsx` | ready, indexing, unavailable, empty, stale, refreshing, unpriced, quota-unavailable | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Pending dependency and surface review |
 | `task-list.tsx` | selected, search-empty | TaskList / TaskTable | Local states and duplicate empty specimen pending migration |
-| `usage-trend.tsx` | hourly-cost, single-model | UsageChart / UsageChart | Local states pending trend migration |
 | `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Pending dependency and surface review |
 | `context.tsx` | selected-compaction, missing-measurements, unknown-capacity | ContextChart + ContextAllocation / ContextChart + CurrentContext | Local states pending context migration |
 | `turn-loading.tsx` | pending, failure | TurnHeader + Status / TurnRow | Pending turn-summary migration |
@@ -73,7 +72,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 ## Fixtures, captures and evidence
 
-`design/fixtures/` owns this project's representative data and fixture projections. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for calls, turns, histories, quota records and projections, plus [`scenes/context.ts`](../design/scenes/context.ts), [`chart.ts`](../design/scenes/chart.ts), [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for their projections and state lists. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
+`design/fixtures/` owns this project's representative data and fixture projections. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for calls, turns, histories and shared projections, plus [`scenes/context.ts`](../design/scenes/context.ts), [`fixtures/usage-trend.ts`](../design/fixtures/usage-trend.ts), [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for their projections and state lists. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
 [`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 69 frame fixtures and `cup-waterfall-scroll`.
 
@@ -153,3 +152,17 @@ Current owner: `modules/quota.tsx`. Migration state: implemented; Leo gallery re
 | `surfaces/quota.tsx` / `credits-and-exhaustion` | `modules/quota.tsx` / `section-credits-and-exhaustion` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
 
 The removed `surfaces/quota.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.
+
+## usage-trend module
+
+Current owner: `modules/usage-trend.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+
+| Old frame | Current module frame | Disposition |
+| --- | --- | --- |
+| `components/usage-chart.tsx` / `tokens` | `modules/usage-trend.tsx` / `chart-tokens` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `components/usage-chart.tsx` / `selected` | `modules/usage-trend.tsx` / `chart-selected` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `components/legend.tsx` / `models` | `modules/usage-trend.tsx` / `legend-models` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/usage-trend.tsx` / `hourly-cost` | `modules/usage-trend.tsx` / `chart-hourly-cost` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/usage-trend.tsx` / `single-model` | `modules/usage-trend.tsx` / `chart-single-model` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+
+The removed `surfaces/usage-trend.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.

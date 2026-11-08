@@ -5,8 +5,8 @@ import {
   modelNames,
   modelTones,
   totals,
-} from "./usage";
-import { compact, money, percent } from "./format";
+} from "../scenes/usage";
+import { compact, money, percent } from "../scenes/format";
 export function chartScene(
   mode: "daily" | "hourly" | "single" = "daily",
   metric = "Tokens",

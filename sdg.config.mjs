@@ -40,9 +40,10 @@ export default {
           .waitFor();
       }
       if (
-        ["cup-usage-chart-selected", "cup-usage-trend-hourly-cost"].includes(
-          name,
-        )
+        [
+          "cup-usage-trend-chart-selected",
+          "cup-usage-trend-chart-hourly-cost",
+        ].includes(name)
       ) {
         if (name.endsWith("hourly-cost"))
           await page.getByRole("radio", { name: "费用", exact: true }).click();
