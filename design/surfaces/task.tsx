@@ -1,60 +1,48 @@
-import { ContextSection } from "../modules/context";
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
-import {
-  copy,
-  summaryMetrics,
-  history,
-  primaryTurns,
-  variant,
-} from "../scenes/usage";
-import { taskForms } from "../scenes/forms";
+import { taskFrames, taskScene } from "../fixtures/task";
 import { Panel, Section, Stack } from "../components/layout";
 import { Header } from "../components/header";
 import { MetricGrid } from "../components/metric-figure";
-import { TurnHeader } from "../modules/turn-summary";
 import { Status } from "../components/status";
+import { ContextSection } from "../modules/context";
+import { TurnHeader } from "../modules/turn-summary";
 export default () =>
-  taskForms.map((name) => (
-    <Frame {...frame("task", name)}>
-      <Panel>
-        {name === "empty" ? (
-          <Status kind="empty" message={copy.noTask} />
-        ) : (
-          <>
-            <Header
-              title={name === "long-title" ? copy.longTitle : copy.task}
-              back
-            />
-            {name === "indexing" ? (
-              <Status
-                kind="indexing"
-                total={history.length}
-                processed={history.length / 3}
-              />
-            ) : name === "unavailable" ? (
-              <Status kind="error" />
-            ) : (
-              <>
-                {name === "stale" && <Status kind="stale" />}
-                <MetricGrid
-                  columns={2}
-                  items={summaryMetrics(
-                    history.filter((h) => h.task === 0),
-                  ).filter((_, i) => [0, 1, 4, 5].includes(i))}
+  taskFrames.map((name) => {
+    const scene = taskScene(name);
+    return (
+      <Frame {...frame("task", name)}>
+        <Panel>
+          {scene.empty ? (
+            <Status kind="empty" message={scene.emptyMessage} />
+          ) : (
+            <>
+              <Header title={scene.title} back />
+              {scene.indexing ? (
+                <Status
+                  kind="indexing"
+                  total={scene.total}
+                  processed={scene.processed}
                 />
-                <ContextSection />
-                <Section title="轮次 · 最新在前">
-                  <Stack>
-                    {[...primaryTurns].reverse().map((turn) => (
-                      <TurnHeader turn={turn} />
-                    ))}
-                  </Stack>
-                </Section>
-              </>
-            )}
-          </>
-        )}
-      </Panel>
-    </Frame>
-  ));
+              ) : scene.unavailable ? (
+                <Status kind="error" />
+              ) : (
+                <>
+                  {scene.stale && <Status kind="stale" />}
+                  <MetricGrid columns={2} items={scene.metrics} />
+                  <ContextSection />
+                  <Section title="轮次 · 最新在前">
+                    <Stack>
+                      {scene.turns.map((turn) => (
+                        <TurnHeader turn={turn} />
+                      ))}
+                    </Stack>
+                  </Section>
+                </>
+              )}
+            </>
+          )}
+        </Panel>
+      </Frame>
+    );
+  });

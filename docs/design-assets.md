@@ -275,3 +275,20 @@ New owner: `modules/usage-summary.tsx` → runtime Overview local usage Section,
 | overview/quota-unavailable | Removed: quota/section-error owns the account-local replacement; overview/ready covers its surrounding arrangement. |
 
 Quota part frames: section-loading and section-error. UsageSummary part frames: ready, refreshing, indexing and unavailable; each is one owned state, with no combined-state matrix. All new specimens use 672px content width plus 4px clearance. Structural extraction preserves retained surface pixels.
+
+## Batch 6: task
+
+Governance status: implemented; Leo gallery review pending.
+
+`fixtures/task.ts` owns task-specific history filtering, metric selection, newest-first turn ordering, progress and title selection. The surface now composes explicit projection fields; runtime consumers remain TaskPage, TaskSummary, ContextChart, CurrentContext and TurnHeader. No new module is needed: the metric grid and page branch arrangement are layout glue.
+
+| Old surface frame | Disposition / retained layout |
+| --- | --- |
+| task/ready | Retained: metrics, context and turn-list arrangement. |
+| task/empty | Retained: direct-entry empty page omits Header and all content regions. Status/feedback covers the local empty control. |
+| task/indexing | Retained: Header with whole-page indexing replacement. |
+| task/unavailable | Retained: Header with retry replacement for the whole body. |
+| task/stale | Retained: banner changes whole-page geometry above metrics. |
+| task/long-title | Retained: wrapped title changes Header and downstream geometry. |
+
+All six retained frames preserve their original light/dark pixels. No frame is a local context or row state combination.
