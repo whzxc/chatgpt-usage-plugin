@@ -35,7 +35,7 @@ export function ToolDialog({
       >
         <header class="flex items-start justify-between gap-4">
           <div class="min-w-0 flex flex-col gap-2">
-            <h2 class="text-title font-semibold">
+            <h2 class="text-title leading-[28px] font-semibold">
               {pending ? "工具调用" : "exec_command 工具调用"}
             </h2>
             {!pending && (
@@ -115,6 +115,7 @@ export function ToolBody({
 export default () => [
   <Frame
     {...frame("tool-dialog", "dialog-ready")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -139,6 +140,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-loading")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -151,6 +153,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-error")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -163,6 +166,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-long")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -175,6 +179,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-failed")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -187,6 +192,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-copy-error")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -199,6 +205,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-unknown")}
+    note="Proposal pending Leo review"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >

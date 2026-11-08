@@ -250,7 +250,7 @@ TurnSummary composes the expanded TurnHeader and explicit loading/error feedback
 
 No ownership correction is pending: TimeAxis, Minimap and WaterfallRow retain call/turn semantics; ToolBody retains tool payload, truncation and copy semantics. They remain in their approved feature modules. The recorded turn/partial fidelity item remains open for the separate batch 6 proposal.
 
-Runtime comparison follow-ups: standalone RequestDetails captures differ by about 6px in height; waterfall/unknown differs by about 3px, and partial keeps its recorded padded-range drift. Native ToolDialog typography differs by about 2px in height. These differences are separate visual-acceptance proposals; the retained design surfaces remain pixel-identical.
+The height and partial-range follow-ups are analyzed in the fidelity proposal section below. Structural surface extraction preserves every retained light/dark surface pixel.
 
 ## Batch 6: overview
 
@@ -338,3 +338,16 @@ Governance status: implemented; Leo gallery review pending.
 | entry/failure | components/status/feedback error specimen; one Status wrapper without independent page geometry. |
 
 The gallery now retains overview, task and turn composition sources. Every remaining surface frame has an explicit layout reason above. Frame manifest, capture preparations, adapter routes, README counts and mapping records match the retained library.
+
+## Batch 6 fidelity proposals
+
+Status: **Proposal pending Leo review**. These changes have a separate proposal commit after all five structural commits. No `ui/` files change. The original turn/partial fidelity record above remains open until Leo approves the proposal.
+
+| Item and measured baseline | Owning source and exact cause | Recommendation / proposed delta |
+| --- | --- | --- |
+| Waterfall unknown: design 932px, runtime 929px | Design Status explicitly uses `text-body` (14px / 21px). Runtime `ui/task/waterfall.css` `.waterfall { font-size: 12px }` flows into `.status-line > span` in `ui/shared/layout.css`, which has no body font override. Runtime computed warning is 12px / 18px, 16px padding, 16px icon, total 50px; design is 53px. | Align implementation to the approved design: make Status body typography explicit at 14px / 21px. Recorded only; no runtime or design change in this batch. |
+| RequestDetails full, collapsed, loading, error: 358/296/357/368px design; 364/302/363/374px runtime | Design note title and summary use `text-meta` (12px / 18px). `ui/task/waterfall.css` `.wf-note > button` and its spans have no font size; the standalone capture inherits 14px / 21px from the Panel. Two note headers add 3px each. Inside the production waterfall they inherit its 12px context. The 16px padding and 16px gaps match. | Align implementation to design: declare 12px / 18px on note headings rather than relying on the surrounding waterfall. Recorded only; keep both standalone and integrated behavior intentional. |
+| ToolDialog ready/long/failed/copy-error/unknown: 451/647/431/528/431px design; runtime is 2px shorter | Design h2 `text-title` inherits line-height 1.5, so 20px produces 30px. `ui/task/tool-dialog.css` `.tool-heading h2` is explicitly 20px / 28px. Both use 24px dialog padding and 24px content gap. Loading/error heights are constrained by the 32px Close button and do not drift. | Design aligns to implementation: propose `leading-[28px]` on the dialog title. Five content frames shrink 2px; loading/error keep their height while their title glyphs move up 1px. Dialog Frame notes mark pending review; ToolBody stays unchanged. |
+| Original turn/partial static 0–24s versus runtime range 0–24.96s; module 777px versus 785px | `ui/task/waterfall-range.ts` viewportRange pads the visible 24,000ms call extent by 4% (960ms). `ui/task/waterfall-clock.ts` interpolates four tick labels: 0s, 8.3s, 16.6s, 25s; its footer floors seconds to 0s–24s. The runtime review adapter places the reveal Button after the timeline in a 24px Stack; the old design placed it inside Section's 16px gap. | Design aligns to implementation: fixture projects range [0, 24960], Waterfall accepts explicit viewRange, ticks and bars use that range, Minimap footer floors seconds, and the reveal Button moves to the outer Stack. Result: +8px, matching the measured runtime height. Only waterfall-partial changes; its Frame note marks pending review. Preserve runtime scroll-following and the whole-turn 45s summary/minimap. |
+
+New UsageSummary and quota status specimens remain part of the structural batch 6 review. The two design fidelity proposals are separate decisions; approving surface cleanup does not approve them. Previously recorded narrower specimen proposals remain separate.

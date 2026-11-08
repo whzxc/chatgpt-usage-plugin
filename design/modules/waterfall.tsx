@@ -28,12 +28,14 @@ export function Waterfall({
   narrative = "collapsed",
   partial = false,
   all = false,
+  viewRange,
 }: {
   turn?: Turn;
   details?: boolean;
   narrative?: "collapsed" | "full" | "loading" | "error";
   partial?: boolean;
   all?: boolean;
+  viewRange?: [number, number];
 }) {
   const expanded = all
       ? turn.calls.filter((c) => c.kind === "model").map((c) => c.id)
@@ -43,7 +45,8 @@ export function Waterfall({
         (!c.parent || expanded.includes(c.parent)) &&
         (!partial || (c.start ?? c.at) < 24000),
     ),
-    range: [number, number] = partial ? [0, 24000] : [0, turn.end ?? turn.now],
+    range: [number, number] =
+      viewRange ?? (partial ? [0, 24000] : [0, turn.end ?? turn.now]),
     hidden = turn.calls.filter(
       (c) => c.kind === "model" && !visible.includes(c),
     ).length;
@@ -96,7 +99,6 @@ export function Waterfall({
               </div>
             ))}
         </div>
-        {partial && <Button label={`显示其余 ${hidden} 次请求`} />}{" "}
         {turn.state === "running" && (
           <p class="text-meta text-muted">
             尚未记录完成的模型请求暂无独立时间条。
@@ -106,6 +108,7 @@ export function Waterfall({
           <Status kind="warning" message={copy.unknownWarning} />
         )}
       </Section>
+      {partial && <Button label={`显示其余 ${hidden} 次请求`} />}
     </Stack>
   );
 }
@@ -181,7 +184,8 @@ export function Minimap({
       <div class="flex justify-between text-meta text-muted">
         <span>模型 / 工具调用次数</span>
         <span>
-          可见 {duration(window[0])}–{duration(window[1])}
+          可见 {duration(Math.floor(window[0] / 1000) * 1000)}–
+          {duration(Math.floor(window[1] / 1000) * 1000)}
         </span>
       </div>
     </div>
@@ -439,6 +443,7 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("waterfall", "waterfall-partial")}
+    note="Proposal pending Leo review"
     width={680}
     capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
   >
