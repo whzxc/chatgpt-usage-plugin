@@ -11,7 +11,7 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Batch scope | Implementation state | Leo review state |
 | --- | --- | --- |
 | Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Gallery review pending |
-| Tokens and Button | Authorized; changes pending | Gallery review pending |
+| Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Gallery review pending |
 | Other generic families and eight feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
@@ -23,7 +23,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | --- | --- | --- | --- |
 | `components/button.tsx` | Button | Header, Minimap, RequestDetails, Status, TaskList, ToolBody, ToolDialog, Waterfall → entry, overview, task-list, task, tool-dialog, turn-loading, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Button |
 | `components/header.tsx` | Header | overview, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Header |
-| `components/layout.tsx` | Panel | Component specimens; context, entry, overview, quota, task-list, task, turn-loading, turn, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Panel; production overview/task containers use [`layout.css`](../ui/shared/layout.css) |
+| `components/layout.tsx` | Panel | Other Panel-based component specimens; context, entry, overview, quota, task-list, task, turn-loading, turn, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Panel; production overview/task containers use [`layout.css`](../ui/shared/layout.css) |
 | `components/layout.tsx` | Stack | Waterfall and task → turn; specimen layouts for Search, SingleChoice, Status, QuotaBar, TurnHeader and WaterfallRow | [`layout.css`](../ui/shared/layout.css): `.stack` and feature flex containers |
 | `components/layout.tsx` | Grid | Legend, MetricGrid, QuotaSection, RequestDetails → overview, quota, usage-trend, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid; [`overview.tsx`](../ui/overview/overview.tsx): quota/legend grids; [`waterfall.tsx`](../ui/task/waterfall.tsx): request fact grid |
 | `components/layout.tsx` | Section | ContextChart, ContextAllocation, QuotaSection, TaskList, UsageChart, Waterfall; overview, task → context, quota, task-list, usage-trend, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Section |
@@ -77,9 +77,17 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 [`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 69 frame fixtures and `cup-waterfall-scroll`.
 
-The baseline captures are page captures at `720x2400`, origin `0 0`; frame width is 720 CSS pixels and height follows content. Both themes use the same `zh-CN` content, fixed clock `2026-11-06T06:32:00Z` and `Asia/Shanghai` labels. Component crop changes update their capture in the owning batch. Current renders are reachable in `output/design/components/<source>/<frame>-{light,dark}.png` and `output/design/surfaces/<source>/<frame>-{light,dark}.png`. Local before/after comparisons are retained under ignored `output/design-governance/`; these files are not part of the installed plugin.
+[`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
+
+The baseline captures are page captures at `720x2400`, origin `0 0`; frame width is 720 CSS pixels and height follows content. Both themes use the same `zh-CN` content, fixed clock `2026-11-06T06:32:00Z` and `Asia/Shanghai` labels. The Button actions capture is content-sized; other component crop changes remain with their owning batch. Current renders are reachable in `output/design/components/<source>/<frame>-{light,dark}.png` and `output/design/surfaces/<source>/<frame>-{light,dark}.png`. Local before/after comparisons are retained under ignored `output/design-governance/`; these files are not part of the installed plugin.
 
 The original approval is recorded in `design.md`. Render availability, a passing check and implementation adoption remain separate from Leo's pending governance review.
+
+## Token disposition
+
+Panel padding and section spacing now consume `--panel-padding` and `--section-gap`. The original Tailwind `p-6`/`gap-6` resolve as `6 × 0.25rem = 24px` in the SDG document, matching both token values. Runtime Panel styles already consume those tokens.
+
+`--other`, `--on-accent`, `--success`, `--icon-size` and `--text-small` were removed from both token files after checking their CSS variable uses and generated utility names across design sources, runtime UI and the review adapter. They had declarations only, with no consumers. `ui/theme.ts` forwards host variables without reading these roles. `--model-other` remains: `ui/overview/overview.tsx` uses it for additional model slots.
 
 ## Fidelity and policy exceptions
 

@@ -2,7 +2,7 @@ import { Frame } from "sdg";
 import { frame } from "../scenes/format";
 export function Panel({ children }: { children?: unknown }) {
   return (
-    <main class="w-full bg-canvas text-text font-ui text-body leading-normal p-6 flex flex-col gap-6">
+    <main class="w-full bg-canvas text-text font-ui text-body leading-normal p-(--panel-padding) flex flex-col gap-(--section-gap)">
       {children}
     </main>
   );

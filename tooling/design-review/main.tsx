@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { buttonActions } from "../../design/fixtures/button";
 import { compact, money } from "../../ui/shared/format";
 import {
   reviewClock,
@@ -342,16 +343,25 @@ function Content() {
     );
   else if (fixture === "cup-button-actions")
     content = (
-      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <Button label="重试" />
-        <Button label="正在更新" busy />
-        <Button label="下一页" disabled />
-        <Button label="刷新">
-          <RefreshIcon />
-        </Button>
-        <Button label="关闭">
-          <CloseIcon />
-        </Button>
+      <div
+        data-design-button-actions
+        style={{
+          display: "flex",
+          alignItems: "center",
+          alignSelf: "flex-start",
+          gap: 16,
+          padding: 4,
+        }}
+      >
+        {buttonActions.map(({ label, busy, disabled, icon }) => (
+          <Button key={label} label={label} busy={busy} disabled={disabled}>
+            {icon === "refresh-cw" ? (
+              <RefreshIcon />
+            ) : icon === "x" ? (
+              <CloseIcon />
+            ) : undefined}
+          </Button>
+        ))}
       </div>
     );
   else if (fixture === "cup-layout-shell")
