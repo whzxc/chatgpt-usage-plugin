@@ -1,7 +1,7 @@
 import fixtures from "./tooling/design-review/fixtures.json" with { type: "json" };
 import { startDesignDev } from "./tooling/design-dev.mjs";
 export default {
-  requires: ">=0.4.3",
+  requires: ">=0.5.0",
   design: "design",
   output: "output/design",
   compare: {

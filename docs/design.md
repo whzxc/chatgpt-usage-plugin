@@ -1,8 +1,8 @@
 # TSX design record
 
-Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers every source and frame listed below.
+Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Governance changes have a separate review status in [the asset register](design-assets.md).
 
-[Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md)
+[Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md) · [Asset rules](https://github.com/whzxc/svg-design-gallery/blob/main/docs/asset-rules.md) · [Asset register](design-assets.md)
 
 ## Direction
 
@@ -12,13 +12,15 @@ The runtime implements this direction with shared React controls and host-bound 
 
 ## Source and capture contract
 
-Use the global `sdg` version 0.4.3 or later. `sdg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
+Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
 
 - `design/tokens.css` owns the approved semantic palette and geometry.
-- `design/components/` exports parameterized presentation functions and component specimens.
-- `design/surfaces/` composes components without duplicating their markup.
+- `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. Feature assets remain here until their owning migration batch is reviewed.
+- `design/modules/` is the agreed feature layer; its owners and current source locations are listed below. No module source has moved yet.
+- `design/surfaces/` currently contains the 10 approved composition sources. Their local states will move with their owning modules.
+- `design/fixtures/` owns extracted representative data. The remaining scene data stays in `design/scenes/` until its owning batch.
 - `design/scenes/usage.ts`, `context.ts`, `chart.ts` and `tool.ts` own fictional records and calculated projections. `forms.ts` declares surface presentations; `format.ts` owns formatting and frame metadata.
-- Every frame is 720 CSS pixels wide, with a reserved fixture and a page capture at `720x2400`, origin `0 0`. Height follows content. Component and isolated section fixtures render only that specimen at the page origin. Complete panel fixtures render the corresponding composition. The viewport accommodates the longest full-content specimen; it does not prescribe the host panel height.
+- Every frame is 720 CSS pixels wide, with an implemented fixture and a page capture at `720x2400`, origin `0 0`. Height follows content. Component and isolated section fixtures render only that specimen at the page origin. Complete panel fixtures render the corresponding composition. The viewport accommodates the longest full-content specimen; it does not prescribe the host panel height.
 - The 720px width is the approved review basis, not a claimed ChatGPT default. Runtime width continues to follow `ui/host-size.ts` and the host's `containerDimensions`.
 - Fixtures use Chinese product text, a fixed review clock of `2026-11-06T06:32:00Z`, and `Asia/Shanghai` calendar labels. No frame uses the current system clock or a live source.
 - Theme selection belongs to the host. The same frame renders light and dark; there are no theme or width matrices.
@@ -30,6 +32,29 @@ npx --no-install tsc --noEmit -p design/tsconfig.json
 ```
 
 Renders are written to `output/design/<source>/<frame>-light.png` and `-dark.png`. `output/` and `design/.sdg/` are ignored. Keep each token declaration on one line, including font stacks and shadows, as required by the toolkit parser.
+
+## Ownership and review
+
+SDG discovers sources in `components`, `modules`, `surfaces` order. Import-direction checking remains enabled. Fixtures and the formatting/frame helpers are supporting files. This project has no artwork or studies; image dimensions and budgets are currently not applicable.
+
+The selected direction remains Quiet Native, Chinese product copy, light/dark host themes and a 720px review basis. Supported installed targets are macOS Apple Silicon and Windows x64. Review captures run on macOS; platform and host-resize acceptance remain part of runtime acceptance.
+
+| Agreed feature owner | Owned parts | Current source locations under `design/` |
+| --- | --- | --- |
+| `modules/quota.tsx` | QuotaBar, QuotaSection | `components/quota-bar.tsx` |
+| `modules/usage-trend.tsx` | UsageChart, Legend | `components/usage-chart.tsx`, `components/legend.tsx` |
+| `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `components/task-list.tsx`, `components/task-row.tsx` |
+| `modules/context.tsx` | ContextChart, ContextAllocation | `components/context-chart.tsx`, `components/context-allocation.tsx` |
+| `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `components/turn-header.tsx`, `surfaces/turn-loading.tsx` |
+| `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `components/minimap.tsx`, `components/waterfall-row.tsx`, `components/waterfall.tsx` |
+| `modules/request-details.tsx` | RequestDetails | `components/request-details.tsx` |
+| `modules/tool-dialog.tsx` | ToolBody, ToolDialog | `components/tool-body.tsx`, `components/tool-dialog.tsx` |
+
+Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
+
+The current authorized sequence is ownership/documentation, then tokens and Button. These two batches receive separate local commits before the gallery handoff. Later batches wait for Leo's gallery review: each remaining generic family, each feature module, then one composed surface at a time, followed by unused-asset cleanup. The turn summary owner is `turn-summary`, distinct from the composed `surfaces/turn`.
+
+For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `sdg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `sdg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
 
 ## Token-to-host mapping
 
