@@ -38,9 +38,9 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/usage-trend.tsx` | UsageChart | overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
 | `modules/quota.tsx` | QuotaBar | QuotaSection → overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
 | `modules/quota.tsx` | QuotaSection | overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
-| `components/task-list.tsx` | TaskList | overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
-| `components/task-row.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
-| `components/task-row.tsx` | TaskRow | TaskList → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
+| `modules/task-list.tsx` | TaskList | overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
+| `modules/task-list.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
+| `modules/task-list.tsx` | TaskRow | TaskList → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
 | `components/context-chart.tsx` | ContextChart | context, task | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
 | `components/context-allocation.tsx` | ContextAllocation | context, task | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
 | `components/turn-header.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
@@ -63,7 +63,6 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | --- | --- | --- | --- |
 | `entry.tsx` | loading, failure | Panel + Status / [`root.tsx`](../ui/app/root.tsx) | Pending composition review |
 | `overview.tsx` | ready, indexing, unavailable, empty, stale, refreshing, unpriced, quota-unavailable | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Pending dependency and surface review |
-| `task-list.tsx` | selected, search-empty | TaskList / TaskTable | Local states and duplicate empty specimen pending migration |
 | `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Pending dependency and surface review |
 | `context.tsx` | selected-compaction, missing-measurements, unknown-capacity | ContextChart + ContextAllocation / ContextChart + CurrentContext | Local states pending context migration |
 | `turn-loading.tsx` | pending, failure | TurnHeader + Status / TurnRow | Pending turn-summary migration |
@@ -166,3 +165,16 @@ Current owner: `modules/usage-trend.tsx`. Migration state: implemented; Leo gall
 | `surfaces/usage-trend.tsx` / `single-model` | `modules/usage-trend.tsx` / `chart-single-model` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
 
 The removed `surfaces/usage-trend.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.
+
+## task-list module
+
+Current owner: `modules/task-list.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+
+| Old frame | Current module frame | Disposition |
+| --- | --- | --- |
+| `components/task-list.tsx` / `search-empty` | `modules/task-list.tsx` / `list-search-empty` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `components/task-row.tsx` / `selection-long` | `modules/task-list.tsx` / `row-selection-long` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/task-list.tsx` / `selected` | `modules/task-list.tsx` / `list-selected` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/task-list.tsx` / `search-empty` | `modules/task-list.tsx` / `list-search-empty` | Duplicate of component search-empty; one module frame and fixture cover both. |
+
+The removed `surfaces/task-list.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.

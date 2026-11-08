@@ -15,7 +15,7 @@ import { Status } from "../components/status";
 import { SingleChoice } from "../components/single-choice";
 import { MetricGrid } from "../components/metric-figure";
 import { UsageChart } from "../modules/usage-trend";
-import { TaskList } from "../components/task-list";
+import { TaskList } from "../modules/task-list";
 export default () =>
   overviewForms.map((name) => {
     const unavailable = name === "unavailable",

@@ -318,13 +318,13 @@ function Content() {
         range={hourly ? "today" : "7d"}
       />
     );
-  } else if (fixture.startsWith("cup-task-list-"))
+  } else if (fixture.startsWith("cup-task-list-list-"))
     content = (
       <TaskListFixture
         form={fixture.endsWith("search-empty") ? "search-empty" : "ready"}
       />
     );
-  else if (fixture === "cup-task-row-selection-long")
+  else if (fixture === "cup-task-list-row-selection-long")
     content = (
       <div>
         <TaskColumns />
@@ -579,6 +579,20 @@ function Content() {
     fixture === "cup-usage-trend-legend-models" ||
     fixture === "cup-usage-trend-chart-hourly-cost" ||
     fixture === "cup-usage-trend-chart-single-model"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-task-list-list-search-empty" ||
+    fixture === "cup-task-list-row-selection-long" ||
+    fixture === "cup-task-list-list-selected"
   )
     return (
       <div

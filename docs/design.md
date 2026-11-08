@@ -17,7 +17,7 @@ Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolate
 - `design/tokens.css` owns the approved semantic palette and geometry.
 - `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. Feature assets remain here until their owning migration batch is reviewed.
 - `design/modules/` contains migrated feature owners; the ownership table records the current locations.
-- `design/surfaces/` currently contains 8 composition sources. Their local states will move with their owning modules.
+- `design/surfaces/` currently contains 7 composition sources. Their local states will move with their owning modules.
 - `design/fixtures/quota.ts` owns quota records; `design/fixtures/usage-trend.ts` owns trend projections.
 - `design/fixtures/` is the project owner for representative data and fixture projections. `button.ts` supplies the shared Button actions to the design specimen and runtime review fixture.
 - Temporary legacy paths: `design/scenes/usage.ts`, `context.ts`, `tool.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
@@ -46,7 +46,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 | --- | --- | --- |
 | `modules/quota.tsx` | QuotaBar, QuotaSection | `modules/quota.tsx` |
 | `modules/usage-trend.tsx` | UsageChart, Legend | `modules/usage-trend.tsx` |
-| `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `components/task-list.tsx`, `components/task-row.tsx` |
+| `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `modules/task-list.tsx`, `modules/task-list.tsx` |
 | `modules/context.tsx` | ContextChart, ContextAllocation | `components/context-chart.tsx`, `components/context-allocation.tsx` |
 | `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `components/turn-header.tsx`, `surfaces/turn-loading.tsx` |
 | `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `components/minimap.tsx`, `components/waterfall-row.tsx`, `components/waterfall.tsx` |
@@ -140,8 +140,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/search.tsx`             | `field`                  | `cup-search-field`                        |
 | `components/single-choice.tsx`      | `selection`              | `cup-single-choice-selection`             |
 | `components/status.tsx`             | `feedback`               | `cup-status-feedback`                     |
-| `components/task-list.tsx`          | `search-empty`           | `cup-task-list-search-empty`              |
-| `components/task-row.tsx`           | `selection-long`         | `cup-task-row-selection-long`             |
 | `components/tool-body.tsx`          | `truncated`              | `cup-tool-body-truncated`                 |
 | `components/tool-dialog.tsx`        | `ready`                  | `cup-tool-dialog-ready`                   |
 | `components/tooltip.tsx`            | `bucket`                 | `cup-tooltip-bucket`                      |
@@ -162,8 +160,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `surfaces/overview.tsx`             | `refreshing`             | `cup-overview-refreshing`                 |
 | `surfaces/overview.tsx`             | `unpriced`               | `cup-overview-unpriced`                   |
 | `surfaces/overview.tsx`             | `quota-unavailable`      | `cup-overview-quota-unavailable`          |
-| `surfaces/task-list.tsx`            | `selected`               | `cup-task-list-surface-selected`          |
-| `surfaces/task-list.tsx`            | `search-empty`           | `cup-task-list-surface-search-empty`      |
 | `surfaces/task.tsx`                 | `ready`                  | `cup-task-ready`                          |
 | `surfaces/task.tsx`                 | `empty`                  | `cup-task-empty`                          |
 | `surfaces/task.tsx`                 | `indexing`               | `cup-task-indexing`                       |
@@ -194,10 +190,13 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `modules/usage-trend.tsx` | `legend-models` | `cup-usage-trend-legend-models` |
 | `modules/usage-trend.tsx` | `chart-hourly-cost` | `cup-usage-trend-chart-hourly-cost` |
 | `modules/usage-trend.tsx` | `chart-single-model` | `cup-usage-trend-chart-single-model` |
+| `modules/task-list.tsx` | `list-search-empty` | `cup-task-list-list-search-empty` |
+| `modules/task-list.tsx` | `row-selection-long` | `cup-task-list-row-selection-long` |
+| `modules/task-list.tsx` | `list-selected` | `cup-task-list-list-selected` |
 
 ## Approval scope
 
-The library contains 19 component sources, 2 module sources and 8 surface sources, with 69 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 17 component sources, 3 module sources and 7 surface sources, with 68 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 

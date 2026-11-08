@@ -4,8 +4,7 @@
       "title": "Usage overview",
       "assets": [
         "surfaces/entry.tsx",
-        "surfaces/overview.tsx",
-        "surfaces/task-list.tsx"
+        "surfaces/overview.tsx"
       ]
     },
     {
@@ -22,7 +21,8 @@
       "title": "Feature modules",
       "assets": [
         "modules/quota.tsx",
-        "modules/usage-trend.tsx"
+        "modules/usage-trend.tsx",
+        "modules/task-list.tsx"
       ]
     },
     {
@@ -39,8 +39,6 @@
         "components/search.tsx",
         "components/single-choice.tsx",
         "components/status.tsx",
-        "components/task-list.tsx",
-        "components/task-row.tsx",
         "components/tool-body.tsx",
         "components/tool-dialog.tsx",
         "components/tooltip.tsx",
