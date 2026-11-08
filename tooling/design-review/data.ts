@@ -23,7 +23,7 @@ import {
   compaction,
   contextParts,
   fixedDetails,
-} from "../../design/scenes/context";
+} from "../../design/fixtures/context";
 import { longOutput } from "../../design/scenes/tool";
 import type {
   Summary,

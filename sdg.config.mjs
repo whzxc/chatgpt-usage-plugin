@@ -54,7 +54,7 @@ export default {
       }
       if (
         [
-          "cup-context-selected-compaction",
+          "cup-context-context-selected-compaction",
           "cup-context-chart-selected-compaction",
         ].includes(name)
       )

@@ -1,3 +1,4 @@
+import { Context } from "../modules/context";
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
 import {
@@ -11,8 +12,6 @@ import { taskForms } from "../scenes/forms";
 import { Panel, Section, Stack } from "../components/layout";
 import { Header } from "../components/header";
 import { MetricGrid } from "../components/metric-figure";
-import { ContextChart } from "../components/context-chart";
-import { ContextAllocation } from "../components/context-allocation";
 import { TurnHeader } from "../components/turn-header";
 import { Status } from "../components/status";
 export default () =>
@@ -44,8 +43,7 @@ export default () =>
                     history.filter((h) => h.task === 0),
                   ).filter((_, i) => [0, 1, 4, 5].includes(i))}
                 />
-                <ContextChart />
-                <ContextAllocation />
+                <Context />
                 <Section title="轮次 · 最新在前">
                   <Stack>
                     {[...primaryTurns].reverse().map((turn) => (

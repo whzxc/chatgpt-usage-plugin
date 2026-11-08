@@ -4,7 +4,7 @@
 
 ## State and ownership
 
-The original 22 component sources, 10 surface sources and 69 frames have an approved visual baseline at `2f983b9` (2026-11-06). Leo has confirmed the adoption audit and the feature boundaries in `design.md`. All 22 component sources have a composed surface consumer. The runtime mappings below identify implementation adoption; gallery presence alone is not an adoption claim.
+The original 22 component sources, 10 surface sources and 69 frames have an approved visual baseline at `2f983b9` (2026-11-06). Leo has confirmed the adoption audit and the feature boundaries in `design.md`. Every adopted part listed below has a composed surface or mapped runtime consumer. The runtime mappings below identify implementation adoption; gallery presence alone is not an adoption claim.
 
 The minimum toolkit version is 0.5.0. Default discovery is `components → modules → surfaces`; import-direction lint is enabled. Feature owners migrate from components into modules as recorded below. Unmigrated owner paths remain planned locations.
 
@@ -13,7 +13,8 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Approved 2026-11-08 by Leo |
 | Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
 | Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Approved 2026-11-08 by Leo |
-| Eight feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
+| Batch 3: quota, usage-trend, task-list, context | Implemented: modules, feature states and selector captures | Leo gallery review pending |
+| Remaining four feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
 ## Part mappings and consumers
@@ -30,7 +31,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/layout.tsx` | Section | ContextChart, ContextAllocation, QuotaSection, TaskList, UsageChart, Waterfall; overview, task → context, quota, task-list, usage-trend, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Section |
 | `components/metric-figure.tsx` | MetricFigure | MetricGrid → overview, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid's `.figure` markup |
 | `components/metric-figure.tsx` | MetricGrid | Waterfall, overview, task | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid; [`overview.tsx`](../ui/overview/overview.tsx): Figures; [`task.tsx`](../ui/task/task.tsx): TaskSummary; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
-| `components/search.tsx` | Search | TaskList → overview, task-list | [`controls.tsx`](../ui/components/ui/controls.tsx): Search |
+| `components/search.tsx` | Search | TaskList → overview; module specimens | [`controls.tsx`](../ui/components/ui/controls.tsx): Search |
 | `components/single-choice.tsx` | SingleChoice | TaskList, UsageChart, overview → task-list, usage-trend | [`SingleChoice.tsx`](../ui/components/ui/SingleChoice.tsx): SingleChoice |
 | `components/status.tsx` | Status | RequestDetails, TaskList, ToolDialog, Waterfall, entry, overview, task, turn-loading → task-list, tool-dialog, turn | [`status.tsx`](../ui/shared/status.tsx): Status, Indexing, Failure |
 | `components/tooltip.tsx` | Tooltip | ContextChart, UsageChart → context, overview, task, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Tooltip |
@@ -38,11 +39,11 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/usage-trend.tsx` | UsageChart | overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
 | `modules/quota.tsx` | QuotaBar | QuotaSection → overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
 | `modules/quota.tsx` | QuotaSection | overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
-| `modules/task-list.tsx` | TaskList | overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
+| `modules/task-list.tsx` | TaskList | overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
 | `modules/task-list.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
-| `modules/task-list.tsx` | TaskRow | TaskList → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
-| `components/context-chart.tsx` | ContextChart | context, task | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
-| `components/context-allocation.tsx` | ContextAllocation | context, task | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
+| `modules/task-list.tsx` | TaskRow | TaskList → overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
+| `modules/context.tsx` | ContextChart | Context → task; module specimens | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
+| `modules/context.tsx` | ContextAllocation | Context → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
 | `components/turn-header.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
 | `surfaces/turn-loading.tsx` | Expanded loading/failure composition | Gallery region entry; TurnHeader + Status | [`turn.tsx`](../ui/task/turn.tsx): TurnRow |
 | `components/minimap.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
@@ -52,6 +53,8 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/waterfall.tsx` | Waterfall | turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Waterfall; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
 | `components/tool-body.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
 | `components/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
+
+`Context` in `modules/context.tsx` composes ContextChart and ContextAllocation without adding a layout node; `surfaces/task.tsx` consumes it. Its runtime mapping is ContextChart + CurrentContext in the task page and ContextFixture in the review adapter.
 
 `trendTip`, `stateLabel` and the `longOutput` re-export are support values rather than independent visual assets. `trendTip` lives in `fixtures/tooltip.ts`; the longOutput re-export remains pending fixture cleanup. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
 
@@ -64,16 +67,15 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | `entry.tsx` | loading, failure | Panel + Status / [`root.tsx`](../ui/app/root.tsx) | Pending composition review |
 | `overview.tsx` | ready, indexing, unavailable, empty, stale, refreshing, unpriced, quota-unavailable | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Pending dependency and surface review |
 | `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Pending dependency and surface review |
-| `context.tsx` | selected-compaction, missing-measurements, unknown-capacity | ContextChart + ContextAllocation / ContextChart + CurrentContext | Local states pending context migration |
 | `turn-loading.tsx` | pending, failure | TurnHeader + Status / TurnRow | Pending turn-summary migration |
 | `turn.tsx` | completed, running, failed, unknown, partial, request-detail, narrative-loading, narrative-error | Header + Waterfall / production Waterfall through review WaterfallFixture | Pending dependency and surface review |
 | `tool-dialog.tsx` | ready, loading, error, long, failed, copy-error, unknown | ToolDialog / production ToolDialog | Local states and duplicate ready specimen pending migration |
 
 ## Fixtures, captures and evidence
 
-`design/fixtures/` owns this project's representative data and fixture projections. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for calls, turns, histories and shared projections, plus [`scenes/context.ts`](../design/scenes/context.ts), [`fixtures/usage-trend.ts`](../design/fixtures/usage-trend.ts), [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for their projections and state lists. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
+`design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 69 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 68 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -94,7 +96,7 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 | `surfaces/turn.tsx` / partial | Static axis: 0–24s. `cup-turn-partial` runtime visible prefix: 0–24.96s from padded row bounds. Summary and minimap cover the complete 45s. Preserve the runtime scroll-following behavior; retain this explicit fidelity item for the waterfall/surface review. |
 | `cup-waterfall-scroll` | Retained interaction-only fixture: six fictional minutes in a 480px scroll container, shared by viewport-following, minimap navigation and reduced-motion review. No additional design frame; excluded from packaged assets with the other review fixtures. |
 | Existing feature placement | Feature assets temporarily remain in components until their agreed module batch. No import-lint opt-out; each move includes all importers. |
-| Legacy fixture locations | Data in `scenes/usage.ts`, `context.ts`, `chart.ts`, `tool.ts` and `forms.ts` moves to its `fixtures/` owner with the corresponding feature batch. This temporary location ends when those moves close; `scenes/` is not a fixture destination. |
+| Legacy fixture locations | Remaining data in `scenes/usage.ts`, `tool.ts` and `forms.ts` moves to its `fixtures/` owner with the corresponding feature batch. This temporary location ends when those moves close; `scenes/` is not a fixture destination. |
 | Existing frame names and full-width specimens | Retained until their owner is reviewed. Multi-part prefixes, duplicate local surface states and specimen crops remain explicit migration work. |
 | Runtime structure | Empty task direct entry omits a back action; overview navigation retains it. Tool dialogs keep the approved 40px review inset and native viewport bounds. Unknown-start and running review fixtures prepare the approved branch folding through keyboard controls. |
 | Artwork and studies | No image assets or studies exist. Display dimensions and image budgets are not applicable to the current inventory. |
@@ -178,3 +180,20 @@ Current owner: `modules/task-list.tsx`. Migration state: implemented; Leo galler
 | `surfaces/task-list.tsx` / `search-empty` | `modules/task-list.tsx` / `list-search-empty` | Duplicate of component search-empty; one module frame and fixture cover both. |
 
 The removed `surfaces/task-list.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.
+
+## context module
+
+Current owner: `modules/context.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+
+| Old frame | Current module frame | Disposition |
+| --- | --- | --- |
+| `components/context-chart.tsx` / `selected-compaction` | `modules/context.tsx` / `chart-selected-compaction` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `components/context-allocation.tsx` / `estimated` | `modules/context.tsx` / `allocation-estimated` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `components/context-allocation.tsx` / `unknown-capacity` | `modules/context.tsx` / `allocation-unknown-capacity` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/context.tsx` / `selected-compaction` | `modules/context.tsx` / `context-selected-compaction` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/context.tsx` / `missing-measurements` | `modules/context.tsx` / `context-missing-measurements` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/context.tsx` / `unknown-capacity` | `modules/context.tsx` / `context-unknown-capacity` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+
+The removed `surfaces/context.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.
+
+Module migration adds no visual proposal. Existing narrower-specimen proposals remain separate; the four modules preserve the 672px content width and original state content.

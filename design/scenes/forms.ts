@@ -26,11 +26,6 @@ export const turnForms = [
   "narrative-loading",
   "narrative-error",
 ] as const;
-export const contextForms = [
-  "selected-compaction",
-  "missing-measurements",
-  "unknown-capacity",
-] as const;
 export const toolForms = [
   "ready",
   "loading",

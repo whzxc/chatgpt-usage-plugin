@@ -11,7 +11,6 @@
       "title": "Task usage",
       "assets": [
         "surfaces/task.tsx",
-        "surfaces/context.tsx",
         "surfaces/turn-loading.tsx",
         "surfaces/turn.tsx",
         "surfaces/tool-dialog.tsx"
@@ -22,15 +21,14 @@
       "assets": [
         "modules/quota.tsx",
         "modules/usage-trend.tsx",
-        "modules/task-list.tsx"
+        "modules/task-list.tsx",
+        "modules/context.tsx"
       ]
     },
     {
       "title": "Shared components",
       "assets": [
         "components/button.tsx",
-        "components/context-allocation.tsx",
-        "components/context-chart.tsx",
         "components/header.tsx",
         "components/layout.tsx",
         "components/metric-figure.tsx",

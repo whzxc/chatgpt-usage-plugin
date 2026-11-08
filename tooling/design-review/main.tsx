@@ -307,8 +307,10 @@ function Content() {
     );
   else if (fixture.startsWith("cup-context-chart-"))
     content = <ContextFixture form="selected-compaction" allocation={false} />;
-  else if (fixture.startsWith("cup-context-"))
-    content = <ContextFixture form={fixture.slice(12)} />;
+  else if (fixture.startsWith("cup-context-context-"))
+    content = (
+      <ContextFixture form={fixture.slice("cup-context-context-".length)} />
+    );
   else if (fixture.startsWith("cup-usage-trend-chart-")) {
     const hourly = fixture.endsWith("hourly-cost"),
       single = fixture.endsWith("single-model");
@@ -593,6 +595,23 @@ function Content() {
     fixture === "cup-task-list-list-search-empty" ||
     fixture === "cup-task-list-row-selection-long" ||
     fixture === "cup-task-list-list-selected"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-context-chart-selected-compaction" ||
+    fixture === "cup-context-allocation-estimated" ||
+    fixture === "cup-context-allocation-unknown-capacity" ||
+    fixture === "cup-context-context-selected-compaction" ||
+    fixture === "cup-context-context-missing-measurements" ||
+    fixture === "cup-context-context-unknown-capacity"
   )
     return (
       <div
