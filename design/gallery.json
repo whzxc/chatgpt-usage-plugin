@@ -22,7 +22,8 @@
         "modules/quota.tsx",
         "modules/usage-trend.tsx",
         "modules/task-list.tsx",
-        "modules/context.tsx"
+        "modules/context.tsx",
+        "modules/waterfall.tsx"
       ]
     },
     {
@@ -32,7 +33,6 @@
         "components/header.tsx",
         "components/layout.tsx",
         "components/metric-figure.tsx",
-        "components/minimap.tsx",
         "components/request-details.tsx",
         "components/search.tsx",
         "components/single-choice.tsx",
@@ -40,9 +40,7 @@
         "components/tool-body.tsx",
         "components/tool-dialog.tsx",
         "components/tooltip.tsx",
-        "components/turn-header.tsx",
-        "components/waterfall-row.tsx",
-        "components/waterfall.tsx"
+        "components/turn-header.tsx"
       ]
     }
   ]

@@ -392,7 +392,7 @@ function Content() {
         ]}
       />
     );
-  } else if (fixture.startsWith("cup-minimap-")) {
+  } else if (fixture.startsWith("cup-waterfall-minimap-")) {
     const selected = fixture.endsWith("selected-range");
     content = (
       <div
@@ -473,8 +473,12 @@ function Content() {
     );
   else if (fixture.startsWith("cup-waterfall-row-"))
     content = <RowFixture unknown={fixture.endsWith("unknown")} />;
-  else if (fixture === "cup-waterfall-completed")
-    content = <WaterfallFixture form="completed" />;
+  else if (fixture.startsWith("cup-waterfall-waterfall-"))
+    content = (
+      <WaterfallFixture
+        form={fixture.slice("cup-waterfall-waterfall-".length)}
+      />
+    );
   else if (fixture === "cup-waterfall-scroll")
     content = <WaterfallFixture form="scroll" />;
   else if (fixture.startsWith("cup-turn-loading-"))
@@ -610,6 +614,26 @@ function Content() {
     fixture === "cup-context-allocation-unknown-capacity" ||
     fixture === "cup-context-chart-missing-measurements" ||
     fixture === "cup-context-chart-unknown-capacity"
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-waterfall-waterfall-completed" ||
+    fixture === "cup-waterfall-minimap-selected-range" ||
+    fixture === "cup-waterfall-minimap-loading-target" ||
+    fixture === "cup-waterfall-row-branches" ||
+    fixture === "cup-waterfall-row-unknown" ||
+    fixture === "cup-waterfall-waterfall-running" ||
+    fixture === "cup-waterfall-waterfall-failed" ||
+    fixture === "cup-waterfall-waterfall-unknown" ||
+    fixture === "cup-waterfall-waterfall-partial"
   )
     return (
       <div

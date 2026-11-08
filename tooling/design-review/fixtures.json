@@ -9,8 +9,8 @@
   "cup-usage-trend-legend-models",
   "cup-metric-figure-grid-overview",
   "cup-metric-figure-grid-unknown",
-  "cup-minimap-selected-range",
-  "cup-minimap-loading-target",
+  "cup-waterfall-minimap-selected-range",
+  "cup-waterfall-minimap-loading-target",
   "cup-quota-bar-windows",
   "cup-request-details-narrative",
   "cup-search-field",
@@ -26,7 +26,7 @@
   "cup-usage-trend-chart-selected",
   "cup-waterfall-row-branches",
   "cup-waterfall-row-unknown",
-  "cup-waterfall-completed",
+  "cup-waterfall-waterfall-completed",
   "cup-waterfall-scroll",
   "cup-context-chart-missing-measurements",
   "cup-context-chart-unknown-capacity",
@@ -66,5 +66,9 @@
   "cup-turn-narrative-loading",
   "cup-turn-narrative-error",
   "cup-usage-trend-chart-hourly-cost",
-  "cup-usage-trend-chart-single-model"
+  "cup-usage-trend-chart-single-model",
+  "cup-waterfall-waterfall-running",
+  "cup-waterfall-waterfall-failed",
+  "cup-waterfall-waterfall-unknown",
+  "cup-waterfall-waterfall-partial"
 ]

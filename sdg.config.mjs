@@ -114,18 +114,22 @@ export default {
           )
           .first()
           .waitFor();
-      if (name === "cup-minimap-selected-range") {
+      if (name === "cup-waterfall-minimap-selected-range") {
         await page
           .getByRole("button", { name: "最慢 12s", exact: true })
           .click();
         await page.getByRole("slider").focus();
       }
-      if (name === "cup-turn-unknown") {
+      if (
+        ["cup-turn-unknown", "cup-waterfall-waterfall-unknown"].includes(name)
+      ) {
         const row = page.locator('[data-wf-id="request:r2"]');
         await row.press("ArrowRight");
         await row.evaluate((element) => element.blur());
       }
-      if (name === "cup-turn-running") {
+      if (
+        ["cup-turn-running", "cup-waterfall-waterfall-running"].includes(name)
+      ) {
         // The approved review state folds request #1; runtime defaults still
         // expand the slowest branch when the turn first opens.
         const row = page.locator('[data-wf-id="request:r1"]');

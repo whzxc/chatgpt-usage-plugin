@@ -46,11 +46,11 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/context.tsx` | ContextAllocation | ContextSection → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
 | `components/turn-header.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
 | `surfaces/turn-loading.tsx` | Expanded loading/failure composition | Gallery region entry; TurnHeader + Status | [`turn.tsx`](../ui/task/turn.tsx): TurnRow |
-| `components/minimap.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
-| `components/waterfall-row.tsx` | TimeAxis | Waterfall and row specimen → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): `.wf-heading` tick markup |
-| `components/waterfall-row.tsx` | WaterfallRow | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): TraceRow |
+| `modules/waterfall.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
+| `modules/waterfall.tsx` | TimeAxis | Waterfall and row specimen → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): `.wf-heading` tick markup |
+| `modules/waterfall.tsx` | WaterfallRow | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): TraceRow |
 | `components/request-details.tsx` | RequestDetails | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): RequestDetailsPanel, NoteDetails |
-| `components/waterfall.tsx` | Waterfall | turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Waterfall; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
+| `modules/waterfall.tsx` | Waterfall | turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Waterfall; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
 | `components/tool-body.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
 | `components/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
 
@@ -75,7 +75,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 67 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 71 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -197,3 +197,19 @@ Current owner: `modules/context.tsx`. Migration state: approved 2026-11-08 by Le
 The context module declares exactly five part frames: chart-selected-compaction, chart-missing-measurements, chart-unknown-capacity, allocation-estimated and allocation-unknown-capacity. The removed `surfaces/context.tsx` contained local states; the part frames replace its combined-state coverage. Current fixture IDs and selector captures are listed in `design.md`.
 
 Module migration adds no visual proposal. Existing narrower-specimen proposals remain separate; the four modules preserve the 672px content width and original state content.
+
+## waterfall module
+
+Current owner: `modules/waterfall.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+
+| Old frame | Current frame | Disposition |
+| --- | --- | --- |
+| `components/waterfall.tsx` / `completed` | `waterfall-completed` | Moved and cropped with 4px display clearance. |
+| `components/minimap.tsx` / `selected-range` | `minimap-selected-range` | Moved and cropped with 4px display clearance. |
+| `components/minimap.tsx` / `loading-target` | `minimap-loading-target` | Moved and cropped with 4px display clearance. |
+| `components/waterfall-row.tsx` / `branches` | `row-branches` | Moved and cropped with 4px display clearance. |
+| `components/waterfall-row.tsx` / `unknown` | `row-unknown` | Moved and cropped with 4px display clearance. |
+| Local state previously represented in a surface | `waterfall-running` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `waterfall-failed` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `waterfall-unknown` | Part-level coverage; surface retained for batch 6. |
+| Local state previously represented in a surface | `waterfall-partial` | Part-level coverage; surface retained for batch 6. |
