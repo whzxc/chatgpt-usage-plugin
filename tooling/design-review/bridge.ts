@@ -93,21 +93,17 @@ export function onInitialResult(fn: (result: unknown) => void) {
   };
 }
 export async function initialize() {
-  if (fixture === "cup-entry-loading") return pending();
-  if (fixture === "cup-entry-failure")
-    listeners.forEach((fn) => fn({ _meta: { usageError: copy.failure } }));
-  else
-    listeners.forEach((fn) =>
-      fn({
-        _meta: {
-          usageOverview: {
-            range: "7d",
-            summary: summaryData(form),
-            tasks: tasksData(form),
-            quota: quotaData(form),
-          },
+  listeners.forEach((fn) =>
+    fn({
+      _meta: {
+        usageOverview: {
+          range: "7d",
+          summary: summaryData(form),
+          tasks: tasksData(form),
+          quota: quotaData(form),
         },
-      }),
-    );
+      },
+    }),
+  );
 }
 export function onTeardown(_listener: () => void) {}

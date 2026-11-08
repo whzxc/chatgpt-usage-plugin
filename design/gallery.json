@@ -3,7 +3,6 @@
     {
       "title": "Usage overview",
       "assets": [
-        "surfaces/entry.tsx",
         "surfaces/overview.tsx"
       ]
     },

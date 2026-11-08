@@ -269,8 +269,7 @@ const summaryOrigin = (now: number) => reviewClock - now;
 function Content() {
   if (!fixtures.includes(fixture))
     throw Error(`Unknown design fixture: ${fixture}`);
-  if (fixture.startsWith("cup-overview-") || fixture.startsWith("cup-entry-"))
-    return <Root />;
+  if (fixture.startsWith("cup-overview-")) return <Root />;
   if (fixture.startsWith("cup-tool-dialog-dialog-")) {
     return <ToolDialog threadId="fictional-task-0" toolId="t2" close={noop} />;
   }
@@ -299,7 +298,7 @@ function Content() {
               label="用量范围"
               value="7d"
               options={[
-                ["1d", "今天"],
+                ["today", "今天"],
                 ["7d", "7 天"],
                 ["30d", "30 天"],
               ]}

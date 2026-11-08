@@ -9,8 +9,6 @@
   "cup-single-choice-selection",
   "cup-status-feedback",
   "cup-tooltip-bucket",
-  "cup-entry-loading",
-  "cup-entry-failure",
   "cup-overview-ready",
   "cup-overview-indexing",
   "cup-overview-unavailable",
