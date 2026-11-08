@@ -10,7 +10,9 @@
     "paths": {
       "sdg": ["./.sdg/runtime.d.ts"],
       "sdg/jsx-runtime": ["./.sdg/runtime.d.ts"]
-    }
+    },
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["**/*.tsx", "**/*.ts", ".sdg/*.d.ts"]
 }

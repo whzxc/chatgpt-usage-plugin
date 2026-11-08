@@ -1,6 +1,6 @@
 import { Frame } from "sdg";
 import { frame } from "../support/frame";
-import { compact, money, duration } from "../support/format";
+import { compact, money } from "../support/format";
 import {
   baseTurn,
   copy,
@@ -9,7 +9,7 @@ import {
   type Call,
   type Turn,
 } from "../fixtures/usage";
-import { Grid, Stack } from "../components/layout";
+import { Grid } from "../components/layout";
 import { Status } from "../components/status";
 import { Button } from "../components/button";
 export function RequestDetails({

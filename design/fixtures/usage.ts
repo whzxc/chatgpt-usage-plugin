@@ -56,7 +56,6 @@ export const copy = {
   noUsage: "这个时间范围内没有用量记录",
   noTask: "这个任务还没有用量记录",
   noResults: "没有匹配的任务",
-  noPrompt: "未提供文字请求",
 };
 // Fictional USD prices per million tokens, never fetched from a service.
 export const prices: Record<

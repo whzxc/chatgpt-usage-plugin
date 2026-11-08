@@ -275,11 +275,7 @@ function Content() {
     return <ToolDialog threadId="fictional-task-0" toolId="t2" close={noop} />;
   }
   let content: ReactNode;
-  if (
-    fixture.startsWith("cup-task-") &&
-    !fixture.startsWith("cup-task-list-") &&
-    !fixture.startsWith("cup-task-row-")
-  )
+  if (fixture.startsWith("cup-task-") && !fixture.startsWith("cup-task-list-"))
     return (
       <TaskPage
         initial={threadData(fixture.slice(9))}

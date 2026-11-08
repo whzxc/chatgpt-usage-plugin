@@ -11,7 +11,7 @@ import {
 export const fixture =
   new URLSearchParams(location.search).get("fixture") || "";
 const form = fixture.replace(
-  /^cup-(overview|task|turn|tool-dialog-dialog|tool-dialog)-/,
+  /^cup-(overview|task|turn|tool-dialog-dialog)-/,
   "",
 );
 function pending(signal?: AbortSignal): Promise<never> {
@@ -57,16 +57,8 @@ export async function callData<T>(
     if (["cup-turn-summary-summary-error"].includes(fixture))
       throw Error("无法读取轮次");
     if (args.text) {
-      if (
-        fixture.endsWith("narrative-loading") ||
-        fixture === "cup-request-details-loading"
-      )
-        return pending(signal);
-      if (
-        fixture.endsWith("narrative-error") ||
-        fixture === "cup-request-details-error"
-      )
-        throw Error("无法读取全文");
+      if (fixture === "cup-request-details-loading") return pending(signal);
+      if (fixture === "cup-request-details-error") throw Error("无法读取全文");
       return {
         index: readyIndex,
         reason: null,

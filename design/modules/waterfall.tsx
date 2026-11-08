@@ -1,6 +1,6 @@
 import { Frame, Icon } from "sdg";
 import { frame } from "../support/frame";
-import { duration, money, compact } from "../support/format";
+import { duration, money } from "../support/format";
 import {
   baseTurn,
   variant,
@@ -12,7 +12,6 @@ import {
   slowest,
   elapsed,
   models,
-  tools,
   cost,
   type Call,
 } from "../fixtures/usage";

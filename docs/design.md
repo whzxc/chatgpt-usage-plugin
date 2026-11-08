@@ -95,7 +95,7 @@ For each batch, update affected imports, captures, gallery entries, fixture rout
 
 All task names, commands, results, dates, prices and measurements are fictional. The model price table is fixture input, not a current price claim. No credential, private path or real task content belongs in a scene.
 
-The call records are the source of truth. `totals` derives token sums, request/tool counts, failure counts, cost and cache share. Day buckets, model legends, task rows and summary metrics aggregate the same history. The primary task's four turns also produce its context curve and current context allocation. Surface variants transform those records before computing their displays.
+The call records are the source of truth. `totals` derives token sums, request/tool counts, failure counts, cost and cache share. Day buckets, model legends, task rows and summary metrics aggregate the same history. The primary task's four turns also produce its context curve and current context allocation. Fixture projections transform those records before surfaces compose their displays.
 
 - Token totals are input plus output. Cached input is a subset of input; reasoning output is a subset of output. K/M use decimal magnitudes. Token axis ticks omit trailing fractional zeros; measured values retain their declared precision. Display rounding can make rounded subtotals differ slightly; raw totals remain consistent.
 - Costs are USD estimates calculated from uncached input, cached input and output rates. Unknown measurements and unavailable pricing remain `null` and display `—`; no missing value is converted into a measured zero. The unpriced form has unknown usage fields as well as missing pricing.
@@ -122,7 +122,7 @@ Copy controls are disabled when their content is unavailable. Tool dialogs have 
 
 ## Declared forms
 
-Every name below resolves to an implementation fixture. Captures use viewport `720x2400`; all frames are 720px wide. The running turn captures the `.panel` element at its full natural height, including the final status note. Other frames use page captures. Partial surfaces and component fixtures render at page origin. Themes use the same form. The fixture manifest is `tooling/design-review/fixtures.json`.
+Every name below resolves to one implementation fixture in tooling/design-review/fixtures.json. Retained surfaces use a 720px page capture at origin 0 0 with viewport 720x2400. Component/module captures select their content wrapper with 4px clearance; current widths live in Frame props (including intrinsic controls and the pending 188px Search / 248px Tooltip crops). Both themes use the same form. The asset register records each layout constraint and review status.
 
 | Source                              | Frame                    | Fixture                                   |
 | ----------------------------------- | ------------------------ | ----------------------------------------- |
@@ -225,14 +225,14 @@ For viewport-following interaction review, open `/__design/review?fixture=cup-wa
 
 The adapter fixes the clock to `2026-11-06T06:32:00Z`, the locale to `zh-CN` and the timezone to `Asia/Shanghai`. It waits for the fixture-ready marker, fails on a fixture error, and prepares chart inspection, refresh failure, narrative loading, dialog copy failure and keyboard focus through runtime controls. Live API and external HTTPS requests are blocked. Both themes use the same fixtures; `CUP_REVIEW_THEME=dark` selects the dark capture.
 
-The production build starts at `ui/app/main.tsx`; it has no import of the review entry, fixture bridge or design scenes. Packaging copies the generated UI/backend and plugin assets, leaving `tooling/design-review/` and `design/` outside the installed plugin.
+The production build starts at `ui/app/main.tsx`; it has no import of the review entry, fixture bridge or design fixtures. Packaging copies the generated UI/backend and plugin assets, leaving `tooling/design-review/` and `design/` outside the installed plugin.
 
 ## Reachability and drift
 
-All declared forms have runtime fixture compositions; no frame is intentionally unbound. Migrated generic specimens capture their exported runtime parts with 4px clearance; legacy section fixtures retain page-origin captures. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
+All declared forms have runtime fixture compositions; no frame is intentionally unbound. Generic and module specimens capture their mapped runtime parts with 4px clearance; retained surfaces use page captures. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
 
-`cup-turn-partial` uses the runtime's padded visible-row time range (0–24.96s for its loaded prefix), while the static frame labels 0–24s. Its summary and minimap still cover the complete 45s turn. This timing-range drift preserves the existing scroll-following behavior and is visible in the compare review.
+The approved waterfall-partial fixture uses the runtime padded visible-row range 0–24.96s and 24px reveal spacing. Summary and minimap cover the complete 45s. Runtime Status and RequestDetails typography now match the design; exact resolved measurements and active crop proposals are recorded in design-assets.md.
 
 Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, and the running turn fixture folds its first branch to match the approved static forms. Runtime default folding still follows measured duration, failure and running state.
 
-Full-library visual comparison and interaction acceptance run in the separate acceptance thread before push or release.
+SDG comparison covers every declared frame in both themes. Runtime interaction and platform acceptance retain the project acceptance workflow before product release.
