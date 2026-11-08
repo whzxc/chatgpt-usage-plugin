@@ -225,7 +225,7 @@ The production build starts at `ui/app/main.tsx`; it has no import of the review
 
 ## Reachability and drift
 
-All declared forms have runtime fixture compositions; no frame is intentionally unbound. Component and isolated-section fixtures mount the exported runtime component at the page origin. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
+All declared forms have runtime fixture compositions; no frame is intentionally unbound. Migrated generic specimens capture their exported runtime parts with 4px clearance; legacy section fixtures retain page-origin captures. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
 
 `cup-turn-partial` uses the runtime's padded visible-row time range (0–24.96s for its loaded prefix), while the static frame labels 0–24s. Its summary and minimap still cover the complete 45s turn. This timing-range drift preserves the existing scroll-following behavior and is visible in the compare review.
 

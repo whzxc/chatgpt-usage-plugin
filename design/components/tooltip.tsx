@@ -1,7 +1,6 @@
 import { Frame } from "sdg";
-import { frame, compact, money } from "../scenes/format";
-import { trend, costTrend, modelNames } from "../scenes/usage";
-import { Panel } from "./layout";
+import { frame } from "../scenes/format";
+import { tooltipExample } from "../fixtures/tooltip";
 export function Tooltip({
   title,
   rows,
@@ -24,15 +23,17 @@ export function Tooltip({
     </aside>
   );
 }
-export const trendTip = (i: number) =>
-  modelNames.map((label, j) => ({
-    label,
-    value: `${compact(trend[i].values[j])} · ${money(costTrend[i].values[j])}`,
-  }));
 export default () => [
-  <Frame {...frame("tooltip", "bucket")}>
-    <Panel>
-      <Tooltip title={trend[4].label} rows={trendTip(4)} />
-    </Panel>
+  <Frame
+    {...frame("tooltip", "bucket")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <Tooltip {...tooltipExample} />
+    </div>
   </Frame>,
 ];

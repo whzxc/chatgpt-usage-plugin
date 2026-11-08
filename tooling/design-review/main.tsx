@@ -36,15 +36,9 @@ import {
 } from "../../ui/task/waterfall";
 import { ToolDialog, ToolBody } from "../../ui/task/tool-dialog";
 import { traceSpans } from "../../ui/task/waterfall-model";
-import {
-  baseTurn,
-  copy,
-  variant,
-  trend,
-  modelNames,
-  costTrend,
-} from "../../design/scenes/usage";
+import { baseTurn, copy, variant } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { tooltipExample } from "../../design/fixtures/tooltip";
 import { statusExamples, statusProgress } from "../../design/fixtures/status";
 import { headerExamples } from "../../design/fixtures/header";
 import { layoutExample } from "../../design/fixtures/layout";
@@ -464,15 +458,7 @@ function Content() {
       <ToolBody title="输出" body={body(longOutput)} onCopyError={noop} />
     );
   else if (fixture === "cup-tooltip-bucket")
-    content = (
-      <Tooltip
-        title={trend[4].label}
-        rows={modelNames.map((label, j) => ({
-          label,
-          value: `${compact(trend[4].values[j])} · ${money(costTrend[4].values[j])}`,
-        }))}
-      />
-    );
+    content = <Tooltip {...tooltipExample} />;
   else if (fixture === "cup-turn-header-states")
     content = (
       <Stack>
@@ -558,6 +544,16 @@ function Content() {
       </div>
     );
   if (fixture === "cup-status-feedback")
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (fixture === "cup-tooltip-bucket")
     return (
       <div
         data-design-specimen

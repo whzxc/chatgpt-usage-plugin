@@ -12,7 +12,8 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | --- | --- | --- |
 | Ownership, mapping and source metadata | Documented; no source moves, frame renames or visual changes | Approved 2026-11-08 by Leo |
 | Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
-| Other generic families and eight feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
+| Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Leo gallery review pending |
+| Eight feature owners | Migration pending; original visual baseline retained | Per-batch review pending |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
 ## Part mappings and consumers
@@ -52,7 +53,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/tool-body.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
 | `components/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
 
-`trendTip`, `stateLabel` and the `longOutput` re-export are support values rather than independent visual assets. `trendTip` and the re-export remain pending fixture cleanup. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
+`trendTip`, `stateLabel` and the `longOutput` re-export are support values rather than independent visual assets. `trendTip` lives in `fixtures/tooltip.ts`; the longOutput re-export remains pending fixture cleanup. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
 
 ## Surface mappings and declared states
 
@@ -81,7 +82,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 The baseline captures are page captures at `720x2400`, origin `0 0`; frame width is 720 CSS pixels and height follows content. Both themes use the same `zh-CN` content, fixed clock `2026-11-06T06:32:00Z` and `Asia/Shanghai` labels. The Button actions capture is content-sized; other component crop changes remain with their owning batch. Current renders are reachable in `output/design/components/<source>/<frame>-{light,dark}.png` and `output/design/surfaces/<source>/<frame>-{light,dark}.png`. Local before/after comparisons are retained under ignored `output/design-governance/`; these files are not part of the installed plugin.
 
-Leo approved batches 0 and 1, including the Button content crop, on 2026-11-08. The original approval is recorded in `design.md`. Render availability, a passing check and implementation adoption remain separate from Leo's pending governance review.
+Leo approved batches 0 and 1, including the Button content crop, on 2026-11-08. The original approval is recorded in `design.md`. Batch 2 and later migrations still require Leo's gallery review; batches 0 and 1 are approved. Render availability, a passing check and implementation adoption are recorded separately.
 
 ## Token disposition
 
@@ -136,3 +137,9 @@ The header specimens use `fixtures/` data and a `[data-design-specimen]` runtime
 ## status family
 
 The status specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.
+
+## tooltip family
+
+The tooltip specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.
+
+Visual proposal, pending a separate review: narrower Search, Header, metric, Status and Tooltip specimens may change wrapping or alignment. Their original content widths remain constraints for this structural batch.
