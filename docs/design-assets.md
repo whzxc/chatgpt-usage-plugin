@@ -4,9 +4,9 @@
 
 ## Adoption and review
 
-Quiet Native, light/dark host themes, Chinese product text and the 720px review basis remain the selected direction. Minimum SDG version: 0.5.0. All 32 reusable parts below have real implementation consumers, including internal and transitive use. Adoption is independent of the final specimen crop review.
+Quiet Native, light/dark host themes, Chinese product text and the 720px review basis remain the selected direction. Minimum SDG version: 0.5.0. All 32 reusable parts below have real implementation consumers, including internal and transitive use. Leo approved the final specimen crops on 2026-11-08.
 
-Leo approved the original visual baseline at `2f983b9` on 2026-11-06. Governance batches 0–6, context rework and both ToolDialog/partial fidelity proposals are approved **2026-11-08 by Leo**. The final data/lifecycle work and runtime typography correction are implemented and await one final gallery review. Two active crop proposals are identified below; no abandoned proposal or study remains.
+Leo approved the original visual baseline at `2f983b9` on 2026-11-06. Governance batches 0–6, context rework and both ToolDialog/partial fidelity proposals are approved **2026-11-08 by Leo**. Leo approved the final data/lifecycle work, runtime typography correction and both Search/Tooltip crop proposals on 2026-11-08. No pending or abandoned proposal or study remains.
 
 ## Parts and implementation consumers
 
@@ -67,7 +67,7 @@ The support directory has two neutral helpers: format.ts for displayed values, f
 
 The library has **20 sources, 69 frames and 32 reusable parts**. design/gallery.json lists exactly 8 component, 9 module and 3 surface sources. tooling/design-review/fixtures.json lists exactly the 69 declared frame IDs plus cup-waterfall-scroll. The declared forms table in design.md is the frame/capture register; Frame props own current dimensions and selectors. No stale source or capture ID is retained.
 
-Part crops keep 4px display clearance, including focus outline and offset. Normal content width is 672px. Button and SingleChoice use intrinsic width; Panel preserves its 720px region inside clearance, and ToolDialog preserves its 720px modal region. Active narrower Search/Tooltip dimensions are listed below. Surface captures retain 720x2400 viewport, page origin and natural content height. Both themes use zh-CN, Asia/Shanghai labels and the fixed review clock 2026-11-06T06:32:00Z.
+Part crops keep 4px display clearance, including focus outline and offset. Normal content width is 672px. Button and SingleChoice use intrinsic width; Panel preserves its 720px region inside clearance, and ToolDialog preserves its 720px modal region. Approved narrower Search/Tooltip dimensions are listed below. Surface captures retain 720x2400 viewport, page origin and natural content height. Both themes use zh-CN, Asia/Shanghai labels and the fixed review clock 2026-11-06T06:32:00Z.
 
 The review adapter in tooling/design-review/main.tsx mounts real production parts; data.ts projects fixture records into runtime types; bridge.ts serves fictional responses. RequestDetails standalone notes use the representative full summary while request titles retain their short indexed headings. Production data and request-heading logic are unchanged. Packaging excludes design/, tooling/design-review/ and output/.
 
@@ -80,9 +80,9 @@ The review adapter in tooling/design-review/main.tsx mounts real production part
 | ToolDialog | Approved 20px title with 28px line height, 24px padding and 24px gap. The prior 2px content-frame height drift is resolved; ready is 728x449px. |
 | Original turn/partial 0–24s record | Approved padded visible range is [0, 24960]ms. Axis labels are 0s, 8.3s, 16.6s, 25s; the footer floors seconds to 0s–24s. Reveal Button has 24px outer Stack spacing. Both captures are 680x785px. Summary/minimap retain the complete 45s turn and runtime scroll-following behavior. |
 
-## Active crop proposals
+## Approved specimen crops
 
-Both frames are marked **Proposal pending Leo review**. Component defaults, source ownership, names and fixture IDs stay unchanged; the adapter uses the same narrower specimen regions.
+Both frames are marked **Approved 2026-11-08 by Leo**. Component defaults, source ownership, names and fixture IDs stay unchanged; the adapter uses the same narrower specimen regions.
 
 | Frame | Proposed content / frame width | Real usage constraint |
 | --- | --- | --- |
@@ -109,8 +109,8 @@ The final audit follows the linked SDG placement, dependencies, frames, names, f
 | Supporting data and types | 19 reachable fixture files and 2 neutral support helpers; no scenes paths or business types in generic interfaces. |
 | Names, frames and captures | 69 built frames match declared IDs; 70 unique fixture routes include the deliberate interaction fixture; all relevant code lines are at most 140 characters. |
 | Lifecycle and mappings | 32 adopted parts mapped to real implementation consumers; 37 consumed tokens, including model-other; no orphan asset or abandoned alternative. |
-| Structural fidelity | All 28 retained surface theme images are pixel-identical; only the two active specimen crop proposals change design pixels. |
+| Structural fidelity | All 28 retained surface theme images are pixel-identical; only the two approved specimen crops change design pixels. |
 | Runtime typography and regression | 16 existing waterfall tests pass. All 69 frames pass compare in each theme; the other 64 runtime frames are pixel-identical after the five-frame correction. Both cropped specimens pass refreshed comparison in each theme. |
 | Tooling | SDG 0.5.0 non-read-only check passes all 20 sources; repository check and strict design typecheck pass. |
 
-Codex implements and checks the authorized final batch; Leo reviews the two active crop proposals and the complete batch in gallery 4331. No further implementation batch is deferred. Review approval remains the only pending disposition.
+Leo approved the complete final batch and both Search/Tooltip crops on 2026-11-08. Governance is complete, with no deferred implementation batch, open finding or pending review.

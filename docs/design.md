@@ -1,6 +1,6 @@
 # TSX design record
 
-Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Leo approved governance batches 0 and 1 (ownership, mappings, exceptions, tokens and Button crop) on 2026-11-08. Leo approved batch 2 (all six generic families and three frame renames) on 2026-11-08. Leo approved batch 3 (quota, usage-trend, task-list, context and its rework) on 2026-11-08. Leo approved batches 4 and 5 (waterfall, turn-summary, request-details and tool-dialog) on 2026-11-08. Leo approved batch 6 structural work and both ToolDialog/partial fidelity proposals on 2026-11-08. Later governance changes have a separate review status in [the asset register](design-assets.md).
+Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Leo approved governance batches 0 and 1 (ownership, mappings, exceptions, tokens and Button crop) on 2026-11-08. Leo approved batch 2 (all six generic families and three frame renames) on 2026-11-08. Leo approved batch 3 (quota, usage-trend, task-list, context and its rework) on 2026-11-08. Leo approved batches 4 and 5 (waterfall, turn-summary, request-details and tool-dialog) on 2026-11-08. Leo approved batch 6 structural work and both ToolDialog/partial fidelity proposals on 2026-11-08. Leo approved the final data/lifecycle work, runtime typography correction and Search/Tooltip crops on 2026-11-08. Governance is complete; see [the asset register](design-assets.md).
 
 [Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md) · [Asset rules](https://github.com/whzxc/svg-design-gallery/blob/main/docs/asset-rules.md) · [Asset register](design-assets.md)
 
@@ -122,7 +122,7 @@ Copy controls are disabled when their content is unavailable. Tool dialogs have 
 
 ## Declared forms
 
-Every name below resolves to one implementation fixture in tooling/design-review/fixtures.json. Retained surfaces use a 720px page capture at origin 0 0 with viewport 720x2400. Component/module captures select their content wrapper with 4px clearance; current widths live in Frame props (including intrinsic controls and the pending 188px Search / 248px Tooltip crops). Both themes use the same form. The asset register records each layout constraint and review status.
+Every name below resolves to one implementation fixture in tooling/design-review/fixtures.json. Retained surfaces use a 720px page capture at origin 0 0 with viewport 720x2400. Component/module captures select their content wrapper with 4px clearance; current widths live in Frame props (including intrinsic controls and the approved 188px Search / 248px Tooltip crops). Both themes use the same form. The asset register records each layout constraint and review status.
 
 | Source                              | Frame                    | Fixture                                   |
 | ----------------------------------- | ------------------------ | ----------------------------------------- |
@@ -231,7 +231,7 @@ The production build starts at `ui/app/main.tsx`; it has no import of the review
 
 All declared forms have runtime fixture compositions; no frame is intentionally unbound. Generic and module specimens capture their mapped runtime parts with 4px clearance; retained surfaces use page captures. The empty task frame represents direct entry; an empty task reached from the overview retains its back action. Native dialogs remain modal and viewport-bounded, with the approved 40px inset at the review width.
 
-The approved waterfall-partial fixture uses the runtime padded visible-row range 0–24.96s and 24px reveal spacing. Summary and minimap cover the complete 45s. Runtime Status and RequestDetails typography now match the design; exact resolved measurements and active crop proposals are recorded in design-assets.md.
+The approved waterfall-partial fixture uses the runtime padded visible-row range 0–24.96s and 24px reveal spacing. Summary and minimap cover the complete 45s. Runtime Status and RequestDetails typography now match the design; exact resolved measurements and approved specimen crops are recorded in design-assets.md.
 
 Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, and the running turn fixture folds its first branch to match the approved static forms. Runtime default folding still follows measured duration, failure and running state.
 
