@@ -16,8 +16,8 @@ Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolate
 
 - `design/tokens.css` owns the approved semantic palette and geometry.
 - `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. Feature assets remain here until their owning migration batch is reviewed.
-- `design/modules/` is the agreed feature layer; its owners and current source locations are listed below. No module source has moved yet.
-- `design/surfaces/` currently contains the 10 approved composition sources. Their local states will move with their owning modules.
+- `design/modules/` contains migrated feature owners; the ownership table records the current locations.
+- `design/surfaces/` currently contains 9 composition sources. Their local states will move with their owning modules.
 - `design/fixtures/` is the project owner for representative data and fixture projections. `button.ts` supplies the shared Button actions to the design specimen and runtime review fixture.
 - Temporary legacy paths: `design/scenes/usage.ts`, `context.ts`, `chart.ts`, `tool.ts` and `forms.ts` still contain records, projections and state lists. Move each feature's data to `fixtures/` with its owning migration batch; add new fixture data there. `scenes/format.ts` remains a supporting formatting/frame helper, outside the source layers.
 - Frames use the 720 CSS pixel review basis and implemented fixtures, with page captures at `720x2400`, origin `0 0`, except content-cropped generic specimens, whose current dimensions and selectors are declared in their Frame props and the asset register. Height follows content. Component and isolated section fixtures capture their specimen region; unchanged legacy specimens retain page-origin captures. Complete panel fixtures render the corresponding composition. The viewport accommodates the longest full-content specimen; it does not prescribe the host panel height.
@@ -43,7 +43,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 
 | Agreed feature owner | Owned parts | Current source locations under `design/` |
 | --- | --- | --- |
-| `modules/quota.tsx` | QuotaBar, QuotaSection | `components/quota-bar.tsx` |
+| `modules/quota.tsx` | QuotaBar, QuotaSection | `modules/quota.tsx` |
 | `modules/usage-trend.tsx` | UsageChart, Legend | `components/usage-chart.tsx`, `components/legend.tsx` |
 | `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `components/task-list.tsx`, `components/task-row.tsx` |
 | `modules/context.tsx` | ContextChart, ContextAllocation | `components/context-chart.tsx`, `components/context-allocation.tsx` |
@@ -54,7 +54,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 
 Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
 
-The current authorized sequence is ownership/documentation, then tokens and Button. These two batches receive separate local commits before the gallery handoff. Later batches wait for Leo's gallery review: each remaining generic family, each feature module, then one composed surface at a time, followed by unused-asset cleanup. The turn summary owner is `turn-summary`, distinct from the composed `surfaces/turn`.
+Batches 0–2 are approved. The currently authorized batch migrates quota, usage-trend, task-list and context, with one local commit per module before Leo's gallery review. Later feature modules, composed surfaces and unused-asset cleanup retain their separate review scope. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
 
 For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `sdg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `sdg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
 
@@ -136,7 +136,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/metric-figure.tsx`      | `grid-unknown`                | `cup-metric-figure-grid-unknown`               |
 | `components/minimap.tsx`            | `selected-range`         | `cup-minimap-selected-range`              |
 | `components/minimap.tsx`            | `loading-target`         | `cup-minimap-loading-target`              |
-| `components/quota-bar.tsx`          | `windows`                | `cup-quota-bar-windows`                   |
 | `components/request-details.tsx`    | `narrative`              | `cup-request-details-narrative`           |
 | `components/search.tsx`             | `field`                  | `cup-search-field`                        |
 | `components/single-choice.tsx`      | `selection`              | `cup-single-choice-selection`             |
@@ -165,7 +164,6 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `surfaces/overview.tsx`             | `refreshing`             | `cup-overview-refreshing`                 |
 | `surfaces/overview.tsx`             | `unpriced`               | `cup-overview-unpriced`                   |
 | `surfaces/overview.tsx`             | `quota-unavailable`      | `cup-overview-quota-unavailable`          |
-| `surfaces/quota.tsx`                | `credits-and-exhaustion` | `cup-quota-credits-and-exhaustion`        |
 | `surfaces/task-list.tsx`            | `selected`               | `cup-task-list-surface-selected`          |
 | `surfaces/task-list.tsx`            | `search-empty`           | `cup-task-list-surface-search-empty`      |
 | `surfaces/task.tsx`                 | `ready`                  | `cup-task-ready`                          |
@@ -193,10 +191,12 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `surfaces/turn.tsx`                 | `narrative-error`        | `cup-turn-narrative-error`                |
 | `surfaces/usage-trend.tsx`          | `hourly-cost`            | `cup-usage-trend-hourly-cost`             |
 | `surfaces/usage-trend.tsx`          | `single-model`           | `cup-usage-trend-single-model`            |
+| `modules/quota.tsx` | `bar-windows` | `cup-quota-bar-windows` |
+| `modules/quota.tsx` | `section-credits-and-exhaustion` | `cup-quota-section-credits-and-exhaustion` |
 
 ## Approval scope
 
-The library contains 22 component sources and 10 surface sources, with 69 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 21 component sources, 1 module sources and 9 surface sources, with 69 declared frames. The surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 

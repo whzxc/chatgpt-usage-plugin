@@ -423,7 +423,7 @@ function Content() {
         ))}
       </Stack>
     );
-  else if (fixture === "cup-quota-credits-and-exhaustion")
+  else if (fixture === "cup-quota-section-credits-and-exhaustion")
     content = (
       <QuotaBlock quota={quotaData("credits-and-exhaustion")} retry={noop} />
     );
@@ -557,6 +557,19 @@ function Content() {
     return (
       <div
         data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (
+    fixture === "cup-quota-bar-windows" ||
+    fixture === "cup-quota-section-credits-and-exhaustion"
+  )
+    return (
+      <div
+        data-design-module
         className="panel"
         style={{ padding: 4, width: 680 }}
       >

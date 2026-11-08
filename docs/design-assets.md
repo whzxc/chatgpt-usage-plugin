@@ -4,9 +4,9 @@
 
 ## State and ownership
 
-The 22 component sources, 10 surface sources and 69 frames have an approved visual baseline at `2f983b9` (2026-11-06). Leo has confirmed the adoption audit and the feature boundaries in `design.md`. All 22 component sources have a composed surface consumer. The runtime mappings below identify implementation adoption; gallery presence alone is not an adoption claim.
+The original 22 component sources, 10 surface sources and 69 frames have an approved visual baseline at `2f983b9` (2026-11-06). Leo has confirmed the adoption audit and the feature boundaries in `design.md`. All 22 component sources have a composed surface consumer. The runtime mappings below identify implementation adoption; gallery presence alone is not an adoption claim.
 
-The minimum toolkit version is 0.5.0. Default discovery is `components → modules → surfaces`; import-direction lint is enabled. Current feature sources still live in `components/`. The module paths in `design.md` identify their agreed owners and pending migrations, not existing files.
+The minimum toolkit version is 0.5.0. Default discovery is `components → modules → surfaces`; import-direction lint is enabled. Feature owners migrate from components into modules as recorded below. Unmigrated owner paths remain planned locations.
 
 | Batch scope | Implementation state | Leo review state |
 | --- | --- | --- |
@@ -36,8 +36,8 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/tooltip.tsx` | Tooltip | ContextChart, UsageChart → context, overview, task, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Tooltip |
 | `components/legend.tsx` | Legend | UsageChart → overview, usage-trend | [`overview.tsx`](../ui/overview/overview.tsx): ModelLegend |
 | `components/usage-chart.tsx` | UsageChart | overview, usage-trend | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
-| `components/quota-bar.tsx` | QuotaBar | QuotaSection → overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
-| `components/quota-bar.tsx` | QuotaSection | overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
+| `modules/quota.tsx` | QuotaBar | QuotaSection → overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
+| `modules/quota.tsx` | QuotaSection | overview, quota | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
 | `components/task-list.tsx` | TaskList | overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
 | `components/task-row.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
 | `components/task-row.tsx` | TaskRow | TaskList → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
@@ -63,7 +63,6 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | --- | --- | --- | --- |
 | `entry.tsx` | loading, failure | Panel + Status / [`root.tsx`](../ui/app/root.tsx) | Pending composition review |
 | `overview.tsx` | ready, indexing, unavailable, empty, stale, refreshing, unpriced, quota-unavailable | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Pending dependency and surface review |
-| `quota.tsx` | credits-and-exhaustion | QuotaSection / QuotaBlock | Local states pending quota migration |
 | `task-list.tsx` | selected, search-empty | TaskList / TaskTable | Local states and duplicate empty specimen pending migration |
 | `usage-trend.tsx` | hourly-cost, single-model | UsageChart / UsageChart | Local states pending trend migration |
 | `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Pending dependency and surface review |
@@ -143,3 +142,14 @@ The status specimens use `fixtures/` data and a `[data-design-specimen]` runtime
 The tooltip specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: approved 2026-11-08 by Leo.
 
 Visual proposal, pending a separate review: narrower Search, Header, metric, Status and Tooltip specimens may change wrapping or alignment. Their original content widths remain constraints for this structural batch.
+
+## quota module
+
+Current owner: `modules/quota.tsx`. Migration state: implemented; Leo gallery review pending. Parts retain defaults and 672px content width with 4px display clearance. Common controls are imported from components. Consumer and shared business leaf move in this same module; import-direction lint remains enabled.
+
+| Old frame | Current module frame | Disposition |
+| --- | --- | --- |
+| `components/quota-bar.tsx` / `windows` | `modules/quota.tsx` / `bar-windows` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/quota.tsx` / `credits-and-exhaustion` | `modules/quota.tsx` / `section-credits-and-exhaustion` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+
+The removed `surfaces/quota.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.

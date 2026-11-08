@@ -1,3 +1,8 @@
+import {
+  quotaForms,
+  quotaWindows,
+  quotaAccount,
+} from "../../design/fixtures/quota";
 // Fictional design-review records are projected into the production tool schema.
 import {
   baseTurn,
@@ -11,9 +16,6 @@ import {
   variant,
   density,
   slowest,
-  quotaWindows,
-  quotaForms,
-  quotaAccount,
 } from "../../design/scenes/usage";
 import type { Turn as SceneTurn, Call } from "../../design/scenes/usage";
 import {

@@ -5,7 +5,6 @@
       "assets": [
         "surfaces/entry.tsx",
         "surfaces/overview.tsx",
-        "surfaces/quota.tsx",
         "surfaces/task-list.tsx",
         "surfaces/usage-trend.tsx"
       ]
@@ -21,6 +20,12 @@
       ]
     },
     {
+      "title": "Feature modules",
+      "assets": [
+        "modules/quota.tsx"
+      ]
+    },
+    {
       "title": "Shared components",
       "assets": [
         "components/button.tsx",
@@ -31,7 +36,6 @@
         "components/legend.tsx",
         "components/metric-figure.tsx",
         "components/minimap.tsx",
-        "components/quota-bar.tsx",
         "components/request-details.tsx",
         "components/search.tsx",
         "components/single-choice.tsx",

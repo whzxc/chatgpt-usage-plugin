@@ -10,7 +10,7 @@ import {
 import { overviewForms } from "../scenes/forms";
 import { Panel, Section } from "../components/layout";
 import { Header } from "../components/header";
-import { QuotaSection } from "../components/quota-bar";
+import { QuotaSection } from "../modules/quota";
 import { Status } from "../components/status";
 import { SingleChoice } from "../components/single-choice";
 import { MetricGrid } from "../components/metric-figure";

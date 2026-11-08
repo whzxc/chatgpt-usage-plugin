@@ -1,7 +1,8 @@
+import { quotaForms, quotaWindows, quotaAccount } from "../fixtures/quota";
 import { Frame } from "sdg";
 import { frame, percent, number } from "../scenes/format";
-import { quotaForms, quotaWindows, quotaAccount } from "../scenes/usage";
-import { Panel, Stack, Grid, Section } from "./layout";
+
+import { Stack, Grid, Section } from "../components/layout";
 export function QuotaBar({
   window,
 }: {
@@ -78,14 +79,34 @@ export function QuotaSection({
     </Section>
   );
 }
+
 export default () => [
-  <Frame {...frame("quota-bar", "windows")}>
-    <Panel>
+  <Frame
+    {...frame("quota", "bar-windows")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
       <Stack>
         {quotaForms.map((window) => (
           <QuotaBar window={window} />
         ))}
       </Stack>
-    </Panel>
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("quota", "section-credits-and-exhaustion")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <QuotaSection windows={quotaForms.slice(2)} credits />
+    </div>
   </Frame>,
 ];
