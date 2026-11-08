@@ -1,7 +1,7 @@
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
-import { summaryMetrics, variant, turnMetrics } from "../scenes/usage";
-import { Panel, Grid } from "./layout";
+import { metricExamples } from "../fixtures/metric-figure";
+import { Grid } from "./layout";
 export function MetricFigure({
   label,
   value,
@@ -43,14 +43,28 @@ export function MetricGrid({
   );
 }
 export default () => [
-  <Frame {...frame("metric-figure", "overview")}>
-    <Panel>
-      <MetricGrid items={summaryMetrics()} />
-    </Panel>
+  <Frame
+    {...frame("metric-figure", "grid-overview")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <MetricGrid items={metricExamples.overview} />
+    </div>
   </Frame>,
-  <Frame {...frame("metric-figure", "unknown")}>
-    <Panel>
-      <MetricGrid items={turnMetrics(variant("unknown"))} small />
-    </Panel>
+  <Frame
+    {...frame("metric-figure", "grid-unknown")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <MetricGrid items={metricExamples.unknown} small />
+    </div>
   </Frame>,
 ];

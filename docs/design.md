@@ -130,10 +130,10 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `components/context-chart.tsx`      | `selected-compaction`    | `cup-context-chart-selected-compaction`   |
 | `components/header.tsx`             | `long-title`             | `cup-header-long-title`                   |
 | `components/header.tsx`             | `refreshing`             | `cup-header-refreshing`                   |
-| `components/layout.tsx`             | `shell`                  | `cup-layout-shell`                        |
+| `components/layout.tsx`             | `panel-shell`                  | `cup-layout-panel-shell`                        |
 | `components/legend.tsx`             | `models`                 | `cup-legend-models`                       |
-| `components/metric-figure.tsx`      | `overview`               | `cup-metric-figure-overview`              |
-| `components/metric-figure.tsx`      | `unknown`                | `cup-metric-figure-unknown`               |
+| `components/metric-figure.tsx`      | `grid-overview`               | `cup-metric-figure-grid-overview`              |
+| `components/metric-figure.tsx`      | `grid-unknown`                | `cup-metric-figure-grid-unknown`               |
 | `components/minimap.tsx`            | `selected-range`         | `cup-minimap-selected-range`              |
 | `components/minimap.tsx`            | `loading-target`         | `cup-minimap-loading-target`              |
 | `components/quota-bar.tsx`          | `windows`                | `cup-quota-bar-windows`                   |

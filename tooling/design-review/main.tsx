@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { layoutExample } from "../../design/fixtures/layout";
 import { searchExamples } from "../../design/fixtures/search";
 import { selectionExamples } from "../../design/fixtures/single-choice";
 import { buttonActions } from "../../design/fixtures/button";
@@ -362,8 +363,8 @@ function Content() {
         ))}
       </div>
     );
-  else if (fixture === "cup-layout-shell")
-    content = <Section title="本机用量" />;
+  else if (fixture === "cup-layout-panel-shell")
+    content = <Section title={layoutExample.title} />;
   else if (fixture.startsWith("cup-header-"))
     content = (
       <Header
@@ -376,9 +377,9 @@ function Content() {
     );
   else if (fixture === "cup-legend-models")
     content = <ModelLegend summary={summaryData()} />;
-  else if (fixture === "cup-metric-figure-overview")
+  else if (fixture === "cup-metric-figure-grid-overview")
     content = <Figures summary={summaryData()} />;
-  else if (fixture === "cup-metric-figure-unknown") {
+  else if (fixture === "cup-metric-figure-grid-unknown") {
     const t = turnData(variant("unknown"));
     content = (
       <MetricGrid
@@ -518,6 +519,25 @@ function Content() {
         style={{ padding: 4, width: 680 }}
       >
         {content}
+      </div>
+    );
+  if (
+    fixture === "cup-metric-figure-grid-overview" ||
+    fixture === "cup-metric-figure-grid-unknown"
+  )
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (fixture === "cup-layout-panel-shell")
+    return (
+      <div data-design-specimen style={{ padding: 4, width: 728 }}>
+        <Panel>{content}</Panel>
       </div>
     );
   return <Panel>{content}</Panel>;

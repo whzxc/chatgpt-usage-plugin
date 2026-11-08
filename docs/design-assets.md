@@ -118,3 +118,13 @@ The single-choice specimens use `fixtures/` data and a `[data-design-specimen]` 
 ## search family
 
 The search specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.
+
+## layout-metrics family
+
+The layout, metric-figure specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment; the Panel specimen retains its own 24px padding inside the 4px clearance. Governance state: implemented, awaiting Leo gallery review.
+
+- Frame route: `cup-layout-shell` → `cup-layout-panel-shell`.
+
+- Frame route: `cup-metric-figure-overview` → `cup-metric-figure-grid-overview`.
+
+- Frame route: `cup-metric-figure-unknown` → `cup-metric-figure-grid-unknown`.

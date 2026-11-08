@@ -1,3 +1,4 @@
+import { layoutExample } from "../fixtures/layout";
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
 export function Panel({ children }: { children?: unknown }) {
@@ -57,9 +58,18 @@ export function Section({
   );
 }
 export default () => [
-  <Frame {...frame("layout", "shell")}>
-    <Panel>
-      <Section title="本机用量" />
-    </Panel>
+  <Frame
+    {...frame("layout", "panel-shell")}
+    width={728}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
+      <Panel>
+        <Section title={layoutExample.title} />
+      </Panel>
+    </div>
   </Frame>,
 ];
