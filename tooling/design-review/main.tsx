@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { searchExamples } from "../../design/fixtures/search";
 import { selectionExamples } from "../../design/fixtures/single-choice";
 import { buttonActions } from "../../design/fixtures/button";
 import { compact, money } from "../../ui/shared/format";
@@ -100,7 +101,9 @@ function TaskListFixture({ form }: { form: string }) {
   );
 }
 function SearchFixture() {
-  const [values, setValues] = useState(["", "海岸", "跨季节观测记录"]);
+  const [values, setValues] = useState(
+    searchExamples.map((item) => item.value),
+  );
   return (
     <Stack>
       {values.map((v, i) => (
@@ -503,6 +506,16 @@ function Content() {
         data-design-specimen
         className="panel"
         style={{ padding: 4, width: "max-content" }}
+      >
+        {content}
+      </div>
+    );
+  if (fixture === "cup-search-field")
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
       >
         {content}
       </div>

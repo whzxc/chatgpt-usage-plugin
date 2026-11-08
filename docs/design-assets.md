@@ -114,3 +114,7 @@ Panel padding and section spacing now consume `--panel-padding` and `--section-g
 ## single-choice family
 
 The single-choice specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. SingleChoice uses intrinsic content width. Governance state: implemented, awaiting Leo gallery review.
+
+## search family
+
+The search specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.

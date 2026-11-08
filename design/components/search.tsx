@@ -1,11 +1,7 @@
 import { Frame, Icon } from "sdg";
 import { frame } from "../scenes/format";
-import { Panel, Stack } from "./layout";
-const examples = [
-  { value: "" },
-  { value: "海岸", focus: true },
-  { value: "跨季节观测记录", disabled: true },
-];
+import { Stack } from "./layout";
+import { searchExamples } from "../fixtures/search";
 export function Search({
   value = "",
   focus = false,
@@ -17,7 +13,10 @@ export function Search({
 }) {
   return (
     <label
-      class={`flex items-center gap-2 rounded-control bg-surface px-3 h-(--control-height) min-w-0 ${focus ? "outline-2 outline-focus outline-offset-2" : ""}`}
+      class={[
+        "flex items-center gap-2 rounded-control bg-surface px-3 h-(--control-height) min-w-0",
+        focus ? "outline-2 outline-focus outline-offset-2" : "",
+      ].join(" ")}
     >
       <Icon name="search" class="text-muted shrink-0" />
       <input
@@ -32,13 +31,20 @@ export function Search({
   );
 }
 export default () => [
-  <Frame {...frame("search", "field")}>
-    <Panel>
+  <Frame
+    {...frame("search", "field")}
+    width={680}
+    capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-specimen
+      class="w-full p-1 font-ui text-body leading-normal"
+    >
       <Stack>
-        {examples.map((p) => (
+        {searchExamples.map((p) => (
           <Search {...p} />
         ))}
       </Stack>
-    </Panel>
+    </div>
   </Frame>,
 ];
