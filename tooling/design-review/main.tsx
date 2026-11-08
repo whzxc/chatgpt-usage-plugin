@@ -55,6 +55,7 @@ import {
   quotaData,
   turnSummary,
   turnData,
+  requestDetailsSpan,
   threadData,
   body,
 } from "./data";
@@ -475,7 +476,7 @@ function Content() {
   else if (fixture.startsWith("cup-request-details-"))
     content = (
       <RequestDetailsPanel
-        span={traceSpans(turnData().timeline, false)[1]}
+        span={requestDetailsSpan()}
         threadId="fictional-task-0"
         turnId={baseTurn.id}
         close={noop}

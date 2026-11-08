@@ -353,3 +353,7 @@ Leo approved the structural batch, new UsageSummary/quota specimens and both fid
 ## Final batch: supporting data
 
 Status: implemented; Leo final gallery review pending. All shared records now live in fixtures/usage.ts. The support directory contains format and frame helpers only, with no visual-layer or fixture imports. Generic components have neutral prop interfaces; feature-specific Call, Turn and TaskRowData types stay with fixtures and modules. Frame names, routes, captures and component defaults are unchanged. All long TS/TSX lines are split without changing displayed values.
+
+## Final batch: runtime typography
+
+Status: implemented; Leo final review pending. Runtime `.waterfall > .status` explicitly sets 14px / 21px; `.wf-note > button` sets 12px / 18px. The standalone RequestDetails fixture now supplies the design's representative note summary while retaining the short indexed request title; production records and request-heading logic are unchanged. Existing waterfall range/model tests and both-theme compare captures cover this change. The design library is unchanged by this implementation correction.

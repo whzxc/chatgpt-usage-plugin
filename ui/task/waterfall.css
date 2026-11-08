@@ -250,6 +250,8 @@
   gap: 8px;
 }
 .wf-note > button {
+  font-size: 12px;
+  line-height: 18px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -351,6 +353,8 @@
   color: var(--muted);
 }
 .waterfall > .status {
+  font-size: 14px;
+  line-height: 21px;
   margin-top: 16px;
 }
 @container waterfall (width < 560px) {

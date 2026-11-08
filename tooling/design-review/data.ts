@@ -1,3 +1,4 @@
+import { traceSpans } from "../../ui/task/waterfall-model";
 import {
   quotaForms,
   quotaWindows,
@@ -462,5 +463,18 @@ export function toolData(form = "ready"): ToolData {
       ),
       exitCode: form === "unknown" ? null : form === "failed" ? 1 : 0,
     },
+  };
+}
+
+// The isolated details specimen supplies full representative note summaries;
+// request labels still come from the indexed, short reasoning heading.
+export function requestDetailsSpan() {
+  const span = traceSpans(turnData().timeline, false)[1];
+  return {
+    ...span,
+    notes: span.notes?.map((note) => ({
+      ...note,
+      text: note.kind === "reasoning" ? copy.reasoning : note.text,
+    })),
   };
 }
