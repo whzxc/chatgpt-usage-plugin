@@ -14,7 +14,7 @@ The minimum toolkit version is 0.5.0. Default discovery is `components → modul
 | Tokens and Button | Implemented: shared fixture, content crop and equivalent Panel token bindings | Approved 2026-11-08 by Leo |
 | Batch 2: SingleChoice, Search, Layout/MetricFigure, Header, Status, Tooltip | Implemented: fixtures, part names and 4px specimen clearance | Approved 2026-11-08 by Leo |
 | Batch 3: quota, usage-trend, task-list, context | Implemented, including context interface and frame rework | Approved 2026-11-08 by Leo |
-| Batches 4–5: waterfall, turn-summary, request-details, tool-dialog | Implemented: part states and explicit props; surface simplification deferred to batch 6 | Leo gallery review pending |
+| Batches 4–5: waterfall, turn-summary, request-details, tool-dialog | Implemented: part states and explicit props | Approved 2026-11-08 by Leo |
 | Composed surfaces and final lifecycle cleanup | Pending dependency review | Per-surface review pending |
 
 ## Part mappings and consumers
@@ -199,7 +199,7 @@ Module migration adds no visual proposal. Existing narrower-specimen proposals r
 
 ## waterfall module
 
-Current owner: `modules/waterfall.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+Current owner: `modules/waterfall.tsx`. Approved 2026-11-08 by Leo. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
 
 | Old frame | Current frame | Disposition |
 | --- | --- | --- |
@@ -215,7 +215,7 @@ Current owner: `modules/waterfall.tsx`. Implemented; Leo gallery review pending.
 
 ## turn-summary module
 
-Current owner: `modules/turn-summary.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+Current owner: `modules/turn-summary.tsx`. Approved 2026-11-08 by Leo. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
 
 | Old frame | Current frame | Disposition |
 | --- | --- | --- |
@@ -225,7 +225,7 @@ Current owner: `modules/turn-summary.tsx`. Implemented; Leo gallery review pendi
 
 ## request-details module
 
-Current owner: `modules/request-details.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+Current owner: `modules/request-details.tsx`. Approved 2026-11-08 by Leo. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
 
 | Old frame | Current frame | Disposition |
 | --- | --- | --- |
@@ -236,7 +236,7 @@ Current owner: `modules/request-details.tsx`. Implemented; Leo gallery review pe
 
 ## tool-dialog module
 
-Current owner: `modules/tool-dialog.tsx`. Implemented; Leo gallery review pending. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
+Current owner: `modules/tool-dialog.tsx`. Approved 2026-11-08 by Leo. Explicit part props preserve defaults; local states are declared on the owning part. Surfaces retain their compositions for batch 6.
 
 | Old frame | Current frame | Disposition |
 | --- | --- | --- |
