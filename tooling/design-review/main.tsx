@@ -570,7 +570,7 @@ function Content() {
       <div
         data-design-specimen
         className="panel"
-        style={{ padding: 4, width: 680 }}
+        style={{ padding: 4, width: 188 }}
       >
         {content}
       </div>
@@ -622,7 +622,7 @@ function Content() {
       <div
         data-design-specimen
         className="panel"
-        style={{ padding: 4, width: 680 }}
+        style={{ padding: 4, width: 248 }}
       >
         {content}
       </div>

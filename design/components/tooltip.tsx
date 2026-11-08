@@ -26,7 +26,8 @@ export function Tooltip({
 export default () => [
   <Frame
     {...frame("tooltip", "bucket")}
-    width={680}
+    note="Proposal pending Leo review"
+    width={248}
     capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
   >
     <div

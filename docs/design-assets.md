@@ -357,3 +357,9 @@ Status: implemented; Leo final gallery review pending. All shared records now li
 ## Final batch: runtime typography
 
 Status: implemented; Leo final review pending. Runtime `.waterfall > .status` explicitly sets 14px / 21px; `.wf-note > button` sets 12px / 18px. The standalone RequestDetails fixture now supplies the design's representative note summary while retaining the short indexed request title; production records and request-heading logic are unchanged. Existing waterfall range/model tests and both-theme compare captures cover this change. The design library is unchanged by this implementation correction.
+
+## Final batch: crop decisions
+
+Active proposals, **Proposal pending Leo review**: Search/field uses 180px content width (188px including clearance), matching `.task-filters .search` in ui/shared/layout.css. Tooltip/bucket uses 240px content width (248px including clearance), matching `.inspection > .tooltip` and the composed design inspection cards. Only specimen and adapter crop widths change; defaults and consumers are unchanged. Both retain 4px focus/border clearance and their existing fixture IDs.
+
+Closed without a visual change: Header retains 672px to review actual panel title wrapping and the trailing refresh group. Metric grids retain 672px to preserve the production three-column alignment and six-metric layout. Status retains 672px to review full-width progress, long feedback and retry placement. Layout retains its approved 720px panel plus clearance. Button and SingleChoice already use intrinsic content crops. A narrower frame for these assets would introduce a different layout constraint without a real consumer.

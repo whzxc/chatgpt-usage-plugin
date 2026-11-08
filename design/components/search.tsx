@@ -33,7 +33,8 @@ export function Search({
 export default () => [
   <Frame
     {...frame("search", "field")}
-    width={680}
+    note="Proposal pending Leo review"
+    width={188}
     capture={{ selector: "[data-design-specimen]", viewport: "720x2400" }}
   >
     <div
