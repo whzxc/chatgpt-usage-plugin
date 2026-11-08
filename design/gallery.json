@@ -26,7 +26,8 @@
         "modules/waterfall.tsx",
         "modules/turn-summary.tsx",
         "modules/request-details.tsx",
-        "modules/tool-dialog.tsx"
+        "modules/tool-dialog.tsx",
+        "modules/usage-summary.tsx"
       ]
     },
     {

@@ -289,7 +289,55 @@ function Content() {
         onBack={fixture === "cup-task-empty" ? undefined : noop}
       />
     );
-  if (fixture.startsWith("cup-context-allocation-"))
+  if (fixture.startsWith("cup-usage-summary-")) {
+    const loading = fixture.endsWith("indexing"),
+      error = fixture.endsWith("unavailable");
+    content = (
+      <Section
+        title="本机用量"
+        actions={
+          !loading &&
+          !error && (
+            <SingleChoice
+              label="用量范围"
+              value="7d"
+              options={[
+                ["1d", "今天"],
+                ["7d", "7 天"],
+                ["30d", "30 天"],
+              ]}
+              onChange={noop}
+              disabled={fixture.endsWith("refreshing")}
+            />
+          )
+        }
+      >
+        {loading ? (
+          <Status
+            kind="indexing"
+            processed={statusProgress.processed}
+            total={statusProgress.total}
+          />
+        ) : error ? (
+          <Status kind="error" retry={noop} />
+        ) : (
+          <Figures summary={summaryData()} />
+        )}
+      </Section>
+    );
+  } else if (
+    fixture.startsWith("cup-quota-section-") &&
+    !fixture.endsWith("credits-and-exhaustion")
+  )
+    content = (
+      <QuotaBlock
+        quota={quotaData(
+          fixture.endsWith("loading") ? "indexing" : "quota-unavailable",
+        )}
+        retry={noop}
+      />
+    );
+  else if (fixture.startsWith("cup-context-allocation-"))
     content = (
       <CurrentContext
         context={
@@ -499,6 +547,20 @@ function Content() {
   else if (fixture.startsWith("cup-turn-"))
     content = <WaterfallFixture form={fixture.slice(9)} header />;
   else throw Error(`No renderer for fixture: ${fixture}`);
+  if (
+    fixture.startsWith("cup-usage-summary-") ||
+    (fixture.startsWith("cup-quota-section-") &&
+      !fixture.endsWith("credits-and-exhaustion"))
+  )
+    return (
+      <div
+        data-design-module
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
   if (fixture === "cup-single-choice-selection")
     return (
       <div

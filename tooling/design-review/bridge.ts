@@ -27,7 +27,6 @@ export async function callData<T>(
   signal?: AbortSignal,
 ): Promise<T> {
   if (fixture.endsWith("-stale")) throw Error("更新失败");
-  if (fixture === "cup-overview-refreshing") return pending(signal);
   if (name === "usage_summary") return summaryData(form) as T;
   if (name === "usage_tasks") {
     const data = tasksData(form);

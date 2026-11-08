@@ -75,7 +75,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`fixtures/tool-dialog.ts`](../design/fixtures/tool-dialog.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 81 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 85 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -256,3 +256,22 @@ TurnSummary composes the expanded TurnHeader and explicit loading/error feedback
 No ownership correction is pending: TimeAxis, Minimap and WaterfallRow retain call/turn semantics; ToolBody retains tool payload, truncation and copy semantics. They remain in their approved feature modules. No new visual proposal is introduced; the recorded turn/partial 0–24s versus 0–24.96s fidelity item remains unchanged.
 
 Runtime comparison follow-ups: standalone RequestDetails captures differ by about 6px in height; waterfall/unknown differs by about 3px, and partial keeps its recorded padded-range drift. Native ToolDialog typography differs by about 2px in height. These differences are separate visual-acceptance proposals; the retained design surfaces remain pixel-identical.
+
+## Batch 6: overview
+
+Governance status: implemented; Leo gallery review pending.
+
+New owner: `modules/usage-summary.tsx` → runtime Overview local usage Section, SingleChoice range filter and Figures (`ui/overview/overview.tsx`). Consumers: overview surface and module specimens. `fixtures/overview.ts` owns records, unknown-model transforms, summary metrics, task records and indexing progress. QuotaSection now owns its loading/error branches; runtime owner remains QuotaBlock.
+
+| Old surface frame | Coverage / disposition |
+| --- | --- |
+| overview/ready | Retained: complete account, summary, trend and task arrangement. |
+| overview/indexing | Retained: both account and local-index regions replace the complete lower page. |
+| overview/unavailable | Retained: account remains while local usage and the lower page become unavailable. |
+| overview/empty | Retained: zero summary and empty page replace trend and tasks. |
+| overview/stale | Retained: refresh banner changes page geometry. |
+| overview/unpriced | Retained: warning replaces trend while task table remains. |
+| overview/refreshing | Removed: header/refreshing and usage-summary/refreshing cover local busy controls; page arrangement is unchanged. |
+| overview/quota-unavailable | Removed: quota/section-error owns the account-local replacement; overview/ready covers its surrounding arrangement. |
+
+Quota part frames: section-loading and section-error. UsageSummary part frames: ready, refreshing, indexing and unavailable; each is one owned state, with no combined-state matrix. All new specimens use 672px content width plus 4px clearance. Structural extraction preserves retained surface pixels.

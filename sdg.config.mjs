@@ -31,13 +31,9 @@ export default {
         () => document.documentElement.dataset.fixtureError,
       );
       if (error) throw new Error(`Design fixture ${name}: ${error}`);
-      if (name.endsWith("-stale") || name === "cup-overview-refreshing") {
+      if (name.endsWith("-stale")) {
         await page.getByRole("button", { name: "刷新", exact: true }).click();
-        await page
-          .locator(
-            name.endsWith("-stale") ? ".status-stale" : '[aria-busy="true"]',
-          )
-          .waitFor();
+        await page.locator(".status-stale").waitFor();
       }
       if (
         [

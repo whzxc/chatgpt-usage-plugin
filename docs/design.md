@@ -44,14 +44,6 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 
 | Agreed feature owner | Owned parts | Current source locations under `design/` |
 | --- | --- | --- |
-| `modules/quota.tsx` | QuotaBar, QuotaSection | `modules/quota.tsx` |
-| `modules/usage-trend.tsx` | UsageChart, Legend | `modules/usage-trend.tsx` |
-| `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `modules/task-list.tsx` |
-| `modules/context.tsx` | ContextChart, ContextAllocation, ContextSection | `modules/context.tsx` |
-| `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `modules/turn-summary.tsx`, `surfaces/turn-loading.tsx` |
-| `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `modules/waterfall.tsx` |
-| `modules/request-details.tsx` | RequestDetails | `modules/request-details.tsx` |
-| `modules/tool-dialog.tsx` | ToolBody, ToolDialog | `modules/tool-dialog.tsx` |
 
 Codex proposes and implements each authorized batch, checks the source and reviews both theme renders. Leo reviews the gallery and approves its visual result. The user authorizes batch scope and repository publication. Original visual approval does not close a governance batch. The asset register separates implementation adoption, migration state and pending reviewer decisions.
 
@@ -125,48 +117,46 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 
 | Source                              | Frame                    | Fixture                                   |
 | ----------------------------------- | ------------------------ | ----------------------------------------- |
-| `components/button.tsx`             | `actions`                | `cup-button-actions`                      |
-| `components/header.tsx`             | `long-title`             | `cup-header-long-title`                   |
-| `components/header.tsx`             | `refreshing`             | `cup-header-refreshing`                   |
-| `components/layout.tsx`             | `panel-shell`                  | `cup-layout-panel-shell`                        |
-| `components/metric-figure.tsx`      | `grid-overview`               | `cup-metric-figure-grid-overview`              |
-| `components/metric-figure.tsx`      | `grid-unknown`                | `cup-metric-figure-grid-unknown`               |
-| `components/search.tsx`             | `field`                  | `cup-search-field`                        |
-| `components/single-choice.tsx`      | `selection`              | `cup-single-choice-selection`             |
-| `components/status.tsx`             | `feedback`               | `cup-status-feedback`                     |
-| `components/tooltip.tsx`            | `bucket`                 | `cup-tooltip-bucket`                      |
-| `surfaces/entry.tsx`                | `loading`                | `cup-entry-loading`                       |
-| `surfaces/entry.tsx`                | `failure`                | `cup-entry-failure`                       |
-| `surfaces/overview.tsx`             | `ready`                  | `cup-overview-ready`                      |
-| `surfaces/overview.tsx`             | `indexing`               | `cup-overview-indexing`                   |
-| `surfaces/overview.tsx`             | `unavailable`            | `cup-overview-unavailable`                |
-| `surfaces/overview.tsx`             | `empty`                  | `cup-overview-empty`                      |
-| `surfaces/overview.tsx`             | `stale`                  | `cup-overview-stale`                      |
-| `surfaces/overview.tsx`             | `refreshing`             | `cup-overview-refreshing`                 |
-| `surfaces/overview.tsx`             | `unpriced`               | `cup-overview-unpriced`                   |
-| `surfaces/overview.tsx`             | `quota-unavailable`      | `cup-overview-quota-unavailable`          |
-| `surfaces/task.tsx`                 | `ready`                  | `cup-task-ready`                          |
-| `surfaces/task.tsx`                 | `empty`                  | `cup-task-empty`                          |
-| `surfaces/task.tsx`                 | `indexing`               | `cup-task-indexing`                       |
-| `surfaces/task.tsx`                 | `unavailable`            | `cup-task-unavailable`                    |
-| `surfaces/task.tsx`                 | `stale`                  | `cup-task-stale`                          |
-| `surfaces/task.tsx`                 | `long-title`             | `cup-task-long-title`                     |
-| `surfaces/tool-dialog.tsx`          | `loading`                | `cup-tool-dialog-surface-loading`         |
-| `surfaces/tool-dialog.tsx`          | `error`                  | `cup-tool-dialog-surface-error`           |
-| `surfaces/tool-dialog.tsx`          | `long`                   | `cup-tool-dialog-surface-long`            |
-| `surfaces/tool-dialog.tsx`          | `failed`                 | `cup-tool-dialog-surface-failed`          |
-| `surfaces/tool-dialog.tsx`          | `copy-error`             | `cup-tool-dialog-surface-copy-error`      |
-| `surfaces/tool-dialog.tsx`          | `unknown`                | `cup-tool-dialog-surface-unknown`         |
-| `surfaces/turn-loading.tsx`         | `pending`                | `cup-turn-loading-pending`                |
-| `surfaces/turn-loading.tsx`         | `failure`                | `cup-turn-loading-failure`                |
-| `surfaces/turn.tsx`                 | `completed`              | `cup-turn-completed`                      |
-| `surfaces/turn.tsx`                 | `running`                | `cup-turn-running`                        |
-| `surfaces/turn.tsx`                 | `failed`                 | `cup-turn-failed`                         |
-| `surfaces/turn.tsx`                 | `unknown`                | `cup-turn-unknown`                        |
-| `surfaces/turn.tsx`                 | `partial`                | `cup-turn-partial`                        |
-| `surfaces/turn.tsx`                 | `request-detail`         | `cup-turn-request-detail`                 |
-| `surfaces/turn.tsx`                 | `narrative-loading`      | `cup-turn-narrative-loading`              |
-| `surfaces/turn.tsx`                 | `narrative-error`        | `cup-turn-narrative-error`                |
+| `components/button.tsx` | `actions` | `cup-button-actions` |
+| `components/header.tsx` | `long-title` | `cup-header-long-title` |
+| `components/header.tsx` | `refreshing` | `cup-header-refreshing` |
+| `components/layout.tsx` | `panel-shell` | `cup-layout-panel-shell` |
+| `components/metric-figure.tsx` | `grid-overview` | `cup-metric-figure-grid-overview` |
+| `components/metric-figure.tsx` | `grid-unknown` | `cup-metric-figure-grid-unknown` |
+| `components/search.tsx` | `field` | `cup-search-field` |
+| `components/single-choice.tsx` | `selection` | `cup-single-choice-selection` |
+| `components/status.tsx` | `feedback` | `cup-status-feedback` |
+| `components/tooltip.tsx` | `bucket` | `cup-tooltip-bucket` |
+| `surfaces/entry.tsx` | `loading` | `cup-entry-loading` |
+| `surfaces/entry.tsx` | `failure` | `cup-entry-failure` |
+| `surfaces/overview.tsx` | `ready` | `cup-overview-ready` |
+| `surfaces/overview.tsx` | `indexing` | `cup-overview-indexing` |
+| `surfaces/overview.tsx` | `unavailable` | `cup-overview-unavailable` |
+| `surfaces/overview.tsx` | `empty` | `cup-overview-empty` |
+| `surfaces/overview.tsx` | `stale` | `cup-overview-stale` |
+| `surfaces/overview.tsx` | `unpriced` | `cup-overview-unpriced` |
+| `surfaces/task.tsx` | `ready` | `cup-task-ready` |
+| `surfaces/task.tsx` | `empty` | `cup-task-empty` |
+| `surfaces/task.tsx` | `indexing` | `cup-task-indexing` |
+| `surfaces/task.tsx` | `unavailable` | `cup-task-unavailable` |
+| `surfaces/task.tsx` | `stale` | `cup-task-stale` |
+| `surfaces/task.tsx` | `long-title` | `cup-task-long-title` |
+| `surfaces/tool-dialog.tsx` | `loading` | `cup-tool-dialog-surface-loading` |
+| `surfaces/tool-dialog.tsx` | `error` | `cup-tool-dialog-surface-error` |
+| `surfaces/tool-dialog.tsx` | `long` | `cup-tool-dialog-surface-long` |
+| `surfaces/tool-dialog.tsx` | `failed` | `cup-tool-dialog-surface-failed` |
+| `surfaces/tool-dialog.tsx` | `copy-error` | `cup-tool-dialog-surface-copy-error` |
+| `surfaces/tool-dialog.tsx` | `unknown` | `cup-tool-dialog-surface-unknown` |
+| `surfaces/turn-loading.tsx` | `pending` | `cup-turn-loading-pending` |
+| `surfaces/turn-loading.tsx` | `failure` | `cup-turn-loading-failure` |
+| `surfaces/turn.tsx` | `completed` | `cup-turn-completed` |
+| `surfaces/turn.tsx` | `running` | `cup-turn-running` |
+| `surfaces/turn.tsx` | `failed` | `cup-turn-failed` |
+| `surfaces/turn.tsx` | `unknown` | `cup-turn-unknown` |
+| `surfaces/turn.tsx` | `partial` | `cup-turn-partial` |
+| `surfaces/turn.tsx` | `request-detail` | `cup-turn-request-detail` |
+| `surfaces/turn.tsx` | `narrative-loading` | `cup-turn-narrative-loading` |
+| `surfaces/turn.tsx` | `narrative-error` | `cup-turn-narrative-error` |
 | `modules/quota.tsx` | `bar-windows` | `cup-quota-bar-windows` |
 | `modules/quota.tsx` | `section-credits-and-exhaustion` | `cup-quota-section-credits-and-exhaustion` |
 | `modules/usage-trend.tsx` | `chart-tokens` | `cup-usage-trend-chart-tokens` |
@@ -206,12 +196,18 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `modules/tool-dialog.tsx` | `dialog-failed` | `cup-tool-dialog-dialog-failed` |
 | `modules/tool-dialog.tsx` | `dialog-copy-error` | `cup-tool-dialog-dialog-copy-error` |
 | `modules/tool-dialog.tsx` | `dialog-unknown` | `cup-tool-dialog-dialog-unknown` |
+| `modules/quota.tsx` | `section-loading` | `cup-quota-section-loading` |
+| `modules/quota.tsx` | `section-error` | `cup-quota-section-error` |
+| `modules/usage-summary.tsx` | `ready` | `cup-usage-summary-ready` |
+| `modules/usage-summary.tsx` | `refreshing` | `cup-usage-summary-refreshing` |
+| `modules/usage-summary.tsx` | `indexing` | `cup-usage-summary-indexing` |
+| `modules/usage-summary.tsx` | `unavailable` | `cup-usage-summary-unavailable` |
 
 Context states belong to their parts: chart selection, missing measurements and unknown capacity; allocation estimates and unknown capacity. `ContextSection` forwards explicit `selected`, `gaps` and `unknownLimit` props with false defaults. It emits the two parts without a layout node, so the task surface owns their spacing and there is no standalone section frame.
 
 ## Approval scope
 
-The library contains 8 component sources, 8 module sources and 6 surface sources, with 81 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 8 component sources, 9 module sources and 6 surface sources, with 85 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 
@@ -230,7 +226,7 @@ sdg compare --all
 CUP_REVIEW_THEME=dark sdg compare --all
 ```
 
-`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 81 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 85 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
 
 For viewport-following interaction review, open `/__design/review?fixture=cup-waterfall-scroll`. It repeats the fictional turn records with distinct IDs and timestamps across six minutes in a 480px scroll container. Scroll through the calls or navigate with the minimap; the visible range and selection window follow the visible rows. With the system's reduced-motion preference enabled, range changes apply immediately without interpolation. This fixture has no additional design frame and is excluded from the packaged plugin with the other review data.
 

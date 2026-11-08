@@ -1,7 +1,13 @@
-import { quotaForms, quotaWindows, quotaAccount } from "../fixtures/quota";
+import {
+  quotaForms,
+  quotaWindows,
+  quotaAccount,
+  quotaStatusExamples,
+} from "../fixtures/quota";
 import { Frame } from "sdg";
 import { frame, percent, number } from "../scenes/format";
 
+import { Status } from "../components/status";
 import { Stack, Grid, Section } from "../components/layout";
 export function QuotaBar({
   window,
@@ -56,10 +62,23 @@ export function QuotaBar({
 export function QuotaSection({
   windows = quotaWindows,
   credits = false,
+  loading = false,
+  error,
 }: {
   windows?: typeof quotaWindows;
   credits?: boolean;
+  loading?: boolean;
+  error?: string;
 }) {
+  if (loading || error)
+    return (
+      <Section title="账户额度">
+        <Status
+          kind={error ? "error" : "loading"}
+          message={error || "正在读取账户额度"}
+        />
+      </Section>
+    );
   return (
     <Section
       title="账户额度"
@@ -109,4 +128,18 @@ export default () => [
       <QuotaSection windows={quotaForms.slice(2)} credits />
     </div>
   </Frame>,
+  ...quotaStatusExamples.map(({ name, props }) => (
+    <Frame
+      {...frame("quota", name)}
+      width={680}
+      capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+    >
+      <div
+        data-design-module
+        class="w-full p-1 font-ui text-body leading-normal"
+      >
+        <QuotaSection {...props} />
+      </div>
+    </Frame>
+  )),
 ];

@@ -33,3 +33,8 @@ export const quotaForms = [
 ];
 
 export const quotaAccount = { plan: "Plus", credits: 120, availableResets: 2 };
+
+export const quotaStatusExamples = [
+  { name: "section-loading", props: { loading: true } },
+  { name: "section-error", props: { error: "无法读取账户额度：账户不可用" } },
+];
