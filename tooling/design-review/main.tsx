@@ -45,6 +45,7 @@ import {
   costTrend,
 } from "../../design/scenes/usage";
 import { longOutput } from "../../design/scenes/tool";
+import { statusExamples, statusProgress } from "../../design/fixtures/status";
 import { headerExamples } from "../../design/fixtures/header";
 import { layoutExample } from "../../design/fixtures/layout";
 import { searchExamples } from "../../design/fixtures/search";
@@ -447,17 +448,15 @@ function Content() {
   else if (fixture === "cup-status-feedback")
     content = (
       <Stack>
-        {(["loading", "indexing", "error", "stale", "empty"] as const).map(
-          (kind) => (
-            <Status
-              key={kind}
-              kind={kind}
-              processed={summaryData().index.total / 3}
-              total={summaryData().index.total}
-              retry={kind === "error" || kind === "stale" ? noop : undefined}
-            />
-          ),
-        )}
+        {statusExamples.map((kind) => (
+          <Status
+            key={kind}
+            kind={kind}
+            processed={statusProgress.processed}
+            total={statusProgress.total}
+            retry={kind === "error" || kind === "stale" ? noop : undefined}
+          />
+        ))}
       </Stack>
     );
   else if (fixture === "cup-tool-body-truncated")
@@ -549,6 +548,16 @@ function Content() {
     fixture === "cup-header-long-title" ||
     fixture === "cup-header-refreshing"
   )
+    return (
+      <div
+        data-design-specimen
+        className="panel"
+        style={{ padding: 4, width: 680 }}
+      >
+        {content}
+      </div>
+    );
+  if (fixture === "cup-status-feedback")
     return (
       <div
         data-design-specimen

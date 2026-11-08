@@ -132,3 +132,7 @@ The layout, metric-figure specimens use `fixtures/` data and a `[data-design-spe
 ## header family
 
 The header specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.
+
+## status family
+
+The status specimens use `fixtures/` data and a `[data-design-specimen]` runtime capture with 4px outer clearance. Exported part defaults are preserved. The 672px content width is retained to preserve wrapping and alignment. Governance state: implemented, awaiting Leo gallery review.
