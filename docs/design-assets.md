@@ -101,6 +101,16 @@ cup-waterfall-scroll is the deliberate interaction-only fixture: six fictional m
 
 ## Conformance and final review
 
-The final audit follows the linked SDG placement, dependencies, frames, names, fidelity/gaps, lifecycle, supporting-data and local-process checklist. Import-direction lint remains enabled. The design TypeScript check also rejects unused imports and parameters. Automated and manual review cover all 20 sources, support/fixture indirection, token consumers, the 69 frame IDs plus the interaction route, and the implementation mappings above.
+The final audit follows the linked SDG placement, dependencies, frames, names, fidelity/gaps, lifecycle, supporting-data and local-process checklist. Import-direction lint remains enabled. The design TypeScript check also rejects unused imports and parameters. Automated and manual review cover all 20 sources, support/fixture indirection, token consumers, the 69 frame IDs plus the interaction route, and the implementation mappings above. Open findings: **0**. Missing mapping or capture evidence: **0**.
+
+| Final check | Verified result |
+| --- | --- |
+| Placement and source imports | 8 components, 9 modules, 3 surfaces; no upward or helper-hidden dependency. |
+| Supporting data and types | 19 reachable fixture files and 2 neutral support helpers; no scenes paths or business types in generic interfaces. |
+| Names, frames and captures | 69 built frames match declared IDs; 70 unique fixture routes include the deliberate interaction fixture; all relevant code lines are at most 140 characters. |
+| Lifecycle and mappings | 32 adopted parts mapped to real implementation consumers; 37 consumed tokens, including model-other; no orphan asset or abandoned alternative. |
+| Structural fidelity | All 28 retained surface theme images are pixel-identical; only the two active specimen crop proposals change design pixels. |
+| Runtime typography and regression | 16 existing waterfall tests pass. All 69 frames pass compare in each theme; the other 64 runtime frames are pixel-identical after the five-frame correction. Both cropped specimens pass refreshed comparison in each theme. |
+| Tooling | SDG 0.5.0 non-read-only check passes all 20 sources; repository check and strict design typecheck pass. |
 
 Codex implements and checks the authorized final batch; Leo reviews the two active crop proposals and the complete batch in gallery 4331. No further implementation batch is deferred. Review approval remains the only pending disposition.
