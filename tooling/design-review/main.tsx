@@ -532,10 +532,7 @@ function Content() {
     );
   else if (fixture === "cup-waterfall-scroll")
     content = <WaterfallFixture form="scroll" />;
-  else if (
-    fixture.startsWith("cup-turn-loading-") ||
-    fixture.startsWith("cup-turn-summary-summary-")
-  )
+  else if (fixture.startsWith("cup-turn-summary-summary-"))
     content = (
       <TurnRow
         threadId="fictional-task-0"

@@ -50,13 +50,7 @@ export default {
       }
       if (name === "cup-context-chart-selected-compaction")
         await page.locator(".ctx-targets button").nth(8).focus();
-      if (
-        [
-          "cup-turn-request-detail",
-          "cup-turn-narrative-loading",
-          "cup-turn-narrative-error",
-        ].includes(name)
-      )
+      if (["cup-turn-request-detail"].includes(name))
         await page.locator('[data-wf-id="request:r2"]').press("Enter");
       if (
         [
@@ -64,8 +58,6 @@ export default {
           "cup-request-details-loading",
           "cup-request-details-error",
           "cup-turn-request-detail",
-          "cup-turn-narrative-loading",
-          "cup-turn-narrative-error",
         ].includes(name)
       ) {
         const notes = page.locator(".wf-note > button");
@@ -125,16 +117,12 @@ export default {
           .click();
         await page.getByRole("slider").focus();
       }
-      if (
-        ["cup-turn-unknown", "cup-waterfall-waterfall-unknown"].includes(name)
-      ) {
+      if (["cup-waterfall-waterfall-unknown"].includes(name)) {
         const row = page.locator('[data-wf-id="request:r2"]');
         await row.press("ArrowRight");
         await row.evaluate((element) => element.blur());
       }
-      if (
-        ["cup-turn-running", "cup-waterfall-waterfall-running"].includes(name)
-      ) {
+      if (["cup-waterfall-waterfall-running"].includes(name)) {
         // The approved review state folds request #1; runtime defaults still
         // expand the slowest branch when the turn first opens.
         const row = page.locator('[data-wf-id="request:r1"]');
@@ -142,11 +130,7 @@ export default {
           await row.press("ArrowLeft");
         await row.evaluate((element) => element.blur());
       }
-      if (
-        ["cup-turn-loading-failure", "cup-turn-summary-summary-error"].includes(
-          name,
-        )
-      )
+      if (["cup-turn-summary-summary-error"].includes(name))
         await page.locator(".status-error").waitFor();
       const focus = {
         "cup-button-actions": '[aria-label="刷新"]',
@@ -157,8 +141,6 @@ export default {
         "cup-turn-summary-header-states": ".turn-head",
         "cup-waterfall-row-branches": '[data-wf-id="tool:t2"]',
         "cup-turn-request-detail": '[data-wf-id="request:r2"]',
-        "cup-turn-narrative-loading": '[data-wf-id="request:r2"]',
-        "cup-turn-narrative-error": '[data-wf-id="request:r2"]',
       }[name];
       if (focus) {
         await page.keyboard.press("Tab");

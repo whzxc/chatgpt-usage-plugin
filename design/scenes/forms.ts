@@ -1,13 +1,3 @@
-export const turnForms = [
-  "completed",
-  "running",
-  "failed",
-  "unknown",
-  "partial",
-  "request-detail",
-  "narrative-loading",
-  "narrative-error",
-] as const;
 export const toolForms = [
   "loading",
   "error",

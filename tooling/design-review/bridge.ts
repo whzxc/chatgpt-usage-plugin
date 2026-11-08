@@ -52,17 +52,9 @@ export async function callData<T>(
     return toolData(form) as T;
   }
   if (name === "usage_turn") {
-    if (
-      ["cup-turn-loading-pending", "cup-turn-summary-summary-loading"].includes(
-        fixture,
-      )
-    )
+    if (["cup-turn-summary-summary-loading"].includes(fixture))
       return pending(signal);
-    if (
-      ["cup-turn-loading-failure", "cup-turn-summary-summary-error"].includes(
-        fixture,
-      )
-    )
+    if (["cup-turn-summary-summary-error"].includes(fixture))
       throw Error("无法读取轮次");
     if (args.text) {
       if (

@@ -23,20 +23,21 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 
 | Current source | Part | Direct design consumers / surface reach | Runtime implementation |
 | --- | --- | --- | --- |
-| `components/button.tsx` | Button | Header, Minimap, RequestDetails, Status, TaskList, ToolBody, ToolDialog, Waterfall → entry, overview, task-list, task, tool-dialog, turn-loading, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Button |
+| `components/button.tsx` | Button | Header, Minimap, RequestDetails, Status, TaskList, ToolBody, ToolDialog, Waterfall → entry, overview, task-list, task, tool-dialog, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Button |
 | `components/header.tsx` | Header | overview, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Header |
-| `components/layout.tsx` | Panel | Other Panel-based component specimens; context, entry, overview, quota, task-list, task, turn-loading, turn, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Panel; production overview/task containers use [`layout.css`](../ui/shared/layout.css) |
+| `components/layout.tsx` | Panel | Other Panel-based component specimens; context, entry, overview, quota, task-list, task, turn, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Panel; production overview/task containers use [`layout.css`](../ui/shared/layout.css) |
 | `components/layout.tsx` | Stack | Waterfall and task → turn; specimen layouts for Search, SingleChoice, Status, QuotaBar, TurnHeader and WaterfallRow | [`layout.css`](../ui/shared/layout.css): `.stack` and feature flex containers |
 | `components/layout.tsx` | Grid | Legend, MetricGrid, QuotaSection, RequestDetails → overview, quota, usage-trend, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid; [`overview.tsx`](../ui/overview/overview.tsx): quota/legend grids; [`waterfall.tsx`](../ui/task/waterfall.tsx): request fact grid |
 | `components/layout.tsx` | Section | ContextChart, ContextAllocation, QuotaSection, TaskList, UsageChart, Waterfall; overview, task → context, quota, task-list, usage-trend, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): Section |
 | `components/metric-figure.tsx` | MetricFigure | MetricGrid → overview, task, turn | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid's `.figure` markup |
-| `components/metric-figure.tsx` | MetricGrid | Waterfall, overview, task | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid; [`overview.tsx`](../ui/overview/overview.tsx): Figures; [`task.tsx`](../ui/task/task.tsx): TaskSummary; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
+| `components/metric-figure.tsx` | MetricGrid | Waterfall, UsageSummary, task | [`controls.tsx`](../ui/components/ui/controls.tsx): MetricGrid; [`overview.tsx`](../ui/overview/overview.tsx): Figures; [`task.tsx`](../ui/task/task.tsx): TaskSummary; [`waterfall-head.tsx`](../ui/task/waterfall-head.tsx): WaterfallHead |
 | `components/search.tsx` | Search | TaskList → overview; module specimens | [`controls.tsx`](../ui/components/ui/controls.tsx): Search |
-| `components/single-choice.tsx` | SingleChoice | TaskList, UsageChart, overview → task-list, usage-trend | [`SingleChoice.tsx`](../ui/components/ui/SingleChoice.tsx): SingleChoice |
-| `components/status.tsx` | Status | RequestDetails, TaskList, ToolDialog, Waterfall, entry, overview, task, turn-loading → task-list, tool-dialog, turn | [`status.tsx`](../ui/shared/status.tsx): Status, Indexing, Failure |
+| `components/single-choice.tsx` | SingleChoice | TaskList, UsageChart, UsageSummary → overview | [`SingleChoice.tsx`](../ui/components/ui/SingleChoice.tsx): SingleChoice |
+| `components/status.tsx` | Status | RequestDetails, TaskList, ToolDialog, Waterfall, entry, overview, task → task-list, tool-dialog, turn | [`status.tsx`](../ui/shared/status.tsx): Status, Indexing, Failure |
 | `components/tooltip.tsx` | Tooltip | ContextChart, UsageChart → context, overview, task, usage-trend | [`controls.tsx`](../ui/components/ui/controls.tsx): Tooltip |
 | `modules/usage-trend.tsx` | Legend | UsageChart → overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): ModelLegend |
 | `modules/usage-trend.tsx` | UsageChart | overview; usage-trend module specimens | [`overview.tsx`](../ui/overview/overview.tsx): UsageChart |
+| `modules/usage-summary.tsx` | UsageSummary | overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): local usage Section, SingleChoice and Figures |
 | `modules/quota.tsx` | QuotaBar | QuotaSection → overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBar |
 | `modules/quota.tsx` | QuotaSection | overview; quota module specimens | [`overview.tsx`](../ui/overview/overview.tsx): QuotaBlock |
 | `modules/task-list.tsx` | TaskList | overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
@@ -44,8 +45,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/task-list.tsx` | TaskRow | TaskList → overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
 | `modules/context.tsx` | ContextChart | ContextSection → task; module specimens | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
 | `modules/context.tsx` | ContextAllocation | ContextSection → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
-| `modules/turn-summary.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
-| `surfaces/turn-loading.tsx` | Expanded loading/failure composition | Gallery region entry; TurnHeader + Status | [`turn.tsx`](../ui/task/turn.tsx): TurnRow |
+| `modules/turn-summary.tsx` | TurnHeader | Waterfall, task and module specimens → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
 | `modules/waterfall.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
 | `modules/waterfall.tsx` | TimeAxis | Waterfall and row specimen → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): `.wf-heading` tick markup |
 | `modules/waterfall.tsx` | WaterfallRow | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): TraceRow |
@@ -65,17 +65,16 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 | Source under `design/surfaces/` | Frames | Composition / runtime consumer | Governance state |
 | --- | --- | --- | --- |
 | `entry.tsx` | loading, failure | Panel + Status / [`root.tsx`](../ui/app/root.tsx) | Pending composition review |
-| `overview.tsx` | ready, indexing, unavailable, empty, stale, refreshing, unpriced, quota-unavailable | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Pending dependency and surface review |
-| `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Pending dependency and surface review |
-| `turn-loading.tsx` | pending, failure | TurnHeader + Status / TurnRow | Pending turn-summary migration |
-| `turn.tsx` | completed, running, failed, unknown, partial, request-detail, narrative-loading, narrative-error | Header + Waterfall / production Waterfall through review WaterfallFixture | Pending dependency and surface review |
+| `overview.tsx` | ready, indexing, unavailable, empty, stale, unpriced | Header, quota, figures, usage trend, task list / [`overview.tsx`](../ui/overview/overview.tsx) | Implemented; batch 6 Leo review pending |
+| `task.tsx` | ready, empty, indexing, unavailable, stale, long-title | Header, metrics, context, turn summaries / [`task.tsx`](../ui/task/task.tsx) | Implemented; batch 6 Leo review pending |
+| `turn.tsx` | completed, request-detail | Header + Waterfall / production Waterfall through review WaterfallFixture | Implemented; batch 6 Leo review pending |
 | `tool-dialog.tsx` | ready, loading, error, long, failed, copy-error, unknown | ToolDialog / production ToolDialog | Local states and duplicate ready specimen pending migration |
 
 ## Fixtures, captures and evidence
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`fixtures/tool-dialog.ts`](../design/fixtures/tool-dialog.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 85 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 77 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -251,7 +250,7 @@ Current owner: `modules/tool-dialog.tsx`. Approved 2026-11-08 by Leo. Explicit p
 
 `surfaces/tool-dialog.tsx` / ready is removed: identical to module dialog-ready. The other six surface frames remain until batch 6. ToolBody imports longOutput directly from fixtures and does not re-export it.
 
-TurnSummary composes the expanded TurnHeader and explicit loading/error feedback without a layout node. Its surface consumer remains turn-loading. RequestDetails.narrative is the body disclosure/load status, not a whole-module review form. ToolDialog accepts input, output, durationMs, exitCode, loading, error and copyError; fixture helpers map review names to those props. Dialog specimens keep the original 720px modal region inside 4px clearance; their review adapter mirrors that region without changing production CSS.
+TurnSummary composes the expanded TurnHeader and explicit loading/error feedback without a layout node. Its local loading and failure coverage now resides in module frames. RequestDetails.narrative is the body disclosure/load status, not a whole-module review form. ToolDialog accepts input, output, durationMs, exitCode, loading, error and copyError; fixture helpers map review names to those props. Dialog specimens keep the original 720px modal region inside 4px clearance; their review adapter mirrors that region without changing production CSS.
 
 No ownership correction is pending: TimeAxis, Minimap and WaterfallRow retain call/turn semantics; ToolBody retains tool payload, truncation and copy semantics. They remain in their approved feature modules. No new visual proposal is introduced; the recorded turn/partial 0–24s versus 0–24.96s fidelity item remains unchanged.
 
@@ -292,3 +291,24 @@ Governance status: implemented; Leo gallery review pending.
 | task/long-title | Retained: wrapped title changes Header and downstream geometry. |
 
 All six retained frames preserve their original light/dark pixels. No frame is a local context or row state combination.
+
+## Batch 6: turn
+
+Governance status: implemented; Leo gallery review pending.
+
+`fixtures/turn.ts` owns the two retained composition inputs. `surfaces/turn-loading.tsx` is removed: its only content was TurnSummary inside Panel. All eight removed fixture IDs and capture preparations are retired; module captures retain their independent routes. The interaction-only cup-waterfall-scroll fixture is unchanged.
+
+| Old surface frame | Coverage / disposition |
+| --- | --- |
+| turn/completed | Retained: Header, expanded turn and timeline page composition. |
+| turn/request-detail | Retained: selected request rail and inserted details alter the full timeline region geometry and alignment. |
+| turn/running | waterfall/waterfall-running; local running rows and hint, unchanged surrounding page arrangement. |
+| turn/failed | waterfall/waterfall-failed; local failure styling. |
+| turn/unknown | waterfall/waterfall-unknown; local unknown timing and warning. |
+| turn/partial | waterfall/waterfall-partial; local pagination and visible axis. The 0–24s fidelity record remains open below. |
+| turn/narrative-loading | request-details/loading; local body loading already covered, no separate page arrangement. |
+| turn/narrative-error | request-details/error; local body failure already covered, no separate page arrangement. |
+| turn-loading/pending | turn-summary/summary-loading; single-part wrapper removed. |
+| turn-loading/failure | turn-summary/summary-error; single-part wrapper removed. |
+
+Retained completed and request-detail surfaces remain pixel-identical in both themes. No combination-state matrix or new part frame is introduced.

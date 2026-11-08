@@ -1,22 +1,15 @@
-import { waterfallProps } from "../fixtures/waterfall";
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
-import { copy, variant } from "../scenes/usage";
-import { turnForms } from "../scenes/forms";
+import { turnFrames, turnScenes, turnTitle } from "../fixtures/turn";
 import { Panel } from "../components/layout";
 import { Header } from "../components/header";
 import { Waterfall } from "../modules/waterfall";
 export default () =>
-  turnForms.map((name) => (
-    <Frame
-      {...frame("turn", name)}
-      {...(name === "running"
-        ? { capture: { selector: ".panel", viewport: "720x2400" } }
-        : {})}
-    >
+  turnFrames.map((name) => (
+    <Frame {...frame("turn", name)}>
       <Panel>
-        <Header title={copy.task} back />
-        <Waterfall {...waterfallProps(name)} />
+        <Header title={turnTitle} back />
+        <Waterfall {...turnScenes[name]} />
       </Panel>
     </Frame>
   ));
