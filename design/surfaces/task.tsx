@@ -1,4 +1,4 @@
-import { Context } from "../modules/context";
+import { ContextSection } from "../modules/context";
 import { Frame } from "sdg";
 import { frame } from "../scenes/format";
 import {
@@ -43,7 +43,7 @@ export default () =>
                     history.filter((h) => h.task === 0),
                   ).filter((_, i) => [0, 1, 4, 5].includes(i))}
                 />
-                <Context />
+                <ContextSection />
                 <Section title="轮次 · 最新在前">
                   <Stack>
                     {[...primaryTurns].reverse().map((turn) => (

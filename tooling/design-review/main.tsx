@@ -27,6 +27,7 @@ import {
 } from "../../ui/overview/overview";
 import TaskPage, { CurrentContext } from "../../ui/task/task";
 import { ContextChart } from "../../ui/task/context-chart";
+import type { Thread } from "../../ui/shared/types";
 import { TurnHeader, TurnRow } from "../../ui/task/turn";
 import {
   Waterfall,
@@ -137,24 +138,14 @@ function SelectionFixture() {
     </Stack>
   );
 }
-function ContextFixture({
-  form,
-  allocation = true,
-}: {
-  form: string;
-  allocation?: boolean;
-}) {
-  const thread = threadData(form).thread!,
-    [expanded, setExpanded] = useState(new Set<string>());
+function ContextChartFixture({ thread }: { thread: Thread }) {
+  const [expanded, setExpanded] = useState(new Set<string>());
   return (
-    <>
-      <ContextChart
-        thread={thread}
-        expanded={expanded}
-        onOpen={(id) => setExpanded((s) => new Set(s).add(id))}
-      />
-      {allocation && <CurrentContext context={thread.context} />}
-    </>
+    <ContextChart
+      thread={thread}
+      expanded={expanded}
+      onOpen={(id) => setExpanded((s) => new Set(s).add(id))}
+    />
   );
 }
 function WaterfallFixture({
@@ -306,10 +297,18 @@ function Content() {
       />
     );
   else if (fixture.startsWith("cup-context-chart-"))
-    content = <ContextFixture form="selected-compaction" allocation={false} />;
-  else if (fixture.startsWith("cup-context-context-"))
     content = (
-      <ContextFixture form={fixture.slice("cup-context-context-".length)} />
+      <ContextChartFixture
+        thread={
+          threadData(
+            fixture.endsWith("missing-measurements")
+              ? "missing-measurements"
+              : fixture.endsWith("unknown-capacity")
+                ? "unknown-capacity"
+                : "ready",
+          ).thread!
+        }
+      />
     );
   else if (fixture.startsWith("cup-usage-trend-chart-")) {
     const hourly = fixture.endsWith("hourly-cost"),
@@ -609,9 +608,8 @@ function Content() {
     fixture === "cup-context-chart-selected-compaction" ||
     fixture === "cup-context-allocation-estimated" ||
     fixture === "cup-context-allocation-unknown-capacity" ||
-    fixture === "cup-context-context-selected-compaction" ||
-    fixture === "cup-context-context-missing-measurements" ||
-    fixture === "cup-context-context-unknown-capacity"
+    fixture === "cup-context-chart-missing-measurements" ||
+    fixture === "cup-context-chart-unknown-capacity"
   )
     return (
       <div

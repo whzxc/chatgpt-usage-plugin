@@ -42,8 +42,8 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `modules/task-list.tsx` | TaskList | overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskTable |
 | `modules/task-list.tsx` | TaskColumns | TaskList and row specimen → overview, task-list | [`overview.tsx`](../ui/overview/overview.tsx): TaskColumns |
 | `modules/task-list.tsx` | TaskRow | TaskList → overview; module specimens | [`overview.tsx`](../ui/overview/overview.tsx): TaskRow |
-| `modules/context.tsx` | ContextChart | Context → task; module specimens | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
-| `modules/context.tsx` | ContextAllocation | Context → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
+| `modules/context.tsx` | ContextChart | ContextSection → task; module specimens | [`context-chart.tsx`](../ui/task/context-chart.tsx): ContextChart |
+| `modules/context.tsx` | ContextAllocation | ContextSection → task; module specimens | [`task.tsx`](../ui/task/task.tsx): CurrentContext |
 | `components/turn-header.tsx` | TurnHeader | Waterfall, task, turn-loading → turn | [`turn.tsx`](../ui/task/turn.tsx): TurnHeader |
 | `surfaces/turn-loading.tsx` | Expanded loading/failure composition | Gallery region entry; TurnHeader + Status | [`turn.tsx`](../ui/task/turn.tsx): TurnRow |
 | `components/minimap.tsx` | Minimap | Waterfall → turn | [`waterfall.tsx`](../ui/task/waterfall.tsx): Minimap |
@@ -54,7 +54,7 @@ Paths in the source column are relative to `design/`. Consumer names refer to de
 | `components/tool-body.tsx` | ToolBody | ToolDialog → tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolBody |
 | `components/tool-dialog.tsx` | ToolDialog | tool-dialog | [`tool-dialog.tsx`](../ui/task/tool-dialog.tsx): ToolDialog |
 
-`Context` in `modules/context.tsx` composes ContextChart and ContextAllocation without adding a layout node; `surfaces/task.tsx` consumes it. Its runtime mapping is ContextChart + CurrentContext in the task page and ContextFixture in the review adapter.
+`ContextSection` in `modules/context.tsx` composes ContextChart and ContextAllocation with explicit `selected`, `gaps` and `unknownLimit` props, all false by default. `surfaces/task.tsx` consumes it. Its runtime mapping is ContextChart + CurrentContext in the task page. It emits no layout node; the task surface owns the gap between parts, so no standalone section frame is declared. Chart capture fixtures mount ContextChart alone through ContextChartFixture; allocation fixtures mount CurrentContext.
 
 `trendTip`, `stateLabel` and the `longOutput` re-export are support values rather than independent visual assets. `trendTip` lives in `fixtures/tooltip.ts`; the longOutput re-export remains pending fixture cleanup. Shared Lucide geometry is provided by SDG's Icon and the runtime [`Icons.tsx`](../ui/components/ui/Icons.tsx) wrapper.
 
@@ -75,7 +75,7 @@ The exact frame-to-fixture identifiers remain in [Declared forms](design.md#decl
 
 `design/fixtures/` owns this project's representative data and fixture projections. Feature fixtures now live in `fixtures/quota.ts`, `usage-trend.ts`, `task-list.ts` and `context.ts`. The temporary legacy locations are [`scenes/usage.ts`](../design/scenes/usage.ts) for shared calls, turns, histories and projections, [`tool.ts`](../design/scenes/tool.ts) and [`forms.ts`](../design/scenes/forms.ts) for remaining tool/turn content and states. Migrate these records into `fixtures/` with each feature's owning batch; new fixture data goes into `fixtures/`. [`scenes/format.ts`](../design/scenes/format.ts) remains a supporting formatting/frame helper outside the source layers.
 
-[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 68 frame fixtures and `cup-waterfall-scroll`.
+[`tooling/design-review/main.tsx`](../tooling/design-review/main.tsx) composes the mapped production parts; [`data.ts`](../tooling/design-review/data.ts) projects the same fictional records into production types; [`bridge.ts`](../tooling/design-review/bridge.ts) serves them. The manifest [`fixtures.json`](../tooling/design-review/fixtures.json) includes all 67 frame fixtures and `cup-waterfall-scroll`.
 
 [`fixtures/button.ts`](../design/fixtures/button.ts) supplies the same five actions to the design and runtime Button specimens. The `components/button.tsx` / `actions` identity and `cup-button-actions` route are unchanged, so the existing gallery and fixture manifests retain their entries. The specimen capture selects `[data-design-button-actions]` and fits the content with 4px focus clearance.
 
@@ -190,10 +190,10 @@ Current owner: `modules/context.tsx`. Migration state: implemented; Leo gallery 
 | `components/context-chart.tsx` / `selected-compaction` | `modules/context.tsx` / `chart-selected-compaction` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
 | `components/context-allocation.tsx` / `estimated` | `modules/context.tsx` / `allocation-estimated` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
 | `components/context-allocation.tsx` / `unknown-capacity` | `modules/context.tsx` / `allocation-unknown-capacity` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
-| `surfaces/context.tsx` / `selected-compaction` | `modules/context.tsx` / `context-selected-compaction` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
-| `surfaces/context.tsx` / `missing-measurements` | `modules/context.tsx` / `context-missing-measurements` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
-| `surfaces/context.tsx` / `unknown-capacity` | `modules/context.tsx` / `context-unknown-capacity` | Moved with equivalent fixture content; wrapper surface removed when applicable. |
+| `surfaces/context.tsx` / `selected-compaction` | `modules/context.tsx` / `chart-selected-compaction` | Chart selection belongs to ContextChart; unchanged allocation is covered by allocation-estimated. |
+| `surfaces/context.tsx` / `missing-measurements` | `modules/context.tsx` / `chart-missing-measurements` | Missing measurements belong to ContextChart; unchanged allocation is covered by allocation-estimated. |
+| `surfaces/context.tsx` / `unknown-capacity` | `modules/context.tsx` / `chart-unknown-capacity`, `allocation-unknown-capacity` | Each part owns its capacity state; no combined-state frame. |
 
-The removed `surfaces/context.tsx` contained local feature states only. Its complete state coverage now belongs to the module; no independent page geometry is lost. Current fixture IDs and selector captures are listed in `design.md`.
+The context module declares exactly five part frames: chart-selected-compaction, chart-missing-measurements, chart-unknown-capacity, allocation-estimated and allocation-unknown-capacity. The removed `surfaces/context.tsx` contained local states; the part frames replace its combined-state coverage. Current fixture IDs and selector captures are listed in `design.md`.
 
 Module migration adds no visual proposal. Existing narrower-specimen proposals remain separate; the four modules preserve the 672px content width and original state content.

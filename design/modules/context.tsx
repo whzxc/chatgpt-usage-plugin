@@ -233,15 +233,23 @@ export function ContextAllocation({
   );
 }
 
-export function Context({ form = "ready" }: { form?: string }) {
+export function ContextSection({
+  selected = false,
+  gaps = false,
+  unknownLimit = false,
+}: {
+  selected?: boolean;
+  gaps?: boolean;
+  unknownLimit?: boolean;
+}) {
   return (
     <>
       <ContextChart
-        unknownLimit={form === "unknown-capacity"}
-        selected={form === "selected-compaction"}
-        gaps={form === "missing-measurements"}
+        unknownLimit={unknownLimit}
+        selected={selected}
+        gaps={gaps}
       />
-      <ContextAllocation unknownLimit={form === "unknown-capacity"} />
+      <ContextAllocation unknownLimit={unknownLimit} />
     </>
   );
 }
@@ -257,6 +265,30 @@ export default () => [
       class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
     >
       <ContextChart selected />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("context", "chart-missing-measurements")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <ContextChart gaps />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("context", "chart-unknown-capacity")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <ContextChart unknownLimit />
     </div>
   </Frame>,
   <Frame
@@ -281,42 +313,6 @@ export default () => [
       class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
     >
       <ContextAllocation unknownLimit />
-    </div>
-  </Frame>,
-  <Frame
-    {...frame("context", "context-selected-compaction")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Context form="selected-compaction" />
-    </div>
-  </Frame>,
-  <Frame
-    {...frame("context", "context-missing-measurements")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Context form="missing-measurements" />
-    </div>
-  </Frame>,
-  <Frame
-    {...frame("context", "context-unknown-capacity")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Context form="unknown-capacity" />
     </div>
   </Frame>,
 ];

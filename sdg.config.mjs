@@ -52,12 +52,7 @@ export default {
           .nth(name.endsWith("hourly-cost") ? 14 : 4)
           .click();
       }
-      if (
-        [
-          "cup-context-context-selected-compaction",
-          "cup-context-chart-selected-compaction",
-        ].includes(name)
-      )
+      if (name === "cup-context-chart-selected-compaction")
         await page.locator(".ctx-targets button").nth(8).focus();
       if (
         [

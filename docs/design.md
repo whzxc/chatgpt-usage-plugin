@@ -47,7 +47,7 @@ The selected direction remains Quiet Native, Chinese product copy, light/dark ho
 | `modules/quota.tsx` | QuotaBar, QuotaSection | `modules/quota.tsx` |
 | `modules/usage-trend.tsx` | UsageChart, Legend | `modules/usage-trend.tsx` |
 | `modules/task-list.tsx` | TaskList, TaskColumns, TaskRow | `modules/task-list.tsx` |
-| `modules/context.tsx` | ContextChart, ContextAllocation | `modules/context.tsx` |
+| `modules/context.tsx` | ContextChart, ContextAllocation, ContextSection | `modules/context.tsx` |
 | `modules/turn-summary.tsx` | TurnHeader and expanded loading/failure states | `components/turn-header.tsx`, `surfaces/turn-loading.tsx` |
 | `modules/waterfall.tsx` | Minimap, TimeAxis, WaterfallRow, Waterfall | `components/minimap.tsx`, `components/waterfall-row.tsx`, `components/waterfall.tsx` |
 | `modules/request-details.tsx` | RequestDetails | `components/request-details.tsx` |
@@ -188,15 +188,16 @@ Every name below resolves to an implementation fixture. Captures use viewport `7
 | `modules/task-list.tsx` | `row-selection-long` | `cup-task-list-row-selection-long` |
 | `modules/task-list.tsx` | `list-selected` | `cup-task-list-list-selected` |
 | `modules/context.tsx` | `chart-selected-compaction` | `cup-context-chart-selected-compaction` |
+| `modules/context.tsx` | `chart-missing-measurements` | `cup-context-chart-missing-measurements` |
+| `modules/context.tsx` | `chart-unknown-capacity` | `cup-context-chart-unknown-capacity` |
 | `modules/context.tsx` | `allocation-estimated` | `cup-context-allocation-estimated` |
 | `modules/context.tsx` | `allocation-unknown-capacity` | `cup-context-allocation-unknown-capacity` |
-| `modules/context.tsx` | `context-selected-compaction` | `cup-context-context-selected-compaction` |
-| `modules/context.tsx` | `context-missing-measurements` | `cup-context-context-missing-measurements` |
-| `modules/context.tsx` | `context-unknown-capacity` | `cup-context-context-unknown-capacity` |
+
+Context states belong to their parts: chart selection, missing measurements and unknown capacity; allocation estimates and unknown capacity. `ContextSection` forwards explicit `selected`, `gaps` and `unknownLimit` props with false defaults. It emits the two parts without a layout node, so the task surface owns their spacing and there is no standalone section frame.
 
 ## Approval scope
 
-The library contains 15 component sources, 4 module sources and 6 surface sources, with 68 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
+The library contains 15 component sources, 4 module sources and 6 surface sources, with 67 declared frames. The module and surface forms cover entry initialization; overview and quota; task search and selection; task summaries and empty/failure/stale forms; context, compaction and unknown capacity; turn loading, waterfall execution states, paging and narrative detail; and tool dialogs.
 
 Changes relative to the selected specimen retain the palette, type scale and flat chrome while deriving all displayed metrics from records, distinguishing model/tool density in the minimap, wrapping long text, anchoring chart inspection below data, and adding semantic feedback and modal treatment. Only the dialog receives a shadow. Header repetition is removed when turn metrics are already expanded.
 
@@ -215,7 +216,7 @@ sdg compare --all
 CUP_REVIEW_THEME=dark sdg compare --all
 ```
 
-`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 68 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
+`startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 67 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
 
 For viewport-following interaction review, open `/__design/review?fixture=cup-waterfall-scroll`. It repeats the fictional turn records with distinct IDs and timestamps across six minutes in a 480px scroll container. Scroll through the calls or navigate with the minimap; the visible range and selection window follow the visible rows. With the system's reduced-motion preference enabled, range changes apply immediately without interpolation. This fixture has no additional design frame and is excluded from the packaged plugin with the other review data.
 
