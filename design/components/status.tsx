@@ -1,4 +1,4 @@
-import { Frame, Icon } from "sdg";
+import { Frame, Icon } from "adg";
 import { frame } from "../support/frame";
 import { number } from "../support/format";
 import {

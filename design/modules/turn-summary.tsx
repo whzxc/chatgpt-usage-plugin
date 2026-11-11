@@ -1,5 +1,5 @@
 import { turnHeaderExamples } from "../fixtures/turn-summary";
-import { Frame, Icon } from "sdg";
+import { Frame, Icon } from "adg";
 import { frame } from "../support/frame";
 import { compact, money, duration } from "../support/format";
 import { baseTurn, totals, type Turn } from "../fixtures/usage";

@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { taskFrames, taskScene } from "../fixtures/task";
 import { Panel, Section, Stack } from "../components/layout";

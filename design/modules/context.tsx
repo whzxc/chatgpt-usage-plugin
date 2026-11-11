@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { compact, axisCompact, money, percent } from "../support/format";
 import { baseTurn, cost } from "../fixtures/usage";

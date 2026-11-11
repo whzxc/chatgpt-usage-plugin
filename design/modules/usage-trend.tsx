@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { compact, axisCompact, money } from "../support/format";
 import { modelTones, copy, modelLegend } from "../fixtures/usage";

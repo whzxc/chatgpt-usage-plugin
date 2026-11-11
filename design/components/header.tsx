@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { headerExamples, headerUpdated } from "../fixtures/header";
 import { Button } from "./button";

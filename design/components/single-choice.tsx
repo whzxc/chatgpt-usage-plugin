@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { selectionExamples } from "../fixtures/single-choice";
 import { Stack } from "./layout";

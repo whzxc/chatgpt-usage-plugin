@@ -1,4 +1,4 @@
-import { Frame, Icon } from "sdg";
+import { Frame, Icon } from "adg";
 import { frame } from "../support/frame";
 import { Stack } from "./layout";
 import { searchExamples } from "../fixtures/search";

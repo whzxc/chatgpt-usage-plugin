@@ -2,7 +2,7 @@
 
 Status: **approved by the user on 2026-11-06 at design commit `2f983b9`**. Approval covers the original visual baseline of every source and frame listed below. Leo approved governance batches 0 and 1 (ownership, mappings, exceptions, tokens and Button crop) on 2026-11-08. Leo approved batch 2 (all six generic families and three frame renames) on 2026-11-08. Leo approved batch 3 (quota, usage-trend, task-list, context and its rework) on 2026-11-08. Leo approved batches 4 and 5 (waterfall, turn-summary, request-details and tool-dialog) on 2026-11-08. Leo approved batch 6 structural work and both ToolDialog/partial fidelity proposals on 2026-11-08. Leo approved the final data/lifecycle work, runtime typography correction and Search/Tooltip crops on 2026-11-08. Governance is complete; see [the asset register](design-assets.md).
 
-[Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/svg-design-gallery/blob/main/docs/design-toolkit.md) · [Asset rules](https://github.com/whzxc/svg-design-gallery/blob/main/docs/asset-rules.md) · [Asset register](design-assets.md)
+[Development](../README.md#development) · [Data contracts](data-tools.md) · [Toolkit contract](https://github.com/whzxc/agent-design-gallery/blob/main/docs/design-toolkit.md) · [Asset rules](https://github.com/whzxc/agent-design-gallery/blob/main/docs/asset-rules.md) · [Asset register](design-assets.md)
 
 ## Direction
 
@@ -12,7 +12,7 @@ The runtime implements this direction with shared React controls and host-bound 
 
 ## Source and capture contract
 
-Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
+Use the global `adg` version 0.5.0 or later. `adg.config.mjs` starts the isolated design-review server on port 5191, resolves the declared fixtures, and prepares selections through runtime controls. No toolkit dependency is added to this project.
 
 - `design/tokens.css` owns the approved semantic palette and geometry.
 - `design/components/` keeps Button, Header, Layout, MetricFigure, Search, SingleChoice, Status and Tooltip. All feature parts now live in modules; these eight generic families remain in components.
@@ -27,18 +27,18 @@ Use the global `sdg` version 0.5.0 or later. `sdg.config.mjs` starts the isolate
 - Theme selection belongs to the host. The same frame renders light and dark; there are no theme or width matrices.
 
 ```sh
-sdg check
-sdg render
+adg check
+adg render
 npx --no-install tsc --noEmit -p design/tsconfig.json
 ```
 
-Renders are written to `output/design/<source>/<frame>-light.png` and `-dark.png`. `output/` and `design/.sdg/` are ignored. Keep each token declaration on one line, including font stacks and shadows, as required by the toolkit parser.
+Renders are written to `output/design/<source>/<frame>-light.png` and `-dark.png`. `output/` and `design/.adg/` are ignored. Keep each token declaration on one line, including font stacks and shadows, as required by the toolkit parser.
 
 The Button `actions` frame is content-sized, with 4px clearance for its 2px focus outline and 2px outline offset. Its runtime capture selects `[data-design-button-actions]`; both sources use the same action fixture. Button defaults and all composed-panel frames retain the original visual baseline.
 
 ## Ownership and review
 
-SDG discovers sources in `components`, `modules`, `surfaces` order. Import-direction checking remains enabled. Fixtures and the formatting/frame helpers are supporting files. This project has no artwork or studies; image dimensions and budgets are currently not applicable.
+ADG discovers sources in `components`, `modules`, `surfaces` order. Import-direction checking remains enabled. Fixtures and the formatting/frame helpers are supporting files. This project has no artwork or studies; image dimensions and budgets are currently not applicable.
 
 The selected direction remains Quiet Native, Chinese product copy, light/dark host themes and a 720px review basis. Supported installed targets are macOS Apple Silicon and Windows x64. Review captures run on macOS; platform and host-resize acceptance remain part of runtime acceptance.
 
@@ -58,7 +58,7 @@ Codex proposes and implements each authorized batch, checks the source and revie
 
 Batches 0–5, including context rework, are approved. Batch 6 extracts surface projections and retires duplicate local states; Leo approved it on 2026-11-08. The turn summary owner remains `turn-summary`, distinct from `surfaces/turn`.
 
-For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `sdg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `sdg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
+For each batch, update affected imports, captures, gallery entries, fixture routes and asset mappings together. Run `adg check`, render every affected frame in both themes, compare against the preceding baseline and inspect the result. Keep scope, outstanding gaps and review status in the asset register. Open the gallery with `adg open design --port=4331`; if occupied, select another free port other than 4310. Pause for Leo before the next authorized batch group. Full runtime comparison and interaction acceptance retain the separate acceptance workflow below.
 
 ## Token-to-host mapping
 
@@ -213,10 +213,10 @@ Shared buttons, headers, sections, figures, search, tooltips, single choices and
 ```sh
 npm run dev:design
 # http://127.0.0.1:5191/__design/review?fixture=cup-overview-ready
-sdg compare surfaces/overview.tsx --frame=ready
+adg compare surfaces/overview.tsx --frame=ready
 # Acceptance owns the complete sweep:
-sdg compare --all
-CUP_REVIEW_THEME=dark sdg compare --all
+adg compare --all
+CUP_REVIEW_THEME=dark adg compare --all
 ```
 
 `startDesignDev` in `tooling/design-dev.mjs` starts Vite without the backend. The dev-only `/__design/review` entry renders production React components. Its Vite resolver replaces only the panel bridge with `tooling/design-review/bridge.ts`; the fixture projections in `data.ts` convert the fictional design scene records to the production tool types. The fixture manifest contains the 69 names in the declared-forms table and the interaction fixture `cup-waterfall-scroll`. `npm run check` includes the fixture projections and compositions.
@@ -235,4 +235,4 @@ The approved waterfall-partial fixture uses the runtime padded visible-row range
 
 Request titles come from the indexed reasoning summary, falling back to the request number. The fictional bridge provides matching summaries for the approved request titles; full narrative text is loaded separately. Real tasks retain their recorded summaries. The unknown-start turn fixture explicitly opens its second branch through the keyboard, and the running turn fixture folds its first branch to match the approved static forms. Runtime default folding still follows measured duration, failure and running state.
 
-SDG comparison covers every declared frame in both themes. Runtime interaction and platform acceptance retain the project acceptance workflow before product release.
+ADG comparison covers every declared frame in both themes. Runtime interaction and platform acceptance retain the project acceptance workflow before product release.

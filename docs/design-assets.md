@@ -1,10 +1,10 @@
 # Design asset register
 
-[Direction, frames and review](design.md) · [SDG asset rules](https://github.com/whzxc/svg-design-gallery/blob/main/docs/asset-rules.md)
+[Direction, frames and review](design.md) · [ADG asset rules](https://github.com/whzxc/agent-design-gallery/blob/main/docs/asset-rules.md)
 
 ## Adoption and review
 
-Quiet Native, light/dark host themes, Chinese product text and the 720px review basis remain the selected direction. Minimum SDG version: 0.5.0. All 32 reusable parts below have real implementation consumers, including internal and transitive use. Leo approved the final specimen crops on 2026-11-08.
+Quiet Native, light/dark host themes, Chinese product text and the 720px review basis remain the selected direction. Minimum ADG version: 0.5.0. All 32 reusable parts below have real implementation consumers, including internal and transitive use. Leo approved the final specimen crops on 2026-11-08.
 
 Leo approved the original visual baseline at `2f983b9` on 2026-11-06. Governance batches 0–6, context rework and both ToolDialog/partial fidelity proposals are approved **2026-11-08 by Leo**. Leo approved the final data/lifecycle work, runtime typography correction and both Search/Tooltip crop proposals on 2026-11-08. No pending or abandoned proposal or study remains.
 
@@ -101,7 +101,7 @@ cup-waterfall-scroll is the deliberate interaction-only fixture: six fictional m
 
 ## Conformance and final review
 
-The final audit follows the linked SDG placement, dependencies, frames, names, fidelity/gaps, lifecycle, supporting-data and local-process checklist. Import-direction lint remains enabled. The design TypeScript check also rejects unused imports and parameters. Automated and manual review cover all 20 sources, support/fixture indirection, token consumers, the 69 frame IDs plus the interaction route, and the implementation mappings above. Open findings: **0**. Missing mapping or capture evidence: **0**.
+The final audit follows the linked ADG placement, dependencies, frames, names, fidelity/gaps, lifecycle, supporting-data and local-process checklist. Import-direction lint remains enabled. The design TypeScript check also rejects unused imports and parameters. Automated and manual review cover all 20 sources, support/fixture indirection, token consumers, the 69 frame IDs plus the interaction route, and the implementation mappings above. Open findings: **0**. Missing mapping or capture evidence: **0**.
 
 | Final check | Verified result |
 | --- | --- |
@@ -111,6 +111,6 @@ The final audit follows the linked SDG placement, dependencies, frames, names, f
 | Lifecycle and mappings | 32 adopted parts mapped to real implementation consumers; 37 consumed tokens, including model-other; no orphan asset or abandoned alternative. |
 | Structural fidelity | All 28 retained surface theme images are pixel-identical; only the two approved specimen crops change design pixels. |
 | Runtime typography and regression | 16 existing waterfall tests pass. All 69 frames pass compare in each theme; the other 64 runtime frames are pixel-identical after the five-frame correction. Both cropped specimens pass refreshed comparison in each theme. |
-| Tooling | SDG 0.5.0 non-read-only check passes all 20 sources; repository check and strict design typecheck pass. |
+| Tooling | ADG 0.5.0 non-read-only check passes all 20 sources; repository check and strict design typecheck pass. |
 
 Leo approved the complete final batch and both Search/Tooltip crops on 2026-11-08. Governance is complete, with no deferred implementation batch, open finding or pending review.

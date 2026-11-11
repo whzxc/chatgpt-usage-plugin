@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { turnFrames, turnScenes, turnTitle } from "../fixtures/turn";
 import { Panel } from "../components/layout";

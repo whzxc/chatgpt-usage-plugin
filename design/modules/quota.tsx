@@ -4,7 +4,7 @@ import {
   quotaAccount,
   quotaStatusExamples,
 } from "../fixtures/quota";
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { percent, number } from "../support/format";
 

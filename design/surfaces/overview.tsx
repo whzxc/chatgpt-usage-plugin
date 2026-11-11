@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { overviewFrames, overviewScene } from "../fixtures/overview";
 import { Panel } from "../components/layout";

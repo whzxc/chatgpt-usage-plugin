@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { tasks, copy, type TaskRowData } from "../fixtures/usage";
 import { Section } from "../components/layout";

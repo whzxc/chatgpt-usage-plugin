@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { bytes, utf8, duration } from "../support/format";
 import { Button } from "../components/button";

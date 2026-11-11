@@ -9,4 +9,4 @@ plugins/usage/bin/
 *.key
 *.pem
 output/
-design/.sdg/
+design/.adg/

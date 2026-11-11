@@ -15,7 +15,7 @@
     "plugin:dev": "node tooling/plugin-dev.mjs",
     "plugin:build": "node tooling/package.mjs",
     "plugin:check": "node tooling/check-plugin.mjs",
-    "check:format": "prettier --check \"server/**/*.ts\" runtime/check-runtime.cjs \"ui/**/*.{ts,tsx,css}\" \"tooling/*.mjs\" \"tooling/design-review/*.{ts,tsx}\" sdg.config.mjs",
+    "check:format": "prettier --check \"server/**/*.ts\" runtime/check-runtime.cjs \"ui/**/*.{ts,tsx,css}\" \"tooling/*.mjs\" \"tooling/design-review/*.{ts,tsx}\" adg.config.mjs",
     "dev:design": "node tooling/design-dev.mjs"
   },
   "devDependencies": {

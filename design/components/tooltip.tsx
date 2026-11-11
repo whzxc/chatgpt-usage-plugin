@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { tooltipExample } from "../fixtures/tooltip";
 export function Tooltip({

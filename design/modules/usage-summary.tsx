@@ -1,4 +1,4 @@
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 import { copy } from "../fixtures/usage";
 import { usageSummaryExamples } from "../fixtures/overview";

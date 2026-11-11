@@ -1,5 +1,5 @@
 import { layoutExample } from "../fixtures/layout";
-import { Frame } from "sdg";
+import { Frame } from "adg";
 import { frame } from "../support/frame";
 export function Panel({ children }: { children?: unknown }) {
   return (
