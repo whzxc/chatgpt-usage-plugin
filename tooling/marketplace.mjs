@@ -13,8 +13,10 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
+const temporaryRoot = fileURLToPath(new URL('../output/tmp/', import.meta.url));
+await mkdir(temporaryRoot, { recursive: true });
 const version = JSON.parse(await readFile("package.json", "utf8")).version;
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const git = (cwd, ...args) =>
@@ -38,7 +40,7 @@ if (mode === "assemble") {
     throw new Error("assemble <artifacts> <empty-output>");
   await mkdir(output, { recursive: true });
   if ((await readdir(output)).length) throw new Error("Output must be empty");
-  const temp = await mkdtemp(path.join(tmpdir(), "usage-marketplace-"));
+  const temp = await mkdtemp(path.join(temporaryRoot, "usage-marketplace-"));
   try {
     const roots = [];
     const binaries = {};
@@ -107,7 +109,7 @@ if (mode === "assemble") {
   const repository = process.env.GITHUB_REPOSITORY;
   if (repository !== "whzxc/chatgpt-usage-plugin")
     throw new Error("Unexpected destination repository");
-  const temp = await mkdtemp(path.join(tmpdir(), "usage-publish-"));
+  const temp = await mkdtemp(path.join(temporaryRoot, "usage-publish-"));
   try {
     await cp(source, temp, { recursive: true });
     for (const [file, expected] of Object.entries(info.files)) {

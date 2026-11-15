@@ -1,11 +1,13 @@
-import { readFile, stat, mkdtemp, rm, access } from "node:fs/promises";
+import { mkdir, readFile, stat, mkdtemp, rm, access } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
-import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { checkManifests } from "./plugin-manifests.mjs";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 
+const temporaryRoot = fileURLToPath(new URL('../output/tmp/', import.meta.url));
+await mkdir(temporaryRoot, { recursive: true });
 const directory = path.resolve(
   process.argv[2] ||
     `dist/package/${process.platform === "win32" ? "windows-x86_64" : "darwin-aarch64"}/plugins/usage`,
@@ -40,7 +42,7 @@ if (
   pkg.version
 )
   throw new Error("Plugin server version mismatch");
-const state = await mkdtemp(path.join(tmpdir(), "usage-plugin-check-"));
+const state = await mkdtemp(path.join(temporaryRoot, "usage-plugin-check-"));
 const client = new Client({
   name: "usage-artifact-check",
   version: pkg.version,
