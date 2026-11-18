@@ -123,14 +123,9 @@ export function ToolDialog({
               </p>
             )}
           </div>
-          <button
-            ref={closeRef}
-            className="icon-btn"
-            aria-label="关闭"
-            onClick={close}
-          >
+          <Button ref={closeRef} label="关闭" onClick={close}>
             <CloseIcon />
-          </button>
+          </Button>
         </header>
         {error ? (
           <Status kind="error" message={error} retry={() => void load()} />

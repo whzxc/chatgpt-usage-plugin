@@ -14,7 +14,7 @@
   --wf-map-width: 100%;
   --wf-llm: var(--model-primary);
   --wf-tool: var(--tool);
-  font-size: 12px;
+  font-size: var(--text-meta);
   min-width: 0;
 }
 .wf-secondary-stats {
@@ -22,14 +22,14 @@
   flex-wrap: wrap;
   gap: 8px 16px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-meta);
 }
 .wf-sticky {
   position: sticky;
   top: 0;
   z-index: 3;
   background: var(--canvas);
-  border-top: 1px solid var(--border);
+  border-top: var(--stroke-thin) solid var(--border);
   padding-top: 20px;
   display: flex;
   flex-direction: column;
@@ -46,7 +46,7 @@
 .wf-heading {
   color: var(--muted);
   align-items: center;
-  font-size: 12px;
+  font-size: var(--text-meta);
 }
 .wf-axis {
   display: flex;
@@ -74,19 +74,19 @@
   --wf-tone: var(--danger);
 }
 .wf-group.has-details {
-  border-left: 2px solid var(--accent);
+  border-left: var(--stroke-focus) solid var(--accent);
 }
 .wf-row {
   padding-block: 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: var(--stroke-thin) solid var(--border);
   cursor: pointer;
 }
 .wf-row:hover {
   background: var(--selected);
 }
 .wf-item:focus-visible > .wf-row {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+  outline: var(--stroke-focus) solid var(--focus);
+  outline-offset: var(--stroke-focus);
   border-radius: var(--radius-control);
 }
 .wf-item[aria-describedby] > .wf-row {
@@ -108,16 +108,19 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
 }
 .wf-tool .wf-label {
-  font: 12px/18px var(--mono);
+  font-size: var(--text-meta);
+  line-height: var(--line-body);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-regular);
 }
 .wf-summary {
   margin-top: 4px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-meta);
 }
 .wf-fold-slot {
   flex-shrink: 0;
@@ -179,7 +182,7 @@
   left: calc((var(--mark) - var(--wf-start)) * var(--wf-unit) * 1%);
   top: 0;
   height: 12px;
-  border-left: 2px solid var(--tool);
+  border-left: var(--stroke-focus) solid var(--tool);
 }
 .wf-error-mark {
   border-color: var(--danger);
@@ -192,14 +195,14 @@
   justify-content: space-between;
   gap: 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-meta);
 }
 .wf-values > span:last-child {
   text-align: right;
 }
 .wf-slow-value {
   color: var(--tool-text);
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
 }
 .wf-no-time {
   color: var(--muted);
@@ -222,8 +225,8 @@
   gap: 16px;
 }
 .wf-details h3 {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
 }
 .wf-details dl {
   display: grid;
@@ -237,11 +240,11 @@
   min-width: 0;
 }
 .wf-details dt {
-  font-size: 12px;
+  font-size: var(--text-meta);
   color: var(--muted);
 }
 .wf-details dd {
-  font-size: 14px;
+  font-size: var(--text-body);
   overflow-wrap: anywhere;
 }
 .wf-note {
@@ -250,8 +253,8 @@
   gap: 8px;
 }
 .wf-note > button {
-  font-size: 12px;
-  line-height: 18px;
+  font-size: var(--text-meta);
+  line-height: var(--line-body);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -262,7 +265,7 @@
   display: none;
 }
 .wf-note > button > span:first-of-type {
-  font-weight: 600;
+  font-weight: var(--weight-semibold);
   flex-shrink: 0;
 }
 .wf-note-summary {
@@ -270,8 +273,8 @@
   overflow-wrap: anywhere;
 }
 .wf-full-text p {
-  font-size: 14px;
-  line-height: 1.625;
+  font-size: var(--text-body);
+  line-height: var(--line-relaxed);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -283,7 +286,7 @@
   flex-direction: column;
   gap: 8px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--text-meta);
 }
 .wf-map-head,
 .wf-map-foot {
@@ -329,7 +332,7 @@
   inset-block: 0;
   left: var(--wf-map-start);
   width: var(--wf-map-width);
-  border: 2px solid var(--focus);
+  border: var(--stroke-focus) solid var(--focus);
   border-radius: var(--radius-control);
   pointer-events: none;
 }
@@ -338,7 +341,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  border-left: 2px solid var(--tool);
+  border-left: var(--stroke-focus) solid var(--tool);
   pointer-events: none;
 }
 .wf-map-cursor {
@@ -353,8 +356,8 @@
   color: var(--muted);
 }
 .waterfall > .status {
-  font-size: 14px;
-  line-height: 21px;
+  font-size: var(--text-body);
+  line-height: var(--line-body);
   margin-top: 16px;
 }
 @container waterfall (width < 560px) {

@@ -15,7 +15,7 @@ import {
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-const temporaryRoot = fileURLToPath(new URL('../output/tmp/', import.meta.url));
+const temporaryRoot = fileURLToPath(new URL("../output/tmp/", import.meta.url));
 await mkdir(temporaryRoot, { recursive: true });
 const version = JSON.parse(await readFile("package.json", "utf8")).version;
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");

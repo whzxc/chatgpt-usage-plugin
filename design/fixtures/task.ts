@@ -5,7 +5,6 @@ export const taskFrames = [
   "indexing",
   "unavailable",
   "stale",
-  "long-title",
 ] as const;
 export function taskScene(name: string) {
   return {

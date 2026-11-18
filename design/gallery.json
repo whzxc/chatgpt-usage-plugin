@@ -1,43 +1,41 @@
 {
   "groups": [
     {
-      "title": "Usage overview",
+      "title": "Components",
       "assets": [
-        "surfaces/overview.tsx"
-      ]
-    },
-    {
-      "title": "Task usage",
-      "assets": [
-        "surfaces/task.tsx",
-        "surfaces/turn.tsx"
-      ]
-    },
-    {
-      "title": "Feature modules",
-      "assets": [
-        "modules/quota.tsx",
-        "modules/usage-trend.tsx",
-        "modules/task-list.tsx",
-        "modules/context.tsx",
-        "modules/waterfall.tsx",
-        "modules/turn-summary.tsx",
-        "modules/request-details.tsx",
-        "modules/tool-dialog.tsx",
-        "modules/usage-summary.tsx"
-      ]
-    },
-    {
-      "title": "Shared components",
-      "assets": [
-        "components/button.tsx",
-        "components/header.tsx",
         "components/layout.tsx",
-        "components/metric-figure.tsx",
-        "components/search.tsx",
+        "components/button.tsx",
         "components/single-choice.tsx",
+        "components/header.tsx",
+        "components/metric-figure.tsx",
         "components/status.tsx",
         "components/tooltip.tsx"
+      ]
+    },
+    {
+      "title": "Overview",
+      "assets": [
+        "modules/quota.tsx",
+        "modules/usage-summary.tsx",
+        "modules/usage-trend.tsx",
+        "modules/task-list.tsx"
+      ]
+    },
+    {
+      "title": "Task and turn",
+      "assets": [
+        "modules/context.tsx",
+        "modules/turn-summary.tsx",
+        "modules/waterfall/index.tsx",
+        "modules/tool-dialog.tsx"
+      ]
+    },
+    {
+      "title": "Panels",
+      "assets": [
+        "surfaces/overview.tsx",
+        "surfaces/task.tsx",
+        "surfaces/turn.tsx"
       ]
     }
   ]

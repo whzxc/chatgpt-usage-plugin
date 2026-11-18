@@ -5,7 +5,7 @@ import { compact, money, duration } from "../support/format";
 import { baseTurn, totals, type Turn } from "../fixtures/usage";
 import { Stack } from "../components/layout";
 import { Status } from "../components/status";
-export const stateLabel = {
+const stateLabel = {
   done: "已完成",
   running: "进行中",
   failed: "失败",
@@ -15,10 +15,12 @@ export function TurnHeader({
   turn = baseTurn,
   open = false,
   focus = false,
+  fast = false,
 }: {
   turn?: Turn;
   open?: boolean;
   focus?: boolean;
+  fast?: boolean;
 }) {
   const t = totals(turn.calls);
   return (
@@ -46,6 +48,7 @@ export function TurnHeader({
             {duration(turn.end === null ? null : turn.end - turn.start)} ·{" "}
             {t.requests} 次请求 · TTFT {duration(turn.ttft)}
             {turn.compacted ? " · 压缩上下文" : ""}
+            {fast ? " · Fast" : ""}
           </span>
         )}
       </div>

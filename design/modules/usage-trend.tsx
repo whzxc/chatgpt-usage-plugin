@@ -52,7 +52,7 @@ export function UsageChart({
               >
                 {d.values.map((v, j) => (
                   <div
-                    class={`${mode === "hourly" ? "w-full" : "w-7"} ${modelTones[j]}`}
+                    class={`${mode === "hourly" ? "w-full" : "w-7"} ${modelTones[j] ?? "bg-model-other"}`}
                     style={{ height: `${(v / maximum) * 100}%` }}
                   />
                 ))}
@@ -134,18 +134,6 @@ export default () => [
     </div>
   </Frame>,
   <Frame
-    {...frame("usage-trend", "legend-models")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Legend />
-    </div>
-  </Frame>,
-  <Frame
     {...frame("usage-trend", "chart-hourly-cost")}
     width={680}
     capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
@@ -167,6 +155,18 @@ export default () => [
       class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
     >
       <UsageChart mode="single" />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("usage-trend", "legend-models")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <Legend />
     </div>
   </Frame>,
 ];

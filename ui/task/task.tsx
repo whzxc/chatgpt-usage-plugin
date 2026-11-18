@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { callData } from "../app/bridge";
 import {
   Header,
+  Panel,
   Section,
   MetricGrid,
   BackButton,
 } from "../components/ui/controls";
-import { summaryFigures } from "../overview/overview";
+import { summaryFigures } from "../shared/metrics";
 import { compact, integer, percent } from "../shared/format";
 import { usePoll } from "../shared/poll";
 import { Status, Failure, Indexing } from "../shared/status";
@@ -86,7 +87,7 @@ export default function TaskPage({
     );
   };
   return (
-    <main className="task-page">
+    <Panel>
       {data && !thread && data.index.state === "ready" ? (
         <>
           {onBack && (
@@ -157,7 +158,7 @@ export default function TaskPage({
           )}
         </>
       )}
-    </main>
+    </Panel>
   );
 }
 export function TaskSummary({ thread }: { thread: Thread }) {
@@ -180,10 +181,10 @@ const labels = {
   fixed: "固定开销",
 };
 const colors = {
-  toolResults: "var(--m1)",
-  reasoning: "var(--m2)",
+  toolResults: "var(--model-primary)",
+  reasoning: "var(--model-secondary)",
   toolCalls: "var(--tool)",
-  compaction: "var(--m4)",
+  compaction: "var(--context-compaction)",
   messages: "var(--context-messages)",
   fixed: "var(--context-fixed)",
 };

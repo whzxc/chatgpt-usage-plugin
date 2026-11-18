@@ -55,7 +55,7 @@ export function chartScene(
         `${t.requests} req`,
         `${((t.output ?? 0) / seconds).toFixed(1)} tok/s`,
       ].join(" · "),
-      tone: modelTones[i],
+      tone: modelTones[i] ?? "bg-model-other",
     };
   });
   return { buckets, legend, names };

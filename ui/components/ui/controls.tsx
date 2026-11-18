@@ -1,5 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { Icon, RefreshIcon, SearchIcon } from "./Icons";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
+import { Icon, RefreshIcon } from "./Icons";
 import { time } from "../../shared/format";
 
 export function Button({
@@ -8,6 +8,7 @@ export function Button({
   busy = false,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: Ref<HTMLButtonElement>;
   label: string;
   busy?: boolean;
 }) {
@@ -120,29 +121,6 @@ export function MetricGrid({
         </div>
       ))}
     </div>
-  );
-}
-export function Search({
-  value,
-  onChange,
-  disabled = false,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <label className="search">
-      <SearchIcon />
-      <input
-        type="search"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="搜索任务"
-        aria-label="搜索任务"
-        disabled={disabled}
-      />
-    </label>
   );
 }
 export function Tooltip({

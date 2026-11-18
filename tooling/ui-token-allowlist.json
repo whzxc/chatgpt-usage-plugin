@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "token": "--disabled",
+      "reason": "Neutral disabled background for icon/text buttons and segmented choices."
+    },
+    {
+      "token": "--tool-text",
+      "reason": "Accessible light-theme text contrast variant for tool-phase annotations."
+    },
+    {
+      "token": "--context-compaction",
+      "reason": "Semantic context chart series for compaction markers distinct from warning status."
+    }
+  ]
+}

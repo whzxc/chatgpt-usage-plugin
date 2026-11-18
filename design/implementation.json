@@ -1,0 +1,479 @@
+{
+  "version": 1,
+  "mappings": [
+    {
+      "implementation": { "file": "ui/tokens.css" },
+      "design": [{ "source": "design/components/layout.tsx", "part": "Panel" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/shared/layout.css",
+        "symbol": "stack",
+        "anchor": ".stack {"
+      },
+      "design": [{ "source": "design/components/layout.tsx", "part": "Stack" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/shared/layout.css",
+        "symbol": "figure",
+        "anchor": ".figure {"
+      },
+      "design": [
+        {
+          "source": "design/components/metric-figure.tsx",
+          "part": "MetricFigure"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/overview.css",
+        "symbol": "quota-grid",
+        "anchor": ".quota-grid {\n  display: grid;"
+      },
+      "design": [{ "source": "design/components/layout.tsx", "part": "Grid" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/overview.css",
+        "symbol": "legend",
+        "anchor": ".legend {"
+      },
+      "design": [
+        { "source": "design/modules/usage-trend.tsx", "part": "Legend" }
+      ]
+    },
+    {
+      "implementation": { "file": "ui/task/task.css" },
+      "design": [{ "source": "design/surfaces/task.tsx" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall.css",
+        "symbol": "wf-heading",
+        "anchor": ".wf-heading {\n  color: var(--muted);"
+      },
+      "design": [
+        { "source": "design/modules/waterfall/row.tsx", "part": "TimeAxis" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall.css",
+        "symbol": "wf-details-dl",
+        "anchor": ".wf-details dl {\n  display: grid;"
+      },
+      "design": [{ "source": "design/components/layout.tsx", "part": "Grid" }]
+    },
+    {
+      "implementation": { "file": "ui/task/tool-dialog.css" },
+      "design": [
+        { "source": "design/modules/tool-dialog.tsx", "part": "ToolDialog" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "Button"
+      },
+      "design": [
+        { "source": "design/components/button.tsx", "part": "Button" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "Panel"
+      },
+      "design": [{ "source": "design/components/layout.tsx", "part": "Panel" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "Section"
+      },
+      "design": [
+        { "source": "design/components/layout.tsx", "part": "Section" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "Header"
+      },
+      "design": [
+        { "source": "design/components/header.tsx", "part": "Header" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "MetricGrid"
+      },
+      "design": [
+        {
+          "source": "design/components/metric-figure.tsx",
+          "part": "MetricGrid"
+        },
+        { "source": "design/components/layout.tsx", "part": "Grid" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "Tooltip"
+      },
+      "design": [
+        { "source": "design/components/tooltip.tsx", "part": "Tooltip" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/controls.tsx",
+        "symbol": "BackButton"
+      },
+      "design": [
+        { "source": "design/components/button.tsx", "part": "Button" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/SingleChoice.tsx",
+        "symbol": "SingleChoice"
+      },
+      "design": [
+        {
+          "source": "design/components/single-choice.tsx",
+          "part": "SingleChoice"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/Icons.tsx",
+        "symbol": "Icon"
+      },
+      "design": [
+        { "source": "design/components/button.tsx", "part": "Button" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/Icons.tsx",
+        "symbol": "RefreshIcon"
+      },
+      "design": [
+        { "source": "design/components/header.tsx", "part": "Header" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/Icons.tsx",
+        "symbol": "Chevron"
+      },
+      "design": [
+        { "source": "design/modules/turn-summary.tsx", "part": "TurnHeader" },
+        {
+          "source": "design/modules/waterfall/row.tsx",
+          "part": "WaterfallRow"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/Icons.tsx",
+        "symbol": "WarningIcon"
+      },
+      "design": [
+        { "source": "design/components/status.tsx", "part": "Status" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/components/ui/Icons.tsx",
+        "symbol": "CloseIcon"
+      },
+      "design": [
+        { "source": "design/modules/tool-dialog.tsx", "part": "ToolDialog" },
+        {
+          "source": "design/modules/waterfall/request-details.tsx",
+          "part": "RequestDetails"
+        }
+      ]
+    },
+    {
+      "implementation": { "file": "ui/shared/status.tsx", "symbol": "Status" },
+      "design": [
+        { "source": "design/components/status.tsx", "part": "Status" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/shared/status.tsx",
+        "symbol": "Indexing"
+      },
+      "design": [
+        { "source": "design/components/status.tsx", "part": "Status" }
+      ]
+    },
+    {
+      "implementation": { "file": "ui/shared/status.tsx", "symbol": "Failure" },
+      "design": [
+        { "source": "design/components/status.tsx", "part": "Status" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/shared/metrics.ts",
+        "symbol": "summaryFigures"
+      },
+      "design": [
+        {
+          "source": "design/modules/usage-summary.tsx",
+          "part": "UsageSummary"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/quota.tsx",
+        "symbol": "QuotaBar"
+      },
+      "design": [{ "source": "design/modules/quota.tsx", "part": "QuotaBar" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/quota.tsx",
+        "symbol": "QuotaBlock"
+      },
+      "design": [
+        { "source": "design/modules/quota.tsx", "part": "QuotaSection" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/usage-summary.tsx",
+        "symbol": "Figures"
+      },
+      "design": [
+        {
+          "source": "design/components/metric-figure.tsx",
+          "part": "MetricGrid"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/usage-summary.tsx",
+        "symbol": "UsageSummary"
+      },
+      "design": [
+        {
+          "source": "design/modules/usage-summary.tsx",
+          "part": "UsageSummary"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/usage-trend.tsx",
+        "symbol": "ModelLegend"
+      },
+      "design": [
+        { "source": "design/modules/usage-trend.tsx", "part": "Legend" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/usage-trend.tsx",
+        "symbol": "UsageChart"
+      },
+      "design": [
+        { "source": "design/modules/usage-trend.tsx", "part": "UsageChart" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/task-list.tsx",
+        "symbol": "Search"
+      },
+      "design": [
+        { "source": "design/modules/task-list.tsx", "part": "Search" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/task-list.tsx",
+        "symbol": "TaskColumns"
+      },
+      "design": [
+        { "source": "design/modules/task-list.tsx", "part": "TaskColumns" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/task-list.tsx",
+        "symbol": "TaskRow"
+      },
+      "design": [
+        { "source": "design/modules/task-list.tsx", "part": "TaskRow" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/task-list.tsx",
+        "symbol": "TaskTable"
+      },
+      "design": [
+        { "source": "design/modules/task-list.tsx", "part": "TaskList" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/overview/overview.tsx",
+        "symbol": "Overview"
+      },
+      "design": [{ "source": "design/surfaces/overview.tsx" }]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/context-chart.tsx",
+        "symbol": "ContextChart"
+      },
+      "design": [
+        { "source": "design/modules/context.tsx", "part": "ContextChart" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/task.tsx",
+        "symbol": "TaskSummary"
+      },
+      "design": [
+        {
+          "source": "design/components/metric-figure.tsx",
+          "part": "MetricGrid"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/task.tsx",
+        "symbol": "CurrentContext"
+      },
+      "design": [
+        {
+          "source": "design/modules/context.tsx",
+          "part": "ContextAllocation"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/task.tsx",
+        "symbol": "TaskPage"
+      },
+      "design": [
+        { "source": "design/modules/context.tsx", "part": "ContextSection" },
+        { "source": "design/surfaces/task.tsx" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/turn.tsx",
+        "symbol": "TurnHeader"
+      },
+      "design": [
+        { "source": "design/modules/turn-summary.tsx", "part": "TurnHeader" }
+      ]
+    },
+    {
+      "implementation": { "file": "ui/task/turn.tsx", "symbol": "TurnRow" },
+      "design": [
+        { "source": "design/modules/turn-summary.tsx", "part": "TurnSummary" },
+        { "source": "design/surfaces/turn.tsx" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall-head.tsx",
+        "symbol": "WaterfallHead"
+      },
+      "design": [
+        {
+          "source": "design/components/metric-figure.tsx",
+          "part": "MetricGrid"
+        },
+        { "source": "design/modules/waterfall/index.tsx", "part": "Waterfall" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall/minimap.tsx",
+        "symbol": "Minimap"
+      },
+      "design": [
+        { "source": "design/modules/waterfall/minimap.tsx", "part": "Minimap" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall-clock.ts",
+        "symbol": "useWaterfallClock"
+      },
+      "design": [
+        { "source": "design/modules/waterfall/row.tsx", "part": "TimeAxis" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall/row.tsx",
+        "symbol": "TraceRow"
+      },
+      "design": [
+        { "source": "design/modules/waterfall/row.tsx", "part": "WaterfallRow" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall/request-details.tsx",
+        "symbol": "RequestDetailsPanel"
+      },
+      "design": [
+        {
+          "source": "design/modules/waterfall/request-details.tsx",
+          "part": "RequestDetails"
+        }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/waterfall/index.tsx",
+        "symbol": "Waterfall"
+      },
+      "design": [
+        { "source": "design/modules/waterfall/index.tsx", "part": "Waterfall" },
+        { "source": "design/surfaces/turn.tsx" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/tool-dialog.tsx",
+        "symbol": "ToolBody"
+      },
+      "design": [
+        { "source": "design/modules/tool-dialog.tsx", "part": "ToolBody" }
+      ]
+    },
+    {
+      "implementation": {
+        "file": "ui/task/tool-dialog.tsx",
+        "symbol": "ToolDialog"
+      },
+      "design": [
+        { "source": "design/modules/tool-dialog.tsx", "part": "ToolDialog" }
+      ]
+    }
+  ]
+}

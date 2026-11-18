@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-// Lucide paths shared by both views.
+// Lucide paths shared across views.
 export function Icon({
   children,
   size = 16,
@@ -30,12 +30,6 @@ export const RefreshIcon = () => (
     <path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5" />
   </Icon>
 );
-export const SearchIcon = () => (
-  <Icon>
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </Icon>
-);
 export const Chevron = ({ next = false }: { next?: boolean }) => (
   <Icon>
     <path d={next ? "m9 18 6-6-6-6" : "m15 18-6-6 6-6"} />
@@ -50,11 +44,5 @@ export const WarningIcon = () => (
 export const CloseIcon = () => (
   <Icon>
     <path d="m18 6-12 12M6 6l12 12" />
-  </Icon>
-);
-
-export const TerminalIcon = () => (
-  <Icon size={14}>
-    <path d="m4 5 7 7-7 7M13 19h7" />
   </Icon>
 );

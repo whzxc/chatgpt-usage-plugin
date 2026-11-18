@@ -6,7 +6,7 @@ import { checkManifests } from "./plugin-manifests.mjs";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
 
-const temporaryRoot = fileURLToPath(new URL('../output/tmp/', import.meta.url));
+const temporaryRoot = fileURLToPath(new URL("../output/tmp/", import.meta.url));
 await mkdir(temporaryRoot, { recursive: true });
 const directory = path.resolve(
   process.argv[2] ||

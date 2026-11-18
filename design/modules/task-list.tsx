@@ -1,16 +1,44 @@
-import { Frame } from "adg";
+import { Frame, Icon } from "adg";
 import { frame } from "../support/frame";
 import { tasks, copy, type TaskRowData } from "../fixtures/usage";
-import { Section } from "../components/layout";
+import { Stack, Section } from "../components/layout";
 import { SingleChoice } from "../components/single-choice";
-import { Search } from "../components/search";
 import { Button } from "../components/button";
 import { Status } from "../components/status";
+import { searchExamples } from "../fixtures/search";
 import {
   taskListExample,
   taskRowExamples,
   headings,
 } from "../fixtures/task-list";
+export function Search({
+  value = "",
+  focus = false,
+  disabled = false,
+}: {
+  value?: string;
+  focus?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <label
+      class={[
+        "flex items-center gap-2 rounded-control bg-surface px-3 h-(--control-height) min-w-0",
+        focus ? "outline-2 outline-focus outline-offset-2" : "",
+      ].join(" ")}
+    >
+      <Icon name="search" class="text-muted shrink-0" />
+      <input
+        type="search"
+        aria-label="搜索任务"
+        placeholder="搜索任务"
+        value={value}
+        disabled={disabled}
+        class="w-full min-w-0 bg-surface text-meta text-text outline-none placeholder:text-muted"
+      />
+    </label>
+  );
+}
 export function TaskList({
   query = "",
   empty = false,
@@ -97,6 +125,18 @@ export function TaskRow({
 
 export default () => [
   <Frame
+    {...frame("task-list", "list-selected")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <TaskList selected />
+    </div>
+  </Frame>,
+  <Frame
     {...frame("task-list", "list-search-empty")}
     width={680}
     capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
@@ -126,15 +166,19 @@ export default () => [
     </div>
   </Frame>,
   <Frame
-    {...frame("task-list", "list-selected")}
-    width={680}
+    {...frame("task-list", "search-field")}
+    width={188}
     capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
   >
     <div
       data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+      class="w-full p-1 font-ui text-body leading-normal"
     >
-      <TaskList selected />
+      <Stack>
+        {searchExamples.map((p) => (
+          <Search {...p} />
+        ))}
+      </Stack>
     </div>
   </Frame>,
 ];

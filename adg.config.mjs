@@ -1,9 +1,13 @@
 import fixtures from "./tooling/design-review/fixtures.json" with { type: "json" };
 import { startDesignDev } from "./tooling/design-dev.mjs";
 export default {
-  requires: ">=0.5.0",
+  requires: ">=0.15.0",
   design: "design",
   output: "output/design",
+  check: {
+    strictLayers: true,
+    lifecycle: true,
+  },
   compare: {
     port: 5191,
     viewport: "720x2400",
@@ -128,7 +132,7 @@ export default {
         await page.locator(".status-error").waitFor();
       const focus = {
         "cup-button-actions": '[aria-label="刷新"]',
-        "cup-search-field": ".search:nth-child(2) input",
+        "cup-task-list-search-field": ".search:nth-child(2) input",
         "cup-single-choice-selection": '[role="radio"][aria-checked="true"]',
         "cup-task-list-row-selection-long": ".task-name",
         "cup-task-list-list-selected": ".task-name",

@@ -4,8 +4,9 @@ import { compact, duration, integer, money } from "../shared/format";
 import { usePoll } from "../shared/poll";
 import { Failure, Status } from "../shared/status";
 import type { Turn, TurnData, TurnSummary } from "../shared/types";
+import { Button } from "../components/ui/controls";
 import { Chevron } from "../components/ui/Icons";
-import { Waterfall } from "./waterfall";
+import { Waterfall } from "./waterfall/index";
 import { ToolDialog } from "./tool-dialog";
 
 export function TurnRow({
@@ -124,8 +125,11 @@ export function TurnRow({
                 }}
               />
               {(remaining > 0 || data.nextOffset !== null) && (
-                <button
-                  className="text-btn more"
+                <Button
+                  className="more"
+                  label={
+                    busy ? "正在读取轮次。" : `显示其余 ${remaining} 次请求`
+                  }
                   disabled={busy}
                   onClick={() => {
                     const target =
@@ -133,9 +137,7 @@ export function TurnRow({
                     setShown(target);
                     void load(false, target);
                   }}
-                >
-                  {busy ? "正在读取轮次。" : `显示其余 ${remaining} 次请求`}
-                </button>
+                />
               )}
             </>
           )}

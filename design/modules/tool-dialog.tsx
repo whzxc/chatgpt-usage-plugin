@@ -36,7 +36,7 @@ export function ToolDialog({
       >
         <header class="flex items-start justify-between gap-4">
           <div class="min-w-0 flex flex-col gap-2">
-            <h2 class="text-title leading-[28px] font-semibold">
+            <h2 class="text-title leading-(--line-title) font-semibold">
               {pending ? "工具调用" : "exec_command 工具调用"}
             </h2>
             {!pending && (
@@ -116,7 +116,6 @@ export function ToolBody({
 export default () => [
   <Frame
     {...frame("tool-dialog", "dialog-ready")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -128,20 +127,19 @@ export default () => [
     </div>
   </Frame>,
   <Frame
-    {...frame("tool-dialog", "body-truncated")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+    {...frame("tool-dialog", "dialog-long")}
+    width={728}
+    capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
     <div
       data-design-module
       class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
     >
-      <ToolBody title="输出" text={longOutput} />
+      <ToolDialog {...toolDialogProps("long")} />
     </div>
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-loading")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -154,7 +152,6 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-error")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -166,21 +163,7 @@ export default () => [
     </div>
   </Frame>,
   <Frame
-    {...frame("tool-dialog", "dialog-long")}
-    note="Approved 2026-11-08 by Leo"
-    width={728}
-    capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <ToolDialog {...toolDialogProps("long")} />
-    </div>
-  </Frame>,
-  <Frame
     {...frame("tool-dialog", "dialog-failed")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -193,7 +176,6 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-copy-error")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -206,7 +188,6 @@ export default () => [
   </Frame>,
   <Frame
     {...frame("tool-dialog", "dialog-unknown")}
-    note="Approved 2026-11-08 by Leo"
     width={728}
     capture={{ selector: "[data-design-module]", viewport: "728x2400" }}
   >
@@ -215,6 +196,18 @@ export default () => [
       class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
     >
       <ToolDialog {...toolDialogProps("unknown")} />
+    </div>
+  </Frame>,
+  <Frame
+    {...frame("tool-dialog", "body-truncated")}
+    width={680}
+    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+  >
+    <div
+      data-design-module
+      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
+    >
+      <ToolBody title="输出" text={longOutput} />
     </div>
   </Frame>,
 ];

@@ -8,33 +8,29 @@ import {
   Section,
   Header,
   Button,
-  Search,
   MetricGrid,
   Tooltip,
 } from "../../ui/components/ui/controls";
 import { SingleChoice } from "../../ui/components/ui/SingleChoice";
 import { RefreshIcon, CloseIcon } from "../../ui/components/ui/Icons";
 import { Status } from "../../ui/shared/status";
+import { QuotaBlock, QuotaBar } from "../../ui/overview/quota";
+import { UsageSummary, Figures } from "../../ui/overview/usage-summary";
+import { ModelLegend, UsageChart } from "../../ui/overview/usage-trend";
 import {
-  QuotaBlock,
-  QuotaBar,
-  Figures,
-  ModelLegend,
+  Search,
   TaskTable,
   TaskColumns,
   TaskRow,
-  UsageChart,
-} from "../../ui/overview/overview";
+} from "../../ui/overview/task-list";
 import TaskPage, { CurrentContext } from "../../ui/task/task";
 import { ContextChart } from "../../ui/task/context-chart";
 import type { Thread } from "../../ui/shared/types";
 import { TurnHeader, TurnRow } from "../../ui/task/turn";
-import {
-  Waterfall,
-  Minimap,
-  TraceRow,
-  RequestDetailsPanel,
-} from "../../ui/task/waterfall";
+import { Waterfall } from "../../ui/task/waterfall/index";
+import { Minimap } from "../../ui/task/waterfall/minimap";
+import { TraceRow } from "../../ui/task/waterfall/row";
+import { RequestDetailsPanel } from "../../ui/task/waterfall/request-details";
 import { ToolDialog, ToolBody } from "../../ui/task/tool-dialog";
 import { traceSpans } from "../../ui/task/waterfall-model";
 import { baseTurn, copy, variant } from "../../design/fixtures/usage";
@@ -62,6 +58,7 @@ import {
 import { fixture } from "./bridge";
 import fixtures from "./fixtures.json";
 import "../../ui/shared/layout.css";
+import "../../ui/overview/overview.css";
 import "../../ui/task/task.css";
 
 const noop = () => {};
@@ -186,7 +183,7 @@ function WaterfallFixture({
           form === "scroll" ? { height: 480, overflowY: "auto" } : undefined
         }
       >
-        <TurnHeader summary={summary} open toggle={noop} />
+        {header && <TurnHeader summary={summary} open toggle={noop} />}
         <Waterfall
           timeline={timeline}
           turn={turn}
@@ -284,39 +281,29 @@ function Content() {
     );
   if (fixture.startsWith("cup-usage-summary-")) {
     const loading = fixture.endsWith("indexing"),
-      error = fixture.endsWith("unavailable");
+      error = fixture.endsWith("unavailable"),
+      base = summaryData();
     content = (
-      <Section
-        title="本机用量"
-        actions={
-          !loading &&
-          !error && (
-            <SingleChoice
-              label="用量范围"
-              value="7d"
-              options={[
-                ["today", "今天"],
-                ["7d", "7 天"],
-                ["30d", "30 天"],
-              ]}
-              onChange={noop}
-              disabled={fixture.endsWith("refreshing")}
-            />
-          )
+      <UsageSummary
+        summary={
+          loading || error
+            ? {
+                ...base,
+                index: {
+                  ...base.index,
+                  state: loading ? "indexing" : "unavailable",
+                  processed: statusProgress.processed,
+                  total: statusProgress.total,
+                  reason: null,
+                },
+              }
+            : base
         }
-      >
-        {loading ? (
-          <Status
-            kind="indexing"
-            processed={statusProgress.processed}
-            total={statusProgress.total}
-          />
-        ) : error ? (
-          <Status kind="error" retry={noop} />
-        ) : (
-          <Figures summary={summaryData()} />
-        )}
-      </Section>
+        range="7d"
+        onRange={noop}
+        busy={fixture.endsWith("refreshing")}
+        retry={noop}
+      />
     );
   } else if (
     fixture.startsWith("cup-quota-section-") &&
@@ -478,7 +465,8 @@ function Content() {
         close={noop}
       />
     );
-  else if (fixture === "cup-search-field") content = <SearchFixture />;
+  else if (fixture === "cup-task-list-search-field")
+    content = <SearchFixture />;
   else if (fixture === "cup-single-choice-selection")
     content = <SelectionFixture />;
   else if (fixture === "cup-status-feedback")
@@ -561,10 +549,10 @@ function Content() {
         {content}
       </div>
     );
-  if (fixture === "cup-search-field")
+  if (fixture === "cup-task-list-search-field")
     return (
       <div
-        data-design-specimen
+        data-design-module
         className="panel"
         style={{ padding: 4, width: 188 }}
       >
@@ -731,16 +719,7 @@ function Content() {
         {content}
       </div>
     );
-  if (
-    fixture === "cup-tool-dialog-dialog-ready" ||
-    fixture === "cup-tool-dialog-body-truncated" ||
-    fixture === "cup-tool-dialog-dialog-loading" ||
-    fixture === "cup-tool-dialog-dialog-error" ||
-    fixture === "cup-tool-dialog-dialog-long" ||
-    fixture === "cup-tool-dialog-dialog-failed" ||
-    fixture === "cup-tool-dialog-dialog-copy-error" ||
-    fixture === "cup-tool-dialog-dialog-unknown"
-  )
+  if (fixture === "cup-tool-dialog-body-truncated")
     return (
       <div
         data-design-module

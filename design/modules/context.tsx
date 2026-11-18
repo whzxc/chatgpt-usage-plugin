@@ -15,10 +15,12 @@ export function ContextChart({
   selected = false,
   gaps = false,
   unknownLimit = false,
+  expanded = false,
 }: {
   unknownLimit?: boolean;
   selected?: boolean;
   gaps?: boolean;
+  expanded?: boolean;
 }) {
   const data = contextCalls.map((c, i) => ({
       ...c,
@@ -92,6 +94,15 @@ export function ContextChart({
               y2={chartHeight}
               stroke-dasharray="4 4"
               class="stroke-accent"
+            />
+          )}
+          {expanded && (
+            <rect
+              x={x(active)}
+              y={16}
+              width={Math.max(0, x(active + 1) - x(active))}
+              height={bottom - 16}
+              class="fill-selected"
             />
           )}
           <path d={path} fill="none" class="stroke-accent" stroke-width={2} />
