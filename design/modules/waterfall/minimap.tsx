@@ -1,16 +1,24 @@
 import { duration } from "../../support/format";
-import { baseTurn, density, slowest, elapsed, type Turn } from "../../fixtures/usage";
+import {
+  baseTurn,
+  density,
+  slowest,
+  elapsed,
+  type Turn,
+} from "../../fixtures/usage";
 import { Button } from "../../components/button";
 export function Minimap({
   turn = baseTurn,
   range,
   selected,
   busy = false,
+  pilot = false,
 }: {
   turn?: Turn;
   range?: [number, number];
   selected?: number;
   busy?: boolean;
+  pilot?: boolean;
 }) {
   const data = density(turn),
     peak = Math.max(1, ...data.map((b) => b.models + b.tools)),
@@ -22,7 +30,11 @@ export function Minimap({
       <div class="flex justify-between items-center text-meta text-muted">
         <span>整轮调用密度 · {duration(end - turn.start)}</span>
         {slow && (
-          <Button label={`最慢 ${duration(elapsed(slow))}`} disabled={busy} />
+          <Button
+            label={`最慢 ${duration(elapsed(slow))}`}
+            disabled={busy}
+            anchor={pilot ? "waterfall-slowest" : undefined}
+          />
         )}
       </div>
       <div
@@ -50,6 +62,7 @@ export function Minimap({
           ))}
         </div>
         <span
+          data-adg-id={pilot ? "waterfall-range-window" : undefined}
           class="absolute top-0 h-full border-2 border-focus rounded-control"
           style={{
             left: `${(window[0] / end) * 100}%`,

@@ -149,9 +149,11 @@ function ContextChartFixture({ thread }: { thread: Thread }) {
 function WaterfallFixture({
   form,
   header = false,
+  pilot = false,
 }: {
   form: string;
   header?: boolean;
+  pilot?: boolean;
 }) {
   const scene = form === "scroll" ? scrollTurn : variant(form),
     turn = turnData(scene),
@@ -180,7 +182,9 @@ function WaterfallFixture({
       <div
         className="stack"
         style={
-          form === "scroll" ? { height: 480, overflowY: "auto" } : undefined
+          form === "scroll" || pilot
+            ? { height: 480, overflowY: "auto" }
+            : undefined
         }
       >
         {header && <TurnHeader summary={summary} open toggle={noop} />}
@@ -505,13 +509,17 @@ function Content() {
     );
   else if (fixture.startsWith("cup-waterfall-row-"))
     content = <RowFixture unknown={fixture.endsWith("unknown")} />;
-  else if (fixture.startsWith("cup-waterfall-waterfall-"))
+  else if (fixture.startsWith("cup-waterfall-waterfall-")) {
+    const form = fixture
+      .slice("cup-waterfall-waterfall-".length)
+      .replace(/-jumped$/, "");
     content = (
       <WaterfallFixture
-        form={fixture.slice("cup-waterfall-waterfall-".length)}
+        form={form}
+        pilot={form === "completed" || form === "running"}
       />
     );
-  else if (fixture === "cup-waterfall-scroll")
+  } else if (fixture === "cup-waterfall-scroll")
     content = <WaterfallFixture form="scroll" />;
   else if (fixture.startsWith("cup-turn-summary-summary-"))
     content = (
@@ -672,11 +680,13 @@ function Content() {
     );
   if (
     fixture === "cup-waterfall-waterfall-completed" ||
+    fixture === "cup-waterfall-waterfall-completed-jumped" ||
     fixture === "cup-waterfall-minimap-selected-range" ||
     fixture === "cup-waterfall-minimap-loading-target" ||
     fixture === "cup-waterfall-row-branches" ||
     fixture === "cup-waterfall-row-unknown" ||
     fixture === "cup-waterfall-waterfall-running" ||
+    fixture === "cup-waterfall-waterfall-running-jumped" ||
     fixture === "cup-waterfall-waterfall-failed" ||
     fixture === "cup-waterfall-waterfall-unknown" ||
     fixture === "cup-waterfall-waterfall-partial"

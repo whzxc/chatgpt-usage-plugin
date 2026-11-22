@@ -208,7 +208,11 @@ export function Waterfall({
     <div className="waterfall-container">
       <WaterfallHead turn={turn} summary={summary} />
       <div className="waterfall" ref={root}>
-        <div className="wf-sticky" ref={header}>
+        <div
+          data-adg-id="waterfall-sticky-header"
+          className="wf-sticky"
+          ref={header}
+        >
           <div className="section-head">
             <h2>调用时间线</h2>
             <Button

@@ -37,6 +37,7 @@ export function Minimap({
         <span>{`整轮调用密度 · ${duration(overview.durationMs)}`}</span>
         {overview.slowest && (
           <Button
+            data-adg-id="waterfall-slowest"
             label={`最慢 ${duration(slowestDuration)}`}
             disabled={busy}
             onClick={() => {
@@ -110,7 +111,11 @@ export function Minimap({
             </span>
           ))}
         </div>
-        <i className="wf-map-window" aria-hidden="true" />
+        <i
+          data-adg-id="waterfall-range-window"
+          className="wf-map-window"
+          aria-hidden="true"
+        />
         <i
           className="wf-map-cursor"
           aria-hidden="true"

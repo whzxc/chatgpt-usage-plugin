@@ -35,6 +35,7 @@ export function WaterfallRow({
   focus = false,
   range,
   selected = false,
+  anchor,
 }: {
   call: Call;
   turn?: Turn;
@@ -42,6 +43,7 @@ export function WaterfallRow({
   focus?: boolean;
   range?: [number, number];
   selected?: boolean;
+  anchor?: string;
 }) {
   const end = turn.end ?? turn.now,
     view = range ?? [0, end],
@@ -61,6 +63,7 @@ export function WaterfallRow({
       call.status === "failed" || children.some((c) => c.status === "failed");
   return (
     <div
+      data-adg-id={anchor}
       role="treeitem"
       aria-level={child ? 2 : 1}
       aria-expanded={!child ? expanded : undefined}

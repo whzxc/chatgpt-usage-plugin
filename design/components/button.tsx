@@ -7,15 +7,18 @@ export function Button({
   disabled = false,
   busy = false,
   focus = false,
+  anchor,
 }: {
   label: string;
   icon?: string;
   disabled?: boolean;
   busy?: boolean;
   focus?: boolean;
+  anchor?: string;
 }) {
   return (
     <button
+      data-adg-id={anchor}
       aria-label={label}
       disabled={disabled || busy}
       aria-busy={busy || undefined}

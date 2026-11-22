@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "edges": [
+    {
+      "id": "waterfall-jump-to-slowest-completed",
+      "label": "跳转到最慢调用",
+      "from": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-completed"
+      },
+      "to": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-completed-jumped"
+      },
+      "trigger": {
+        "on": "click",
+        "target": {
+          "anchor": "waterfall-slowest"
+        }
+      },
+      "pattern": {
+        "id": "waterfall-visible-range",
+        "targets": [
+          {
+            "anchor": "waterfall-range-window"
+          },
+          {
+            "anchor": "waterfall-row-request-r1"
+          },
+          {
+            "anchor": "waterfall-row-request-r2"
+          },
+          {
+            "anchor": "waterfall-row-tool-t2"
+          },
+          {
+            "anchor": "waterfall-row-tool-t3"
+          },
+          {
+            "anchor": "waterfall-row-request-r3"
+          },
+          {
+            "anchor": "waterfall-row-request-r4"
+          }
+        ]
+      },
+      "focus": {
+        "target": {
+          "anchor": "waterfall-row-tool-t2"
+        }
+      }
+    },
+    {
+      "id": "waterfall-jump-to-slowest-running",
+      "label": "跳转到最慢调用",
+      "from": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-running"
+      },
+      "to": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-running-jumped"
+      },
+      "trigger": {
+        "on": "click",
+        "target": {
+          "anchor": "waterfall-slowest"
+        }
+      },
+      "pattern": {
+        "id": "waterfall-visible-range",
+        "targets": [
+          {
+            "anchor": "waterfall-range-window"
+          },
+          {
+            "anchor": "waterfall-row-request-r1"
+          },
+          {
+            "anchor": "waterfall-row-tool-t1"
+          },
+          {
+            "anchor": "waterfall-row-request-r2"
+          },
+          {
+            "anchor": "waterfall-row-tool-t2"
+          },
+          {
+            "anchor": "waterfall-row-tool-t3"
+          }
+        ]
+      },
+      "focus": {
+        "target": {
+          "anchor": "waterfall-row-request-r1"
+        }
+      }
+    }
+  ],
+  "flows": [
+    {
+      "start": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-completed"
+      },
+      "anchor": {
+        "anchor": "waterfall-sticky-header"
+      },
+      "ends": [
+        {
+          "frame": "waterfall-completed-jumped"
+        }
+      ]
+    },
+    {
+      "start": {
+        "source": "design/modules/waterfall/index.tsx",
+        "frame": "waterfall-running"
+      },
+      "anchor": {
+        "anchor": "waterfall-sticky-header"
+      },
+      "ends": [
+        {
+          "frame": "waterfall-running-jumped"
+        }
+      ]
+    }
+  ]
+}

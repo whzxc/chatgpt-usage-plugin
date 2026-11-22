@@ -25,14 +25,15 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Check out ADG 0.17.1
+      - name: Check out ADG 0.17.3
         uses: actions/checkout@v6
         with:
           repository: whzxc/agent-design-gallery
-          ref: c9ff955c9aa376254e021931b9f79f056cdb234d
+          ref: c60754d1b8a8d93ef51550db969235a0fa563418
           path: output/adg-toolkit
           persist-credentials: false
       - run: npm ci --prefix output/adg-toolkit
+      - run: node output/adg-toolkit/node_modules/playwright/cli.js install chromium
       - name: Check design and generate declarations
         run: node output/adg-toolkit/src/cli.mjs check --json
       - run: npm run check

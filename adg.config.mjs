@@ -1,12 +1,14 @@
 import fixtures from "./tooling/design-review/fixtures.json" with { type: "json" };
 import { startDesignDev } from "./tooling/design-dev.mjs";
+import { waterfallPilot } from "./design/fixtures/waterfall-pilot.ts";
 export default {
-  requires: ">=0.17.1",
+  requires: ">=0.17.3",
   design: "design",
   output: "output/design",
   check: {
     strictLayers: true,
     lifecycle: true,
+    strictMotion: true,
   },
   compare: {
     port: 5191,
@@ -120,13 +122,35 @@ export default {
         await row.press("ArrowRight");
         await row.evaluate((element) => element.blur());
       }
-      if (["cup-waterfall-waterfall-running"].includes(name)) {
-        // The approved review state folds request #1; runtime defaults still
-        // expand the slowest branch when the turn first opens.
-        const row = page.locator('[data-wf-id="request:r1"]');
-        if ((await row.getAttribute("aria-expanded")) === "true")
-          await row.press("ArrowLeft");
-        await row.evaluate((element) => element.blur());
+      const pilot =
+        /^cup-waterfall-waterfall-(completed|running)(-jumped)?$/.exec(name);
+      if (pilot) {
+        const scene = waterfallPilot[pilot[1]];
+        const scroller = page.locator("[data-design-module] > .stack");
+        await scroller.evaluate((node, scroll) => {
+          node.scrollTop = scroll === "end" ? node.scrollHeight : scroll;
+        }, scene.scroll);
+        if (pilot[2]) {
+          await page.locator('[data-adg-id="waterfall-slowest"]').click();
+          await page.locator(`[data-wf-id="${scene.target}"]:focus`).waitFor();
+        }
+        const { range } = pilot[2] ? scene.jumped : scene.initial;
+        await page.waitForFunction(
+          ([start, end]) => {
+            const waterfall = document.querySelector(".waterfall");
+            const actualStart = Number(
+              waterfall?.style.getPropertyValue("--wf-start"),
+            );
+            const actualWidth =
+              100 / Number(waterfall?.style.getPropertyValue("--wf-unit"));
+            return (
+              Math.abs(actualStart - start) < 0.1 &&
+              Math.abs(actualStart + actualWidth - end) < 0.1
+            );
+          },
+          range,
+          { timeout: 5000 },
+        );
       }
       if (["cup-turn-summary-summary-error"].includes(name))
         await page.locator(".status-error").waitFor();

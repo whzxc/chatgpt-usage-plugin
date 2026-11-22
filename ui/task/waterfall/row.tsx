@@ -134,6 +134,7 @@ export const TraceRow = memo(function TraceRow({
       aria-label={`${span.request ? `请求 #${span.request.sequence}，` : ""}${span.label}，${timing}${metrics ? `，${metrics}` : ""}${span.id === slowest ? "，本轮最慢" : ""}${span.failed ? "，失败" : ""}`}
       tabIndex={active ? 0 : -1}
       data-wf-id={span.id}
+      data-adg-id={`waterfall-row-${span.id.replace(":", "-")}`}
       ref={(node) => register(span.id, node)}
       className={`wf-item wf-${span.kind}${span.failed || span.children.some((child) => child.failed) ? " wf-failed" : ""}${parent ? " wf-child" : ""}${span.id === slowest ? " wf-is-slowest" : ""}`}
     >

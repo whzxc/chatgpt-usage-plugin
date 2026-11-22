@@ -8,6 +8,7 @@ import {
   turnMeta,
   type Turn,
 } from "../../fixtures/usage";
+import { waterfallPilot } from "../../fixtures/waterfall-pilot";
 import { waterfallProps } from "../../fixtures/waterfall";
 import { Stack, Section } from "../../components/layout";
 import { MetricGrid } from "../../components/metric-figure";
@@ -23,6 +24,7 @@ export function Waterfall({
   partial = false,
   all = false,
   viewRange,
+  pilot,
 }: {
   turn?: Turn;
   details?: boolean;
@@ -30,20 +32,105 @@ export function Waterfall({
   partial?: boolean;
   all?: boolean;
   viewRange?: [number, number];
+  pilot?: { status: keyof typeof waterfallPilot; jumped: boolean };
 }) {
+  const scene = pilot && waterfallPilot[pilot.status];
+  const layout =
+    pilot && scene && (pilot.jumped ? scene.jumped : scene.initial);
   const expanded = all
       ? turn.calls.filter((c) => c.kind === "model").map((c) => c.id)
-      : ["r2"],
+      : pilot?.status === "running"
+        ? ["r1", "r2"]
+        : ["r2"],
     visible = turn.calls.filter(
       (c) =>
         (!c.parent || expanded.includes(c.parent)) &&
         (!partial || (c.start ?? c.at) < 24000),
     ),
-    range: [number, number] =
-      viewRange ?? (partial ? [0, 24000] : [0, turn.end ?? turn.now]),
+    range: [number, number] = layout
+      ? [...layout.range]
+      : (viewRange ?? (partial ? [0, 24000] : [0, turn.end ?? turn.now])),
     hidden = turn.calls.filter(
       (c) => c.kind === "model" && !visible.includes(c),
     ).length;
+  const rows = (
+    <>
+      <div role="tree" aria-label="轮次调用瀑布时间线">
+        {visible
+          .filter((c) => !c.parent)
+          .map((c) => (
+            <div
+              key={c.id}
+              class={details && c.id === "r2" ? "border-l-2 border-accent" : ""}
+            >
+              <WaterfallRow
+                call={c}
+                turn={turn}
+                expanded={expanded.includes(c.id)}
+                selected={details && c.id === "r2"}
+                focus={details && c.id === "r2"}
+                range={range}
+                anchor={pilot ? `waterfall-row-request-${c.id}` : undefined}
+              />
+              {visible
+                .filter((child) => child.parent === c.id)
+                .map((child) => (
+                  <WaterfallRow
+                    key={child.id}
+                    call={child}
+                    turn={turn}
+                    range={range}
+                    anchor={
+                      pilot ? `waterfall-row-tool-${child.id}` : undefined
+                    }
+                  />
+                ))}
+              {details && c.id === "r2" && (
+                <div class="p-3">
+                  <RequestDetails call={c} turn={turn} narrative={narrative} />
+                </div>
+              )}
+            </div>
+          ))}
+      </div>
+      {turn.state === "running" && (
+        <p class={pilot ? "mt-4 text-meta text-muted" : "text-meta text-muted"}>
+          尚未记录完成的模型请求暂无独立时间条。
+        </p>
+      )}
+      {turn.calls.some((c) => c.start === null) && (
+        <Status kind="warning" message={copy.unknownWarning} />
+      )}
+    </>
+  );
+  if (layout) {
+    return (
+      <div class="h-[480px] flex flex-col overflow-hidden">
+        <div
+          data-adg-id="waterfall-sticky-header"
+          class="relative z-10 shrink-0 bg-canvas border-t border-border pt-5 pb-4 flex flex-col gap-4"
+        >
+          <header class="flex items-center justify-between gap-4">
+            <h2 class="text-body font-semibold">调用时间线</h2>
+            <Button
+              label={pilot?.status === "running" ? "全部折叠" : "全部展开"}
+            />
+          </header>
+          <Minimap turn={turn} range={range} pilot />
+          <TimeAxis range={range} />
+        </div>
+        <div class="relative grow overflow-hidden">
+          <div
+            data-free
+            class="absolute inset-x-0"
+            style={{ top: `${layout.firstRowTop - 225}px` }}
+          >
+            {rows}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <Stack>
       <MetricGrid items={turnMetrics(turn)} small />
@@ -58,78 +145,29 @@ export function Waterfall({
       >
         <Minimap turn={turn} range={range} />
         <TimeAxis range={range} />
-        <div role="tree" aria-label="轮次调用瀑布时间线">
-          {visible
-            .filter((c) => !c.parent)
-            .map((c) => (
-              <div
-                class={
-                  details && c.id === "r2" ? "border-l-2 border-accent" : ""
-                }
-              >
-                <WaterfallRow
-                  call={c}
-                  turn={turn}
-                  expanded={expanded.includes(c.id)}
-                  selected={details && c.id === "r2"}
-                  focus={details && c.id === "r2"}
-                  range={range}
-                />
-                {visible
-                  .filter((child) => child.parent === c.id)
-                  .map((child) => (
-                    <WaterfallRow call={child} turn={turn} range={range} />
-                  ))}
-                {details && c.id === "r2" && (
-                  <div class="p-3">
-                    <RequestDetails
-                      call={c}
-                      turn={turn}
-                      narrative={narrative}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-        </div>
-        {turn.state === "running" && (
-          <p class="text-meta text-muted">
-            尚未记录完成的模型请求暂无独立时间条。
-          </p>
-        )}
-        {turn.calls.some((c) => c.start === null) && (
-          <Status kind="warning" message={copy.unknownWarning} />
-        )}
+        {rows}
       </Section>
       {partial && <Button label={`显示其余 ${hidden} 次请求`} />}
     </Stack>
   );
 }
 export default () => [
-  <Frame
-    {...frame("waterfall", "waterfall-completed")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Waterfall />
-    </div>
-  </Frame>,
-  <Frame
-    {...frame("waterfall", "waterfall-running")}
-    width={680}
-    capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
-  >
-    <div
-      data-design-module
-      class="w-full p-1 font-ui text-body leading-normal flex flex-col gap-6"
-    >
-      <Waterfall {...waterfallProps("running")} />
-    </div>
-  </Frame>,
+  ...(["completed", "running"] as const).flatMap((status) =>
+    [false, true].map((jumped) => (
+      <Frame
+        {...frame("waterfall", `waterfall-${status}${jumped ? "-jumped" : ""}`)}
+        width={680}
+        capture={{ selector: "[data-design-module]", viewport: "720x2400" }}
+      >
+        <div
+          data-design-module
+          class="w-full p-1 font-ui text-body leading-normal"
+        >
+          <Waterfall {...waterfallProps(status)} pilot={{ status, jumped }} />
+        </div>
+      </Frame>
+    )),
+  ),
   <Frame
     {...frame("waterfall", "waterfall-failed")}
     width={680}

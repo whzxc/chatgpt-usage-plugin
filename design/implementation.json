@@ -1,6 +1,23 @@
 {
-  "version": 1,
+  "version": 2,
   "mappings": [
+    {
+      "implementation": {
+        "file": "ui/task/waterfall/minimap.tsx",
+        "symbol": "Minimap",
+        "anchor": "data-adg-id=\"waterfall-slowest\""
+      },
+      "design": [
+        {
+          "source": "design/modules/waterfall/index.tsx",
+          "transition": "waterfall-jump-to-slowest-completed"
+        },
+        {
+          "source": "design/modules/waterfall/index.tsx",
+          "transition": "waterfall-jump-to-slowest-running"
+        }
+      ]
+    },
     {
       "implementation": { "file": "ui/tokens.css" },
       "design": [{ "source": "design/components/layout.tsx", "part": "Panel" }]
