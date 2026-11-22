@@ -8,7 +8,7 @@ Quiet Native uses a neutral host canvas, restrained teal emphasis, flat sections
 
 ## Governance, boards, and everyday workflow
 
-Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.17.0`) with `check: { strictLayers: true, lifecycle: true }` in [adg.config.mjs](../adg.config.mjs).
+Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.17.1`) with `check: { strictLayers: true, lifecycle: true }` in [adg.config.mjs](../adg.config.mjs).
 
 - **Tokens board (`design/tokens.css`)**: Semantic tokens grouped with single-line `/* Heading */` comments inside `:root`. Exact role aliases use `var(--...)`; `:root[data-theme="dark"]` overrides only tokens whose values change. Runtime tokens in [ui/tokens.css](../ui/tokens.css) mirror those headings and fallbacks inside MCP host `var(--host-var, <fallback>)` wrappers and supply the CSS rules checked by `npm run check:ui`.
 - **Motion (`design/motion-patterns.json`)**: `busy-icon-spin` owns the shared busy icon. `waterfall-visible-range` describes how the chart retargets its visible timeline. The design-only timing tokens record the current runtime literals. [Adopting motion](https://github.com/whzxc/agent-design-gallery/blob/main/docs/asset-rules.md#adopting-motion) · [Motion patterns and consumers](https://github.com/whzxc/agent-design-gallery/blob/main/docs/design-toolkit.md#motion-tokens-and-patterns)
@@ -26,14 +26,13 @@ Design assets live in `design/` and are verified against the global `adg` toolki
 
 ## Verification and handoff
 
-Run `adg motion --coverage` for the scanned inventory. With ADG 0.17.0,
-`waterfall-visible-range` has a manual code binding to
+Run `adg motion --coverage` for the scanned inventory. The
+`waterfall-visible-range` pattern binds both animation frame calls in
 [`useWaterfallClock`](../ui/task/waterfall-clock.ts#L14). Its `update` callback
 queues the first `requestAnimationFrame(tick)`, and `tick` reschedules it while
 a range transition or the live clock is active. The range moves linearly over
 150 ms and snaps to the target with reduced motion. The 32 ms redraw gate and
-1 s reduced-motion clock interval control update cadence. Promote the two
-call sites to scanned consumers when the installed ADG recognizes the loop.
+1 s reduced-motion clock interval control update cadence.
 
 ```sh
 npm run check         # Typechecks (ui, server, design-review, design), Node unit tests, check:ui

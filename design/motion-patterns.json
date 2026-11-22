@@ -1,8 +1,8 @@
 {
   "version": 1,
   "roles": {
-    "duration-base": "--motion-waterfall-range",
-    "duration-loop": "--motion-busy-icon",
+    "duration-base": "--motion-base",
+    "duration-loop": "--motion-loop",
     "easing-enter": "--ease-linear",
     "easing-loop": "--ease-linear"
   },
@@ -13,7 +13,7 @@
       "effect": "spin",
       "properties": ["transform"],
       "parameters": {
-        "duration": "--motion-busy-icon",
+        "duration": "--motion-loop",
         "easing": "--ease-linear"
       },
       "interrupt": "cancel",
@@ -24,15 +24,24 @@
         { "file": "ui/shared/layout.css", "match": "css:.is-busy .icon" }
       ]
     },
-    "size-transition": {
-      "properties": ["--wf-start", "--wf-unit", "--wf-map-start", "--wf-map-width"],
-      "interrupt": "retarget"
-    },
     "waterfall-visible-range": {
-      "extends": "size-transition",
+      "kind": "layout",
+      "action": "resize",
+      "effect": "size",
+      "properties": ["--wf-start", "--wf-unit", "--wf-map-start", "--wf-map-width"],
+      "parameters": {
+        "duration": "--motion-base",
+        "easing": "--ease-linear"
+      },
+      "interrupt": "retarget",
+      "reduced": "instant",
       "frames": [
         { "source": "design/modules/waterfall/index.tsx", "frame": "waterfall-completed" },
         { "source": "design/modules/waterfall/index.tsx", "frame": "waterfall-running" }
+      ],
+      "consumers": [
+        { "file": "ui/task/waterfall-clock.ts", "match": "web:requestAnimationFrame", "within": "tick" },
+        { "file": "ui/task/waterfall-clock.ts", "match": "web:requestAnimationFrame", "within": "update" }
       ]
     }
   }
