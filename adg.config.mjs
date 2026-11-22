@@ -2,7 +2,7 @@ import fixtures from "./tooling/design-review/fixtures.json" with { type: "json"
 import { startDesignDev } from "./tooling/design-dev.mjs";
 import { waterfallPilot } from "./design/fixtures/waterfall-pilot.ts";
 export default {
-  requires: ">=0.17.5",
+  requires: ">=0.17.7",
   design: "design",
   output: "output/design",
   check: {
