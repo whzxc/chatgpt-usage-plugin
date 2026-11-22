@@ -43,6 +43,7 @@ Use Node 24.19+ (24.x) and npm on Apple Silicon macOS or Windows x64. Rust is no
 
 ```sh
 npm ci
+adg check --json  # Validate design and generate TypeScript declarations
 npm run check
 npm run build
 npm run dev

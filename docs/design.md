@@ -39,7 +39,7 @@ npm run check         # Typechecks (ui, server, design-review, design), Node uni
 npm run check:ui      # Literal paint rules, >=2 feature consumer checks, token parity & allowance
 npm run check:design  # ADG strictLayers + lifecycle check & design typecheck
 npm run check:format  # Prettier verification across JS/TS/CSS/MJS
-adg compare --all     # Capture & pixel-compare all fixtures against design baselines (light/dark)
+adg compare --all     # Compare all fixtures in light mode (set CUP_REVIEW_THEME=dark for dark)
 adg review --base=<rev> --json  # Standalone HTML diff review sheet in output/design/review.html
 ```
 
