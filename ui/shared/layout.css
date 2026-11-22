@@ -231,7 +231,7 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   .is-busy .icon {
-    animation: spin 1s linear infinite;
+    animation: spin var(--motion-loop) var(--ease-linear) infinite;
   }
 }
 .icon-btn[aria-busy="true"],

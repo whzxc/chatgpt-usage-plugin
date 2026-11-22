@@ -155,11 +155,17 @@ function WaterfallFixture({
   header?: boolean;
   pilot?: boolean;
 }) {
-  const scene = form === "scroll" ? scrollTurn : variant(form),
+  const missingTarget = form === "missing-target";
+  const scroll = form === "scroll" || missingTarget;
+  const scene = scroll ? scrollTurn : variant(form),
     turn = turnData(scene),
     summary = turnSummary(scene),
-    [partial, setPartial] = useState(form === "partial"),
+    [partial, setPartial] = useState(form === "partial" || missingTarget),
     [tool, setTool] = useState<string>();
+  if (missingTarget && turn.overview?.slowest) {
+    const target = turn.overview.slowest.target;
+    turn.overview.slowest.target = { ...target, id: "tool:missing" };
+  }
   const timeline = partial
     ? turn.timeline.filter((r) =>
         r.kind === "request"
@@ -181,11 +187,7 @@ function WaterfallFixture({
       )}
       <div
         className="stack"
-        style={
-          form === "scroll" || pilot
-            ? { height: 480, overflowY: "auto" }
-            : undefined
-        }
+        style={scroll || pilot ? { height: 480, overflowY: "auto" } : undefined}
       >
         {header && <TurnHeader summary={summary} open toggle={noop} />}
         <Waterfall
@@ -521,6 +523,8 @@ function Content() {
     );
   } else if (fixture === "cup-waterfall-scroll")
     content = <WaterfallFixture form="scroll" />;
+  else if (fixture === "cup-waterfall-missing-target")
+    content = <WaterfallFixture form="missing-target" />;
   else if (fixture.startsWith("cup-turn-summary-summary-"))
     content = (
       <TurnRow

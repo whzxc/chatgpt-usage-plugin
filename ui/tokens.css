@@ -66,6 +66,10 @@
   --stroke-focus: 2px;
   --shadow-dialog: 0 12px 32px #20202024;
 
+  /* Motion */
+  --motion-loop: 1s;
+  --ease-linear: linear;
+
   color-scheme: light;
   color: var(--text);
   background: var(--canvas);

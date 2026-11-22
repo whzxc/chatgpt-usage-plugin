@@ -8,6 +8,8 @@ import {
 } from "./waterfall-range";
 import type { TimeRange, ViewportSpan } from "./waterfall-range";
 
+const RANGE_TRANSITION_MS = 150;
+
 // Observe rows once per loaded/collapsed block, never measure the tree per frame.
 export function useWaterfallClock(
   origin: number | null,
@@ -75,13 +77,18 @@ export function useWaterfallClock(
         String(100 / (range.end - range.start)),
       );
       element.style.setProperty("--wf-now", String(now()));
+      const mapDuration = total();
+      element.style.setProperty(
+        "--wf-map-snapshot-scale",
+        String(end / mapDuration),
+      );
       element.style.setProperty(
         "--wf-map-start",
-        `${(100 * range.start) / total()}%`,
+        `${(100 * range.start) / mapDuration}%`,
       );
       element.style.setProperty(
         "--wf-map-width",
-        `${(100 * (range.end - range.start)) / total()}%`,
+        `${(100 * (range.end - range.start)) / mapDuration}%`,
       );
       const rangeLabel = element.querySelector(".wf-visible-range");
       if (rangeLabel)
@@ -133,7 +140,10 @@ export function useWaterfallClock(
       const target = desired();
       if (!target) return;
       if (transition && !reduced.matches) {
-        const progress = Math.min(1, (at - transition.at) / 150);
+        const progress = Math.min(
+          1,
+          (at - transition.at) / RANGE_TRANSITION_MS,
+        );
         write(interpolateRange(transition.from, transition.to, progress));
         if (progress === 1) transition = null;
       } else write(target);
@@ -178,7 +188,7 @@ export function useWaterfallClock(
     const observe = () => {
       element.style.setProperty(
         "--wf-head-height",
-        `${head.offsetHeight + 8}px`,
+        `${head.offsetHeight}px`,
       );
       observer?.disconnect();
       visible.clear();

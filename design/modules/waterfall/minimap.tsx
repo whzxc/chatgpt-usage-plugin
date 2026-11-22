@@ -47,15 +47,15 @@ export function Minimap({
         aria-disabled={busy}
         class="relative bg-surface h-10 rounded-control"
       >
-        <div class="absolute inset-0 flex items-end gap-1 p-1">
+        <div class="absolute inset-0 flex items-end py-1">
           {data.map((bucket) => (
-            <div class="flex-1 h-full flex flex-col-reverse">
+            <div class="flex-1 min-w-0 h-full flex flex-col-reverse">
               <i
-                class="block bg-model-primary"
+                class="block mx-[min(2px,20%)] bg-model-primary"
                 style={{ height: `${(bucket.models / peak) * 100}%` }}
               />
               <i
-                class="block bg-tool"
+                class="block mx-[min(2px,20%)] bg-tool"
                 style={{ height: `${(bucket.tools / peak) * 100}%` }}
               />
             </div>

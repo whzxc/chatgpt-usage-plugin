@@ -64,7 +64,7 @@
 }
 .wf-item {
   --wf-tone: var(--model-primary);
-  scroll-margin-block: var(--wf-head-height, 200px);
+  scroll-margin-block: var(--wf-head-height, 200px) 0;
   outline: none;
 }
 .wf-tool {
@@ -308,18 +308,24 @@
 .wf-density {
   position: absolute;
   inset: 0;
+  right: auto;
+  width: calc(100% * var(--wf-map-snapshot-scale, 1));
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  padding: 4px;
+  padding-block: 4px;
   pointer-events: none;
 }
 .wf-density > span {
   flex: 1;
+  min-width: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+}
+.wf-density i,
+.wf-density b {
+  margin-inline: min(2px, 20%);
 }
 .wf-density i {
   background: var(--tool);

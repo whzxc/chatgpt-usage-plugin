@@ -132,7 +132,21 @@ export default {
         }, scene.scroll);
         if (pilot[2]) {
           await page.locator('[data-adg-id="waterfall-slowest"]').click();
-          await page.locator(`[data-wf-id="${scene.target}"]:focus`).waitFor();
+          const row = page.locator(`[data-wf-id="${scene.target}"]:focus`);
+          await row.waitFor();
+          const visible = await row.evaluate((element) => {
+            const { top, bottom } = element.getBoundingClientRect();
+            const header = element
+              .closest(".waterfall")
+              .querySelector(".wf-sticky");
+            return (
+              top >= header.getBoundingClientRect().bottom - 0.5 &&
+              bottom <=
+                header.closest(".stack").getBoundingClientRect().bottom + 0.5
+            );
+          });
+          if (!visible)
+            throw new Error(`Design fixture ${name}: jump target is clipped`);
         }
         const { range } = pilot[2] ? scene.jumped : scene.initial;
         await page.waitForFunction(

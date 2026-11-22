@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { Button } from "../../components/ui/controls";
 import { duration } from "../../shared/format";
@@ -21,6 +21,10 @@ export function Minimap({
   navigate: (target: JumpTarget) => void;
 }) {
   const [position, setPosition] = useState(0);
+  const density = useRef<HTMLDivElement>(null);
+  const currentPosition = Math.min(position, overview.durationMs);
+  const snapshotOffset = (at: number) =>
+    `calc(${(at * 100) / overview.durationMs}% * var(--wf-map-snapshot-scale, 1))`;
   const peak = Math.max(
     1,
     ...overview.buckets.map((bucket) => bucket.requests + bucket.tools),
@@ -63,13 +67,15 @@ export function Minimap({
         aria-disabled={busy}
         aria-valuemin={0}
         aria-valuemax={overview.durationMs}
-        aria-valuenow={position}
-        aria-valuetext={axisTime(position)}
+        aria-valuenow={currentPosition}
+        aria-valuetext={axisTime(currentPosition)}
         title="每格为调用次数；起点未知时按记录时间定位。点击跳转，框内为当前可见时间范围"
         onClick={(event) => {
-          if (!busy) {
-            const rect = event.currentTarget.getBoundingClientRect();
-            const fraction = (event.clientX - rect.left) / rect.width;
+          if (!busy && density.current) {
+            const rect = density.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            if (!rect.width || x < 0 || x > rect.width) return;
+            const fraction = x / rect.width;
             if (
               overview.slowest &&
               Math.abs(fraction - overview.slowest.at / overview.durationMs) *
@@ -83,7 +89,7 @@ export function Minimap({
         }}
         onKeyDown={(event) => {
           if (busy) return;
-          let next = position;
+          let next = currentPosition;
           if (event.key === "ArrowRight")
             next += overview.durationMs / overview.buckets.length;
           else if (event.key === "ArrowLeft")
@@ -94,7 +100,8 @@ export function Minimap({
             event.preventDefault();
             go(
               Math.floor(
-                (position / overview.durationMs) * overview.buckets.length,
+                (currentPosition / overview.durationMs) *
+                  overview.buckets.length,
               ),
             );
             return;
@@ -103,7 +110,7 @@ export function Minimap({
           event.preventDefault();
         }}
       >
-        <div className="wf-density" aria-hidden="true">
+        <div ref={density} className="wf-density" aria-hidden="true">
           {overview.buckets.map((bucket, i) => (
             <span key={i}>
               <i style={{ height: `${(bucket.tools * 100) / peak}%` }} />
@@ -119,14 +126,14 @@ export function Minimap({
         <i
           className="wf-map-cursor"
           aria-hidden="true"
-          style={{ left: `${(position * 100) / overview.durationMs}%` }}
+          style={{ left: snapshotOffset(currentPosition) }}
         />
         {overview.slowest && (
           <i
             className="wf-map-slowest"
             aria-hidden="true"
             style={{
-              left: `${(overview.slowest.at * 100) / overview.durationMs}%`,
+              left: snapshotOffset(overview.slowest.at),
             }}
           />
         )}

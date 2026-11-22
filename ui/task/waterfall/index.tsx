@@ -63,7 +63,7 @@ export function Waterfall({
     .every((span) => !collapsed.has(span.id));
   const [details, setDetails] = useState<string>();
   const [active, setActive] = useState<string>();
-  const [jump, setJump] = useState<string>();
+  const [jump, setJump] = useState<{ id: string; revealing: boolean }>();
   const nodes = useRef(new Map<string, HTMLDivElement>());
   const rows = useMemo<VisibleSpan[]>(
     () =>
@@ -176,33 +176,40 @@ export function Waterfall({
     event.preventDefault();
   };
   const navigate = async (target: JumpTarget) => {
-    setJump(target.id);
-    if (
-      !spans.some(
-        (span) =>
-          span.id === target.id ||
-          span.children.some((child) => child.id === target.id),
-      )
-    ) {
-      if (!(await reveal(target.requests))) setJump(undefined);
+    const revealing = !spans.some(
+      (span) =>
+        span.id === target.id ||
+        span.children.some((child) => child.id === target.id),
+    );
+    const request = { id: target.id, revealing };
+    setJump(request);
+    if (revealing) {
+      const loaded = await reveal(target.requests).catch(() => false);
+      setJump((current) =>
+        current === request
+          ? loaded
+            ? { ...request, revealing: false }
+            : undefined
+          : current,
+      );
     }
   };
   useEffect(() => {
-    if (!jump) return;
+    if (!jump || jump.revealing) return;
     const parent = spans.find((span) =>
-      span.children.some((child) => child.id === jump),
+      span.children.some((child) => child.id === jump.id),
     );
     if (parent && collapsed.has(parent.id)) {
       setChoices((old) => new Map(old).set(parent.id, true));
       return;
     }
-    const node = nodes.current.get(jump);
+    const node = nodes.current.get(jump.id);
     if (node) {
-      setActive(jump);
+      setActive(jump.id);
       node.focus({ preventScroll: true });
-      node.scrollIntoView({ block: "center", behavior: "instant" });
-      setJump(undefined);
+      node.scrollIntoView({ block: "start", behavior: "instant" });
     }
+    setJump((current) => (current === jump ? undefined : current));
   }, [jump, spans, collapsed]);
   return (
     <div className="waterfall-container">

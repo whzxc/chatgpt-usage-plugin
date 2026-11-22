@@ -37,8 +37,8 @@ a range transition or the live clock is active. The range moves linearly over
 The [waterfall minimap pilot](../design/modules/waterfall/index.motion.json)
 starts from either the running or completed turn on the Playable board. Click
 「最慢」 to jump to the slowest call while the sticky header pins the flow.
-The runtime centers and focuses the row immediately and interpolates the
-horizontal position and width of the range outline.
+The runtime focuses the row and jumps immediately to the visible area below
+the header while the range outline interpolates horizontally.
 
 ```sh
 npm run check         # Typechecks (ui, server, design-review, design), Node unit tests, check:ui
@@ -51,9 +51,9 @@ adg review --base=<rev> --json  # Standalone HTML diff review sheet in output/de
 
 The production build (`npm run build` / `ui/app/main.tsx`) excludes `design/`, `tooling/design-review/`, and `output/`. Packaging rules and MCP host token bindings remain governed by [AGENTS.md](../AGENTS.md) and [data contracts](data-tools.md).
 
-## Round 3 candidates
+## Round 3 decisions
 
-- **Live clock** — The range outline uses live elapsed time, while density and hit testing use the latest overview snapshot. Check whether they stay aligned between refreshes.
-- **Jump landing** — The focused row can land partly under the sticky header, and a successful reveal can leave the minimap busy if the target never appears. Decide how to keep the row visible and clear a missing target.
-- **Row motion** — Rows jump immediately. The outline glides linearly over 150 ms when reduced motion is off. Decide whether rows should animate.
-- **Runtime tokens** — The waterfall uses a literal 150 ms duration and linear interpolation, and the busy icon uses `1s linear`. Decide whether to share these values with the design tokens.
+- **Live clock** — The outline, density, markers, and pointer hit testing share the live time scale. The latest overview fills its known interval, and the unrecorded tail has no jump targets.
+- **Jump landing** — The jump aligns the focused row below the measured sticky header. The minimap becomes available again when reveal finishes without the target.
+- **Row motion** — Keep jumps immediate. The 150 ms outline glide provides orientation, and animating long vertical jumps would delay the requested action.
+- **Runtime tokens** — The busy icon uses `--motion-loop` and `--ease-linear` in CSS. The waterfall clock uses `RANGE_TRANSITION_MS` (150 ms), which matches the pattern's `--motion-base` token without a CSS lookup per frame.

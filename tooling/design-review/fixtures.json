@@ -69,5 +69,6 @@
   "cup-usage-summary-refreshing",
   "cup-usage-summary-indexing",
   "cup-usage-summary-unavailable",
-  "cup-waterfall-scroll"
+  "cup-waterfall-scroll",
+  "cup-waterfall-missing-target"
 ]
