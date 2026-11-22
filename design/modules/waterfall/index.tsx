@@ -108,7 +108,7 @@ export function Waterfall({
       <div class="h-[480px] flex flex-col overflow-hidden">
         <div
           data-adg-id="waterfall-sticky-header"
-          class="relative z-10 shrink-0 bg-canvas border-t border-border pt-5 pb-4 flex flex-col gap-4"
+          class="sticky top-0 z-10 shrink-0 bg-canvas border-t border-border pt-5 pb-4 flex flex-col gap-4"
         >
           <header class="flex items-center justify-between gap-4">
             <h2 class="text-body font-semibold">调用时间线</h2>
@@ -119,7 +119,7 @@ export function Waterfall({
           <Minimap turn={turn} range={range} pilot />
           <TimeAxis range={range} />
         </div>
-        <div class="relative grow overflow-hidden">
+        <div class="relative grow">
           <div
             data-free
             class="absolute inset-x-0"

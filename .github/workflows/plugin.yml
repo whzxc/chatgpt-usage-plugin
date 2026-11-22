@@ -25,11 +25,11 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Check out ADG 0.17.3
+      - name: Check out ADG 0.17.5
         uses: actions/checkout@v6
         with:
           repository: whzxc/agent-design-gallery
-          ref: c60754d1b8a8d93ef51550db969235a0fa563418
+          ref: b27ca29a62cfea01a405e37132722510bb17f991
           path: output/adg-toolkit
           persist-credentials: false
       - run: npm ci --prefix output/adg-toolkit

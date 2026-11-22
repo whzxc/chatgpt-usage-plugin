@@ -8,7 +8,7 @@ Quiet Native uses a neutral host canvas, restrained teal emphasis, flat sections
 
 ## Governance, boards, and everyday workflow
 
-Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.17.3`) with strict layer, lifecycle, and motion checks in [adg.config.mjs](../adg.config.mjs).
+Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.17.5`) with strict layer, lifecycle, and motion checks in [adg.config.mjs](../adg.config.mjs).
 
 - **Tokens board (`design/tokens.css`)**: Semantic tokens grouped with single-line `/* Heading */` comments inside `:root`. Exact role aliases use `var(--...)`; `:root[data-theme="dark"]` overrides only tokens whose values change. Runtime tokens in [ui/tokens.css](../ui/tokens.css) mirror those headings and fallbacks inside MCP host `var(--host-var, <fallback>)` wrappers and supply the CSS rules checked by `npm run check:ui`.
 - **Motion (`design/motion-patterns.json`)**: `busy-icon-spin` owns the shared busy icon. `waterfall-visible-range` describes how the chart retargets its visible timeline. The design-only timing tokens record the current runtime literals. [Adopting motion](https://github.com/whzxc/agent-design-gallery/blob/main/docs/asset-rules.md#adopting-motion) · [Motion patterns and consumers](https://github.com/whzxc/agent-design-gallery/blob/main/docs/design-toolkit.md#motion-tokens-and-patterns)

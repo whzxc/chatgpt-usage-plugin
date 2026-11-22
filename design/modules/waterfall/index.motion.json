@@ -30,7 +30,27 @@
         "target": {
           "anchor": "waterfall-row-tool-t2"
         }
-      }
+      },
+      "instant": [
+        {
+          "anchor": "waterfall-row-request-r1"
+        },
+        {
+          "anchor": "waterfall-row-request-r2"
+        },
+        {
+          "anchor": "waterfall-row-tool-t2"
+        },
+        {
+          "anchor": "waterfall-row-tool-t3"
+        },
+        {
+          "anchor": "waterfall-row-request-r3"
+        },
+        {
+          "anchor": "waterfall-row-request-r4"
+        }
+      ]
     },
     {
       "id": "waterfall-jump-to-slowest-running",
@@ -61,7 +81,24 @@
         "target": {
           "anchor": "waterfall-row-request-r1"
         }
-      }
+      },
+      "instant": [
+        {
+          "anchor": "waterfall-row-request-r1"
+        },
+        {
+          "anchor": "waterfall-row-tool-t1"
+        },
+        {
+          "anchor": "waterfall-row-request-r2"
+        },
+        {
+          "anchor": "waterfall-row-tool-t2"
+        },
+        {
+          "anchor": "waterfall-row-tool-t3"
+        }
+      ]
     }
   ],
   "flows": [
