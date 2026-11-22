@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.3.2
+
+- Keep the waterfall minimap's call density and jump targets aligned with the live timeline while a turn is running.
+- Land on the selected call below the sticky header when jumping from the minimap, including with the slowest-call button.
+- Re-enable the minimap when a jump target is unavailable after loading.
+
 ## 0.3.1
 
 - Match waterfall missing-timing feedback and request-detail note typography to the approved design in both host themes.
