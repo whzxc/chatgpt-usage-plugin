@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "roles": {
+    "duration-base": "--motion-waterfall-range",
+    "duration-loop": "--motion-busy-icon",
+    "easing-enter": "--ease-linear",
+    "easing-loop": "--ease-linear"
+  },
+  "patterns": {
+    "busy-icon-spin": {
+      "kind": "ambient",
+      "action": "loop",
+      "effect": "spin",
+      "properties": ["transform"],
+      "parameters": {
+        "duration": "--motion-busy-icon",
+        "easing": "--ease-linear"
+      },
+      "interrupt": "cancel",
+      "reduced": "static",
+      "frames": [{ "source": "design/components/button.tsx", "frame": "actions" }],
+      "consumers": [
+        { "file": "ui/shared/layout.css", "match": "keyframes:spin" },
+        { "file": "ui/shared/layout.css", "match": "css:.is-busy .icon" }
+      ]
+    },
+    "size-transition": {
+      "properties": ["--wf-start", "--wf-unit", "--wf-map-start", "--wf-map-width"],
+      "interrupt": "retarget"
+    },
+    "waterfall-visible-range": {
+      "extends": "size-transition",
+      "frames": [
+        { "source": "design/modules/waterfall/index.tsx", "frame": "waterfall-completed" },
+        { "source": "design/modules/waterfall/index.tsx", "frame": "waterfall-running" }
+      ]
+    }
+  }
+}

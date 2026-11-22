@@ -8,9 +8,10 @@ Quiet Native uses a neutral host canvas, restrained teal emphasis, flat sections
 
 ## Governance, boards, and everyday workflow
 
-Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.15.0`) with `check: { strictLayers: true, lifecycle: true }` in [adg.config.mjs](../adg.config.mjs).
+Design assets live in `design/` and are verified against the global `adg` toolkit (`>=0.17.0`) with `check: { strictLayers: true, lifecycle: true }` in [adg.config.mjs](../adg.config.mjs).
 
 - **Tokens board (`design/tokens.css`)**: Semantic tokens grouped with single-line `/* Heading */` comments inside `:root`. Exact role aliases use `var(--...)`; `:root[data-theme="dark"]` overrides only tokens whose values change. Runtime tokens in [ui/tokens.css](../ui/tokens.css) mirror those headings and fallbacks inside MCP host `var(--host-var, <fallback>)` wrappers and supply the CSS rules checked by `npm run check:ui`.
+- **Motion (`design/motion-patterns.json`)**: `busy-icon-spin` owns the shared busy icon. `waterfall-visible-range` describes how the chart retargets its visible timeline. The design-only timing tokens record the current runtime literals. [Adopting motion](https://github.com/whzxc/agent-design-gallery/blob/main/docs/asset-rules.md#adopting-motion) · [Motion patterns and consumers](https://github.com/whzxc/agent-design-gallery/blob/main/docs/design-toolkit.md#motion-tokens-and-patterns)
 - **Boards (`design/gallery.json`)**: Four layer-pure chapters ordered general to specific — `Components`, `Overview`, `Task and turn`, and `Panels`. Feature-folder modules enter through `modules/<feature>/index.tsx`.
 - **Ownership (`design/implementation.json`)**: Version 1 mapping binding every exported design part (to its defining source file), runtime stylesheets, and all three surfaces (whole-source without `part`). `adg owner` and `adg impact` resolve bindings across `ui/` and `design/`.
 - **Everyday changes**: Start routine UI updates directly in `ui/`, run `npm run check`, `npm run check:ui`, `npm run check:design`, and `adg compare --all`, then generate an impact-scoped review sheet with `adg review --base=<rev> --json`. Reconcile `design/` first only when introducing new layouts or visual structure.
@@ -24,6 +25,15 @@ Design assets live in `design/` and are verified against the global `adg` toolki
 - **Captures**: 720px panel width (4px display clearance around component/module specimens). `startDesignDev` (`tooling/design-dev.mjs`) serves `/__design/review` on port 5191 with fictional `tooling/design-review/` fixtures, including `cup-waterfall-scroll` for scroll-following verification. External HTTPS and API traffic remain blocked.
 
 ## Verification and handoff
+
+Run `adg motion --coverage` for the scanned inventory. With ADG 0.17.0,
+`waterfall-visible-range` has a manual code binding to
+[`useWaterfallClock`](../ui/task/waterfall-clock.ts#L14). Its `update` callback
+queues the first `requestAnimationFrame(tick)`, and `tick` reschedules it while
+a range transition or the live clock is active. The range moves linearly over
+150 ms and snaps to the target with reduced motion. The 32 ms redraw gate and
+1 s reduced-motion clock interval control update cadence. Promote the two
+call sites to scanned consumers when the installed ADG recognizes the loop.
 
 ```sh
 npm run check         # Typechecks (ui, server, design-review, design), Node unit tests, check:ui

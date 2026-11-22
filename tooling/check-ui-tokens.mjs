@@ -25,27 +25,34 @@ function unwrapHostFallback(value) {
 }
 
 function parseTokenBlocks(css, allowCssProps = false) {
-  const headings = [...css.matchAll(/^\s*\/\*\s*([^*]+?)\s*\*\//gm)].map((m) =>
-    m[1].trim(),
-  );
-  const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const blocks = [...clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
-  const lightBlock = blocks.find((b) => b[1].trim() === ":root");
+  const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  const selector = (block) => block[1].replace(/\/\*[\s\S]*?\*\//g, "").trim();
+  const lightBlock = blocks.find((b) => selector(b) === ":root");
   const darkBlock = blocks.find(
-    (b) => b[1].trim() === ':root[data-theme="dark"]',
+    (b) => selector(b) === ':root[data-theme="dark"]',
   );
   if (!lightBlock || !darkBlock) {
     throw new Error('Expected :root and :root[data-theme="dark"] blocks');
   }
-  const parseDecls = (body) => {
+  const headings = [];
+  const motionTokens = new Set();
+  const parseDecls = (body, isLight = false) => {
     const map = new Map();
-    for (const raw of body.split(";")) {
+    let heading;
+    for (const raw of body.split(/(\/\*[\s\S]*?\*\/)|;/)) {
+      if (!raw) continue;
+      if (raw.startsWith("/*")) {
+        heading = raw.slice(2, -2).trim();
+        if (isLight) headings.push(heading);
+        continue;
+      }
       const compact = raw.replace(/\s+/g, " ").trim();
       if (!compact) continue;
       const m = /^(--[\w-]+)\s*:\s*([\s\S]+)$/.exec(compact);
       if (m) {
         if (map.has(m[1])) throw new Error(`Duplicate token ${m[1]}`);
         map.set(m[1], m[2].trim());
+        if (isLight && heading === "Motion") motionTokens.add(m[1]);
       } else if (!allowCssProps) {
         throw new Error(`Unexpected declaration in tokens: ${compact}`);
       }
@@ -54,8 +61,9 @@ function parseTokenBlocks(css, allowCssProps = false) {
   };
   return {
     headings,
-    light: parseDecls(lightBlock[2]),
+    light: parseDecls(lightBlock[2], true),
     dark: parseDecls(darkBlock[2]),
+    motionTokens,
   };
 }
 
@@ -70,7 +78,11 @@ if (design.headings.length === 0 || ui.headings.length === 0) {
     "Both design/tokens.css and ui/tokens.css need /* Heading */ section comments.",
   );
 }
-if (JSON.stringify(design.headings) !== JSON.stringify(ui.headings)) {
+// Motion inventory can describe existing literals before the UI adopts tokens.
+const designHeadings = ui.headings.includes("Motion")
+  ? design.headings
+  : design.headings.filter((heading) => heading !== "Motion");
+if (JSON.stringify(designHeadings) !== JSON.stringify(ui.headings)) {
   errors.push(
     `Token section headings differ: design=[${design.headings.join(", ")}] ui=[${ui.headings.join(", ")}]`,
   );
@@ -81,7 +93,9 @@ for (const key of design.light.keys()) {
     errors.push(`Value-named token forbidden: ${key}`);
   }
   if (!ui.light.has(key)) {
-    errors.push(`Token ${key} missing from ui/tokens.css :root`);
+    if (!design.motionTokens.has(key)) {
+      errors.push(`Token ${key} missing from ui/tokens.css :root`);
+    }
   } else {
     const dVal = design.light.get(key).replace(/\s+/g, " ").trim();
     const uVal = unwrapHostFallback(ui.light.get(key));

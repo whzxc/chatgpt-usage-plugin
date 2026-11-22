@@ -58,6 +58,11 @@
   --stroke-thin: 1px;
   --stroke-focus: 2px;
   --shadow-dialog: 0 12px 32px #20202024;
+
+  /* Motion */
+  --motion-busy-icon: 1s;
+  --motion-waterfall-range: 150ms;
+  --ease-linear: linear;
 }
 
 :root[data-theme="dark"] {
