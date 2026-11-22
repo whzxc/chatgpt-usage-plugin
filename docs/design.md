@@ -37,8 +37,8 @@ a range transition or the live clock is active. The range moves linearly over
 The [waterfall minimap pilot](../design/modules/waterfall/index.motion.json)
 starts from either the running or completed turn on the Playable board. Click
 「最慢」 to jump to the slowest call while the sticky header pins the flow.
-The player interpolates row displacement alongside the range outline. The
-runtime centers and focuses the row immediately and interpolates the range.
+The runtime centers and focuses the row immediately and interpolates the
+horizontal position and width of the range outline.
 
 ```sh
 npm run check         # Typechecks (ui, server, design-review, design), Node unit tests, check:ui

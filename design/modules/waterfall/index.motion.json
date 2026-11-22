@@ -23,24 +23,6 @@
         "targets": [
           {
             "anchor": "waterfall-range-window"
-          },
-          {
-            "anchor": "waterfall-row-request-r1"
-          },
-          {
-            "anchor": "waterfall-row-request-r2"
-          },
-          {
-            "anchor": "waterfall-row-tool-t2"
-          },
-          {
-            "anchor": "waterfall-row-tool-t3"
-          },
-          {
-            "anchor": "waterfall-row-request-r3"
-          },
-          {
-            "anchor": "waterfall-row-request-r4"
           }
         ]
       },
@@ -72,21 +54,6 @@
         "targets": [
           {
             "anchor": "waterfall-range-window"
-          },
-          {
-            "anchor": "waterfall-row-request-r1"
-          },
-          {
-            "anchor": "waterfall-row-tool-t1"
-          },
-          {
-            "anchor": "waterfall-row-request-r2"
-          },
-          {
-            "anchor": "waterfall-row-tool-t2"
-          },
-          {
-            "anchor": "waterfall-row-tool-t3"
           }
         ]
       },

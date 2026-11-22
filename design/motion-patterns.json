@@ -28,7 +28,7 @@
       "kind": "layout",
       "action": "resize",
       "effect": "size",
-      "properties": ["x", "y", "width", "--wf-start", "--wf-unit", "--wf-map-start", "--wf-map-width"],
+      "properties": ["x", "width", "--wf-start", "--wf-unit", "--wf-map-start", "--wf-map-width"],
       "parameters": {
         "duration": "--motion-base",
         "easing": "--ease-linear"
